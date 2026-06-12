@@ -23,7 +23,8 @@ export default function MarketsView() {
     setMarginMode,
     placeOrder,
     closePosition,
-    cancelOrder
+    cancelOrder,
+    connectWallet
   } = useAppState();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -466,7 +467,7 @@ export default function MarketsView() {
           <button
             onClick={handlePlaceOrder}
             disabled={parsedAmount <= 0}
-            className={`w-full py-3 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition-all mt-auto ${
+            className={`w-full py-3 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition-all ${
               parsedAmount <= 0
                 ? 'bg-[#181822] text-[#6e6e7f] border border-[#1d1d28] cursor-not-allowed'
                 : tradeSide === 'LONG'
@@ -477,10 +478,12 @@ export default function MarketsView() {
             {parsedAmount <= 0 ? 'Enter Amount' : tradeSide === 'LONG' ? 'Place Long / Buy' : 'Place Short / Sell'}
           </button>
         ) : (
-          <div className="flex items-center gap-2 justify-center p-3.5 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/15 text-[#ef4444] text-xs font-semibold mt-auto">
-            <CircleAlert size={14} className="animate-bounce shrink-0" />
-            Connect wallet to trade
-          </div>
+          <button
+            onClick={() => connectWallet('MetaMask')}
+            className="w-full py-3 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
+          >
+            Connect Wallet
+          </button>
         )}
       </section>
     </main>
