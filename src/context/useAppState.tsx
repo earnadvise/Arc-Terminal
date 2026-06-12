@@ -25,6 +25,38 @@ const getPrecision = (symbol: string): number => {
   return 2;
 };
 
+const encodeOpenPosition = (symbol: string, isLong: boolean, size: number, entryPrice: number, leverage: number) => {
+  const selector = 'd2719d3f';
+  const offsetHex = 'a0'.padStart(64, '0');
+  const isLongHex = (isLong ? 1 : 0).toString(16).padStart(64, '0');
+  const sizeWei = BigInt(Math.floor(size * 1000000)) * BigInt(10 ** 12);
+  const sizeHex = sizeWei.toString(16).padStart(64, '0');
+  const priceWei = BigInt(Math.floor(entryPrice * 1000000)) * BigInt(10 ** 12);
+  const priceHex = priceWei.toString(16).padStart(64, '0');
+  const leverageHex = leverage.toString(16).padStart(64, '0');
+  const stringLenHex = symbol.length.toString(16).padStart(64, '0');
+  let stringBytes = '';
+  for (let i = 0; i < symbol.length; i++) {
+    stringBytes += symbol.charCodeAt(i).toString(16);
+  }
+  const stringContentHex = stringBytes.padEnd(64, '0');
+  return '0x' + selector + offsetHex + isLongHex + sizeHex + priceHex + leverageHex + stringLenHex + stringContentHex;
+};
+
+const encodeClosePosition = (symbol: string, realizedPnl: number) => {
+  const selector = '024c0846';
+  const offsetHex = '40'.padStart(64, '0');
+  const pnlWei = BigInt(Math.round(realizedPnl * 1000000)) * BigInt(10 ** 12);
+  const pnlHex = (pnlWei < BigInt(0) ? (BigInt(1) << BigInt(256)) + pnlWei : pnlWei).toString(16).padStart(64, '0');
+  const stringLenHex = symbol.length.toString(16).padStart(64, '0');
+  let stringBytes = '';
+  for (let i = 0; i < symbol.length; i++) {
+    stringBytes += symbol.charCodeAt(i).toString(16);
+  }
+  const stringContentHex = stringBytes.padEnd(64, '0');
+  return '0x' + selector + offsetHex + pnlHex + stringLenHex + stringContentHex;
+};
+
 export interface AppNotification {
   id: string;
   type: 'info' | 'success' | 'warning' | 'error';
@@ -45,7 +77,7 @@ interface AppContextType {
   walletConnected: boolean;
   walletAddress: string;
   walletType: string;
-  balances: { USDC: number; BTC: number; ETH: number; SOL: number; ARC: number };
+  balances: { USDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number };
   notifications: AppNotification[];
   timeframe: string;
   setTimeframe: (time: string) => void;
@@ -66,11 +98,11 @@ interface AppContextType {
     type: 'MARKET' | 'LIMIT' | 'STOP',
     price: number,
     amount: number
-  ) => void;
-  closePosition: (id: string) => void;
+  ) => Promise<void>;
+  closePosition: (id: string) => Promise<void>;
   cancelOrder: (id: string) => void;
-  depositFunds: (amount: number) => void;
-  withdrawFunds: (amount: number) => void;
+  depositFunds: (amount: number) => Promise<void>;
+  withdrawFunds: (amount: number) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -90,11 +122,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [walletType, setWalletType] = useState<string>('');
   const [balances, setBalances] = useState({
     USDC: 5000,
+    walletUSDC: 0,
     BTC: 0,
     ETH: 0,
     SOL: 0,
     ARC: 0
   });
+
+  const walletAddressRef = useRef(walletAddress);
+  useEffect(() => {
+    walletAddressRef.current = walletAddress;
+  }, [walletAddress]);
 
   // State Lists
   const [positions, setPositions] = useState<Position[]>([]);
@@ -122,6 +160,75 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, [markets, activePair]);
 
   const tickCounter = useRef<number>(0);
+
+  const VAULT_ADDRESS = '0x503B3910ff21948464AA92BaB16a6200848bD11B';
+  const DECIMALS = 18;
+
+  const padAddress = (addr: string) => addr.toLowerCase().replace('0x', '').padStart(64, '0');
+  const padBigInt = (val: bigint) => val.toString(16).padStart(64, '0');
+
+  const formatOnChainBalance = (hexBalance: string): number => {
+    if (!hexBalance || hexBalance === '0x') return 0;
+    try {
+      const raw = BigInt(hexBalance);
+      return Number(raw) / (10 ** DECIMALS);
+    } catch {
+      return 0;
+    }
+  };
+
+  const refreshOnChainBalances = async (userAddressStr?: string) => {
+    const address = userAddressStr || walletAddressRef.current;
+    if (!address) return;
+
+    const eth = (window as any).ethereum;
+    if (!eth) return;
+
+    try {
+      // 1. Get collateral token address
+      const tokenRes = await eth.request({
+        method: 'eth_call',
+        params: [{ to: VAULT_ADDRESS, data: '0xdc862d66' }, 'latest']
+      });
+      if (!tokenRes || tokenRes === '0x') return;
+      const tokenAddress = '0x' + tokenRes.slice(-40);
+
+      // 2. Get user's wallet USDC balance
+      const walletBalData = '0x70a08231' + padAddress(address);
+      const walletBalRes = await eth.request({
+        method: 'eth_call',
+        params: [{ to: tokenAddress, data: walletBalData }, 'latest']
+      });
+      const walletUSDC = formatOnChainBalance(walletBalRes);
+
+      // 3. Get user's deposited vault collateral (margin) balance
+      const vaultBalData = '0x5dcf7429' + padAddress(address);
+      const vaultBalRes = await eth.request({
+        method: 'eth_call',
+        params: [{ to: VAULT_ADDRESS, data: vaultBalData }, 'latest']
+      });
+      const vaultUSDC = formatOnChainBalance(vaultBalRes);
+
+      setBalances(prev => ({
+        ...prev,
+        USDC: vaultUSDC,      // Vault margin balance
+        walletUSDC: walletUSDC // Wallet balance
+      }));
+    } catch (e) {
+      console.error('Error refreshing on-chain balances:', e);
+    }
+  };
+
+  // Poll balances when wallet changes
+  useEffect(() => {
+    if (walletConnected && walletAddress) {
+      refreshOnChainBalances(walletAddress);
+      const interval = setInterval(() => {
+        refreshOnChainBalances(walletAddressRef.current);
+      }, 8000);
+      return () => clearInterval(interval);
+    }
+  }, [walletConnected, walletAddress]);
 
   useEffect(() => {
     const fetchPrices = async () => {
@@ -293,7 +400,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           const fullAddr = accounts[0];
           const truncated = `${fullAddr.slice(0, 6)}...${fullAddr.slice(-4)}`;
           setWalletConnected(true);
-          setWalletAddress(truncated);
+          setWalletAddress(fullAddr);
           setWalletType(type);
           addNotification('success', 'Wallet Connected', `Successfully connected ${type} (${truncated}) on Arc Testnet.`);
 
@@ -372,13 +479,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setHistory(prev => [historyItem, ...prev]);
   };
 
-  const placeOrder = (
+  const placeOrder = async (
     side: 'LONG' | 'SHORT',
     type: 'MARKET' | 'LIMIT' | 'STOP',
     price: number,
     amount: number
   ) => {
-    if (!walletConnected) {
+    if (!walletConnected || !walletAddress) {
       addNotification('error', 'Execution Failed', 'Please connect your wallet to trade on Arc Testnet.');
       return;
     }
@@ -393,59 +500,72 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     // Process order
     if (type === 'MARKET') {
-      // Create position immediately
-      const entryPrice = activePair.lastPrice;
-      
-      // Calculate liquidation price
-      // Long: Liq = Entry * (1 - 1/leverage) + margin buffer
-      // Short: Liq = Entry * (1 + 1/leverage) - margin buffer
-      const buffer = marginMode === 'ISOLATED' ? 0.95 : 0.98;
-      const liqPrice = side === 'LONG'
-        ? entryPrice * (1 - (1 / leverage) * buffer)
-        : entryPrice * (1 + (1 / leverage) * buffer);
+      const eth = (window as any).ethereum;
+      if (!eth) {
+        addNotification('error', 'Browser Wallet Error', 'No Web3 provider detected.');
+        return;
+      }
 
-      const newPosition: Position = {
-        id: `pos-${Math.random().toString(36).substring(7)}`,
-        symbol: activePair.symbol,
-        side,
-        size: amount,
-        entryPrice,
-        markPrice: entryPrice,
-        liqPrice: Number(liqPrice.toFixed(getPrecision(activePair.symbol))),
-        margin: Number(requiredMargin.toFixed(2)),
-        leverage,
-        unrealizedPnl: 0,
-        marginMode
-      };
+      addNotification('info', 'Executing Market Order', 'Please confirm the transaction in MetaMask/Rabby...');
+      try {
+        const entryPrice = activePair.lastPrice;
+        
+        // Generate dynamic ABI data for openPosition
+        const txData = encodeOpenPosition(activePair.symbol, side === 'LONG', amount, entryPrice, leverage);
+        
+        const txHash = await eth.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: walletAddress,
+            to: VAULT_ADDRESS,
+            data: txData
+          }]
+        });
 
-      setPositions(prev => [newPosition, ...prev]);
-      
-      // Deduct margin from available USDC
-      setBalances(prev => ({
-        ...prev,
-        USDC: Number((prev.USDC - requiredMargin).toFixed(2))
-      }));
+        addNotification('success', 'Transaction Submitted', `Open Position sent: ${txHash.slice(0, 10)}...`);
 
-      addNotification(
-        'success',
-        'Position Opened',
-        `Market order filled. Opened ${side} ${amount} ${activePair.symbol} at $${entryPrice.toFixed(getPrecision(activePair.symbol))}.`
-      );
+        // Create position locally for immediate responsive UI feedback
+        const buffer = marginMode === 'ISOLATED' ? 0.95 : 0.98;
+        const liqPrice = side === 'LONG'
+          ? entryPrice * (1 - (1 / leverage) * buffer)
+          : entryPrice * (1 + (1 / leverage) * buffer);
 
-      // Add to history
-      const historyItem: HistoryItem = {
-        id: `tx-${Math.random().toString(36).substring(7)}`,
-        time: new Date().toISOString().replace('T', ' ').substring(0, 19),
-        pair: activePair.symbol,
-        side: side === 'LONG' ? 'LONG' : 'SHORT',
-        type: 'Market',
-        size: `${amount} ${activePair.symbol.split('-')[0]}`,
-        price: `$${entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-        fee: `$${(orderValue * 0.0006).toFixed(2)} USDC`,
-        status: 'FILLED'
-      };
-      setHistory(prev => [historyItem, ...prev]);
+        const newPosition: Position = {
+          id: `pos-${Math.random().toString(36).substring(7)}`,
+          symbol: activePair.symbol,
+          side,
+          size: amount,
+          entryPrice,
+          markPrice: entryPrice,
+          liqPrice: Number(liqPrice.toFixed(getPrecision(activePair.symbol))),
+          margin: Number(requiredMargin.toFixed(2)),
+          leverage,
+          unrealizedPnl: 0,
+          marginMode
+        };
 
+        setPositions(prev => [newPosition, ...prev]);
+        
+        // Add to history
+        const historyItem: HistoryItem = {
+          id: `tx-${Math.random().toString(36).substring(7)}`,
+          time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+          pair: activePair.symbol,
+          side: side === 'LONG' ? 'LONG' : 'SHORT',
+          type: 'Market',
+          size: `${amount} ${activePair.symbol.split('-')[0]}`,
+          price: `$${entryPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+          fee: `$${(orderValue * 0.0006).toFixed(2)} USDC`,
+          status: 'FILLED'
+        };
+        setHistory(prev => [historyItem, ...prev]);
+
+        // Refresh on-chain balances after transaction propagates
+        setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+      } catch (err: any) {
+        console.error(err);
+        addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
+      }
     } else {
       // Limit or Stop orders go to Open Orders
       const newOrder: OpenOrder = {
@@ -470,41 +590,61 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const closePosition = (id: string) => {
+  const closePosition = async (id: string) => {
     const pos = positions.find(p => p.id === id);
     if (!pos) return;
 
-    // Return margin + PnL to balances
-    const closingValue = pos.margin + pos.unrealizedPnl;
-    
-    setBalances(prev => ({
-      ...prev,
-      USDC: Number((prev.USDC + closingValue).toFixed(2))
-    }));
+    const eth = (window as any).ethereum;
+    if (!eth || !walletConnected || !walletAddress) {
+      addNotification('error', 'Execution Failed', 'Wallet not connected.');
+      return;
+    }
 
-    // Remove position
-    setPositions(prev => prev.filter(p => p.id !== id));
+    addNotification('info', 'Closing Position', 'Please confirm the close position transaction in MetaMask/Rabby...');
+    try {
+      // Generate dynamic ABI data for closePosition(string,int256)
+      const txData = encodeClosePosition(pos.symbol, pos.unrealizedPnl);
 
-    addNotification(
-      'success',
-      'Position Closed',
-      `Closed ${pos.side} position on ${pos.symbol} at mark price $${pos.markPrice.toFixed(getPrecision(pos.symbol))}. PnL: $${pos.unrealizedPnl.toFixed(2)}`
-    );
+      const txHash = await eth.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: walletAddress,
+          to: VAULT_ADDRESS,
+          data: txData
+        }]
+      });
 
-    // Record close in history
-    const historyItem: HistoryItem = {
-      id: `tx-${Math.random().toString(36).substring(7)}`,
-      time: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      pair: pos.symbol,
-      side: pos.side === 'LONG' ? 'SELL' : 'BUY',
-      type: 'Market (Close)',
-      size: `${pos.size} ${pos.symbol.split('-')[0]}`,
-      price: `$${pos.markPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-      fee: `$${((pos.size * pos.markPrice) * 0.0006).toFixed(2)} USDC`,
-      status: 'FILLED'
-    };
-    setHistory(prev => [historyItem, ...prev]);
+      addNotification('success', 'Transaction Submitted', `Close Position sent: ${txHash.slice(0, 10)}...`);
 
+      // Remove position locally for immediate responsive UI feedback
+      setPositions(prev => prev.filter(p => p.id !== id));
+
+      addNotification(
+        'success',
+        'Position Closed',
+        `Closed ${pos.side} position on ${pos.symbol} at mark price $${pos.markPrice.toFixed(getPrecision(pos.symbol))}. PnL: $${pos.unrealizedPnl.toFixed(2)}`
+      );
+
+      // Record close in history
+      const historyItem: HistoryItem = {
+        id: `tx-${Math.random().toString(36).substring(7)}`,
+        time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        pair: pos.symbol,
+        side: pos.side === 'LONG' ? 'SELL' : 'BUY',
+        type: 'Market (Close)',
+        size: `${pos.size} ${pos.symbol.split('-')[0]}`,
+        price: `$${pos.markPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+        fee: `$${((pos.size * pos.markPrice) * 0.0006).toFixed(2)} USDC`,
+        status: 'FILLED'
+      };
+      setHistory(prev => [historyItem, ...prev]);
+
+      // Refresh on-chain balances after transaction propagates
+      setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+    } catch (err: any) {
+      console.error(err);
+      addNotification('error', 'Close Failed', err.message || 'Transaction rejected.');
+    }
   };
 
   const cancelOrder = (id: string) => {
@@ -512,24 +652,98 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     addNotification('info', 'Order Cancelled', 'Limit order successfully cancelled.');
   };
 
-  const depositFunds = (amount: number) => {
-    setBalances(prev => ({
-      ...prev,
-      USDC: Number((prev.USDC + amount).toFixed(2))
-    }));
-    addNotification('success', 'Margin Deposited', `Deposited $${amount.toFixed(2)} USDC into trading margin.`);
-  };
-
-  const withdrawFunds = (amount: number) => {
-    if (balances.USDC < amount) {
-      addNotification('error', 'Withdrawal Failed', 'Insufficient available margin.');
+  const depositFunds = async (amount: number) => {
+    const eth = (window as any).ethereum;
+    if (!eth || !walletConnected || !walletAddress) {
+      addNotification('error', 'Deposit Failed', 'Wallet not connected.');
       return;
     }
-    setBalances(prev => ({
-      ...prev,
-      USDC: Number((prev.USDC - amount).toFixed(2))
-    }));
-    addNotification('success', 'Funds Withdrawn', `Withdrew $${amount.toFixed(2)} USDC from margin account.`);
+
+    addNotification('info', 'Initiating Deposit', 'Checking allowance and preparing transactions...');
+    try {
+      // Get collateral token address
+      const tokenRes = await eth.request({
+        method: 'eth_call',
+        params: [{ to: VAULT_ADDRESS, data: '0xdc862d66' }, 'latest']
+      });
+      const tokenAddress = '0x' + tokenRes.slice(-40);
+
+      // Check allowance
+      const allowanceData = '0xdd62ed3e' + padAddress(walletAddress) + padAddress(VAULT_ADDRESS);
+      const allowanceRes = await eth.request({
+        method: 'eth_call',
+        params: [{ to: tokenAddress, data: allowanceData }, 'latest']
+      });
+      
+      const rawAmount = BigInt(Math.floor(amount * 1e6)) * BigInt(10 ** 12); // 18 decimals
+      const currentAllowance = allowanceRes ? BigInt(allowanceRes) : BigInt(0);
+
+      if (currentAllowance < rawAmount) {
+        addNotification('info', 'Approve USDC', 'Please approve the vault to spend your USDC in MetaMask.');
+        const approveData = '0x095ea7b3' + padAddress(VAULT_ADDRESS) + padBigInt(rawAmount);
+        await eth.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: walletAddress,
+            to: tokenAddress,
+            data: approveData
+          }]
+        });
+        addNotification('info', 'Approval Sent', 'Waiting for approval transaction confirmation...');
+        await new Promise(r => setTimeout(r, 6000));
+      }
+
+      // Deposit collateral
+      addNotification('info', 'Deposit Collateral', 'Please confirm the deposit transaction in MetaMask.');
+      const depositData = '0xd7ef2ab3' + padBigInt(rawAmount);
+      const txHash = await eth.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: walletAddress,
+          to: VAULT_ADDRESS,
+          data: depositData
+        }]
+      });
+
+      addNotification('success', 'Deposit Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+    } catch (err: any) {
+      console.error(err);
+      addNotification('error', 'Deposit Failed', err.message || 'Transaction rejected.');
+    }
+  };
+
+  const withdrawFunds = async (amount: number) => {
+    const eth = (window as any).ethereum;
+    if (!eth || !walletConnected || !walletAddress) {
+      addNotification('error', 'Withdrawal Failed', 'Wallet not connected.');
+      return;
+    }
+
+    if (balances.USDC < amount) {
+      addNotification('error', 'Withdrawal Failed', 'Insufficient margin deposited.');
+      return;
+    }
+
+    addNotification('info', 'Withdraw Collateral', 'Please confirm the withdraw transaction in MetaMask.');
+    try {
+      const rawAmount = BigInt(Math.floor(amount * 1e6)) * BigInt(10 ** 12); // 18 decimals
+      const withdrawData = '0x0ebf2832' + padBigInt(rawAmount);
+      const txHash = await eth.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: walletAddress,
+          to: VAULT_ADDRESS,
+          data: withdrawData
+        }]
+      });
+
+      addNotification('success', 'Withdrawal Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+    } catch (err: any) {
+      console.error(err);
+      addNotification('error', 'Withdrawal Failed', err.message || 'Transaction rejected.');
+    }
   };
 
   const setActivePairBySymbol = (symbol: string) => {
