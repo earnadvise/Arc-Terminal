@@ -1,0 +1,488 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useAppState } from '@/context/useAppState';
+import TradingViewChart from './TradingViewChart';
+import { Search, Scale, CircleAlert } from 'lucide-react';
+
+export default function MarketsView() {
+  const {
+    markets,
+    activePair,
+    setActivePairBySymbol,
+    positions,
+    openOrders,
+    history,
+    walletConnected,
+    balances,
+    timeframe,
+    setTimeframe,
+    leverage,
+    setLeverage,
+    marginMode,
+    setMarginMode,
+    placeOrder,
+    closePosition,
+    cancelOrder
+  } = useAppState();
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<'All' | 'Crypto' | 'Commodities' | 'Forex'>('All');
+  const [orderType, setOrderType] = useState<'Market' | 'Limit' | 'Stop'>('Market');
+  const [tradeSide, setTradeSide] = useState<'LONG' | 'SHORT'>('LONG');
+  const [inputPrice, setInputPrice] = useState<string>(activePair.lastPrice.toString());
+  const [inputAmount, setInputAmount] = useState<string>('1.0');
+  const [activeBottomTab, setActiveBottomTab] = useState<'Positions' | 'OpenOrders' | 'TradeHistory' | 'FundingHistory'>('Positions');
+
+  React.useEffect(() => {
+    setInputPrice(activePair.lastPrice.toString());
+  }, [activePair.symbol]);
+
+  const parsedPrice = parseFloat(inputPrice) || activePair.lastPrice;
+  const parsedAmount = parseFloat(inputAmount) || 0;
+  const positionSize = parsedAmount * (orderType === 'Market' ? activePair.lastPrice : parsedPrice);
+  const marginRequired = leverage > 0 ? positionSize / leverage : 0;
+  const feeEstimate = positionSize * 0.0006;
+  const calculatedLiqPrice = tradeSide === 'LONG'
+    ? parsedPrice * (1 - (1 / leverage) * 0.95)
+    : parsedPrice * (1 + (1 / leverage) * 0.95);
+
+  const handlePlaceOrder = () => {
+    placeOrder(
+      tradeSide,
+      orderType.toUpperCase() as 'MARKET' | 'LIMIT' | 'STOP',
+      parsedPrice,
+      parsedAmount
+    );
+  };
+
+  const filteredPairs = markets.filter(m => {
+    const matchesSearch = m.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          m.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'All' || m.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
+  return (
+    <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 xl:grid-cols-4 gap-4 select-none">
+
+      {/* ── COL 1: MARKETS SIDEBAR ─────────────────────────────────── */}
+      <section className="xl:col-span-1 bg-[#09090c] border border-[#13131a] rounded-xl p-4 flex flex-col gap-3 shadow-xl" style={{ maxHeight: 820, minHeight: 680 }}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-white uppercase tracking-wide">Markets</h2>
+          <div className="flex items-center gap-1.5 text-[10px] text-[#8e8e9f]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Live
+          </div>
+        </div>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-2.5 text-[#6e6e7f]" size={13} />
+          <input
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-8 pr-3 py-2 bg-[#0d0d12] border border-[#13131a] focus:border-[#8b5cf6]/50 rounded-lg text-xs text-white placeholder-[#6e6e7f] outline-none transition-colors"
+          />
+        </div>
+
+        <div className="flex bg-[#0d0d12] border border-[#13131a] p-0.5 rounded-lg">
+          {(['All', 'Crypto', 'Commodities', 'Forex'] as const).map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategoryFilter(cat)}
+              className={`flex-1 py-1 text-[9px] font-bold rounded-md transition-colors ${
+                categoryFilter === cat
+                  ? 'bg-[#181822] text-[#8b5cf6] border border-[#8b5cf6]/25'
+                  : 'text-[#8e8e9f] hover:text-white'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5">
+          <div className="grid grid-cols-4 text-[9px] font-bold text-[#6e6e7f] uppercase pb-2 border-b border-[#13131a]">
+            <span className="col-span-2">Symbol</span>
+            <span className="text-right">Price</span>
+            <span className="text-right">24h %</span>
+          </div>
+          {filteredPairs.map(m => {
+            const isSelected = m.symbol === activePair.symbol;
+            const isGainer = m.change24h >= 0;
+            return (
+              <div
+                key={m.symbol}
+                onClick={() => setActivePairBySymbol(m.symbol)}
+                className={`grid grid-cols-4 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-[#3b82f6]/10 to-[#8b5cf6]/10 border border-[#8b5cf6]/30'
+                    : 'border border-transparent hover:bg-[#13131a]/55'
+                }`}
+              >
+                <div className="col-span-2">
+                  <div className="text-[11px] font-semibold text-white">{m.symbol}</div>
+                  <div className="text-[9px] text-[#6e6e7f]">{m.name}</div>
+                </div>
+                <div className="text-right text-[10px] number-mono text-[#ededf2]">
+                  {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                </div>
+                <div className={`text-right text-[10px] font-semibold number-mono ${isGainer ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                  {isGainer ? '+' : ''}{m.change24h}%
+                </div>
+              </div>
+            );
+          })}
+          {filteredPairs.length === 0 && (
+            <div className="text-center text-xs text-[#6e6e7f] py-8">No results.</div>
+          )}
+        </div>
+      </section>
+
+      {/* ── COL 2+3: CHART AREA ─────────────────────────────────────── */}
+      <section className="xl:col-span-2 flex flex-col gap-4">
+
+        {/* Pair Header Row */}
+        <div className="bg-[#09090c] border border-[#13131a] rounded-xl px-4 py-3 flex items-center gap-6 overflow-x-auto shadow-xl">
+          <div>
+            <div className="text-base font-black text-white tracking-wide">{activePair.symbol}</div>
+            <div className="text-[9px] text-[#6e6e7f] uppercase">{activePair.name}</div>
+          </div>
+          <div className="h-8 w-px bg-[#13131a]" />
+          <div>
+            <div className={`text-lg font-black number-mono ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+              {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </div>
+            <div className={`text-[9px] number-mono font-semibold ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+              {activePair.change24h >= 0 ? '+' : ''}{activePair.change24h}%
+            </div>
+          </div>
+          {[
+            { label: '24h High', value: activePair.high24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+            { label: '24h Low',  value: activePair.low24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+            { label: '24h Vol',  value: `$${(activePair.volume24h / 1e6).toFixed(2)}M` },
+            { label: 'Open Interest', value: `$${(activePair.openInterest / 1e6).toFixed(2)}M` },
+          ].map(stat => (
+            <div key={stat.label} className="shrink-0">
+              <div className="text-[9px] text-[#6e6e7f] uppercase">{stat.label}</div>
+              <div className="text-xs number-mono text-white font-semibold">{stat.value}</div>
+            </div>
+          ))}
+
+          {/* Timeframe selector */}
+          <div className="ml-auto flex items-center gap-1">
+            {['1m', '5m', '15m', '1h', '4h', '1D'].map(tf => (
+              <button
+                key={tf}
+                onClick={() => setTimeframe(tf)}
+                className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${
+                  timeframe === tf
+                    ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/30'
+                    : 'text-[#8e8e9f] hover:text-white hover:bg-[#13131a]'
+                }`}
+              >
+                {tf}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* TradingView Chart */}
+        <div className="bg-[#09090c] border border-[#13131a] rounded-xl overflow-hidden shadow-xl" style={{ height: 460 }}>
+          <TradingViewChart symbol={activePair.symbol} timeframe={timeframe} />
+        </div>
+
+        {/* Bottom Positions / Orders Table */}
+        <div className="bg-[#09090c] border border-[#13131a] rounded-xl p-4 flex flex-col overflow-hidden shadow-xl" style={{ minHeight: 200 }}>
+          <div className="flex items-center gap-1 mb-3 self-start">
+            {[
+              { id: 'Positions',     label: 'Positions',     count: positions.length },
+              { id: 'OpenOrders',    label: 'Open Orders',   count: openOrders.length },
+              { id: 'TradeHistory',  label: 'Trade History', count: null },
+              { id: 'FundingHistory',label: 'Funding',       count: null },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveBottomTab(tab.id as any)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  activeBottomTab === tab.id
+                    ? 'bg-[#181822] text-[#8b5cf6] border border-[#8b5cf6]/20'
+                    : 'text-[#8e8e9f] hover:text-white'
+                }`}
+              >
+                {tab.label}
+                {tab.count !== null && tab.count > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 text-[9px] bg-[#8b5cf6]/20 text-[#8b5cf6] rounded-full">{tab.count}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          <div className="overflow-auto">
+            {activeBottomTab === 'Positions' && (
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#6e6e7f] border-b border-[#13131a] font-bold uppercase text-[10px]">
+                    <th className="py-2">Market</th><th>Side</th><th>Lev</th>
+                    <th>Size</th><th>Entry</th><th>Mark</th>
+                    <th>Liq</th><th>PnL</th><th className="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#13131a]">
+                  {positions.map(pos => {
+                    const isGain = pos.unrealizedPnl >= 0;
+                    return (
+                      <tr key={pos.id} className="hover:bg-[#13131a]/30 transition-colors">
+                        <td className="py-2.5 font-bold text-white">{pos.symbol}</td>
+                        <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${pos.side === 'LONG' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{pos.side}</span></td>
+                        <td className="number-mono text-[#c7c7d6]">{pos.leverage}x</td>
+                        <td className="number-mono text-white">{pos.size}</td>
+                        <td className="number-mono text-[#c7c7d6]">${pos.entryPrice.toLocaleString()}</td>
+                        <td className="number-mono text-[#c7c7d6]">${pos.markPrice.toLocaleString()}</td>
+                        <td className="number-mono text-amber-500">${pos.liqPrice.toLocaleString()}</td>
+                        <td className={`number-mono font-bold ${isGain ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                          {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
+                        </td>
+                        <td className="text-right">
+                          <button onClick={() => closePosition(pos.id)} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {positions.length === 0 && (
+                    <tr><td colSpan={9} className="text-center text-[#6e6e7f] py-6 text-xs">No active positions.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {activeBottomTab === 'OpenOrders' && (
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#6e6e7f] border-b border-[#13131a] font-bold uppercase text-[10px]">
+                    <th className="py-2">Market</th><th>Side</th><th>Type</th>
+                    <th>Price</th><th>Amount</th><th>Lev</th>
+                    <th className="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#13131a]">
+                  {openOrders.map(order => (
+                    <tr key={order.id} className="hover:bg-[#13131a]/30 transition-colors">
+                      <td className="py-2.5 font-bold text-white">{order.symbol}</td>
+                      <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${order.side === 'BUY' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{order.side === 'BUY' ? 'LONG' : 'SHORT'}</span></td>
+                      <td className="text-[#c7c7d6]">{order.type}</td>
+                      <td className="number-mono text-[#c7c7d6]">${order.price.toLocaleString()}</td>
+                      <td className="number-mono text-white">{order.amount}</td>
+                      <td className="number-mono text-[#c7c7d6]">{order.leverage}x</td>
+                      <td className="text-right">
+                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-[#8e8e9f] hover:text-white bg-[#13131a] border border-[#1e1e2c] rounded transition-all">Cancel</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {openOrders.length === 0 && (
+                    <tr><td colSpan={7} className="text-center text-[#6e6e7f] py-6">No open orders.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {activeBottomTab === 'TradeHistory' && (
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#6e6e7f] border-b border-[#13131a] font-bold uppercase text-[10px]">
+                    <th className="py-2">Time</th><th>Pair</th><th>Side</th>
+                    <th>Type</th><th>Size</th><th>Price</th><th>Fee</th><th>Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#13131a]">
+                  {history.filter(h => h.side !== 'DEPOSIT' && h.side !== 'WITHDRAW').slice(0, 8).map(h => (
+                    <tr key={h.id}>
+                      <td className="py-2.5 text-[#6e6e7f] number-mono text-[10px]">{h.time}</td>
+                      <td className="font-bold text-white">{h.pair}</td>
+                      <td><span className={`text-[9px] font-bold ${h.side === 'LONG' || h.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{h.side}</span></td>
+                      <td className="text-[#c7c7d6]">{h.type}</td>
+                      <td className="number-mono text-[#c7c7d6]">{h.size}</td>
+                      <td className="number-mono text-[#c7c7d6]">{h.price}</td>
+                      <td className="number-mono text-[#6e6e7f]">{h.fee}</td>
+                      <td><span className="text-emerald-500 font-semibold text-[10px]">{h.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {activeBottomTab === 'FundingHistory' && (
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#6e6e7f] border-b border-[#13131a] font-bold uppercase text-[10px]">
+                    <th className="py-2">Time</th><th>Market</th><th>Rate</th><th>Settlement</th><th>Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#13131a]">
+                  <tr className="hover:bg-[#13131a]/30">
+                    <td className="py-2.5 number-mono text-[#6e6e7f] text-[10px]">2026-06-12 08:00</td>
+                    <td className="font-bold text-white">BTC-PERP</td>
+                    <td className="number-mono text-[#10b981]">0.0100%</td>
+                    <td className="number-mono text-[#ef4444]">-$0.25 USDC</td>
+                    <td className="text-emerald-500 font-semibold text-[10px]">SETTLED</td>
+                  </tr>
+                  <tr className="hover:bg-[#13131a]/30">
+                    <td className="py-2.5 number-mono text-[#6e6e7f] text-[10px]">2026-06-12 04:00</td>
+                    <td className="font-bold text-white">ETH-PERP</td>
+                    <td className="number-mono text-[#ef4444]">-0.0050%</td>
+                    <td className="number-mono text-[#10b981]">+$0.08 USDC</td>
+                    <td className="text-emerald-500 font-semibold text-[10px]">SETTLED</td>
+                  </tr>
+                </tbody>
+              </table>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ── COL 4: ORDER ENTRY ──────────────────────────────────────── */}
+      <section className="xl:col-span-1 bg-[#09090c] border border-[#13131a] rounded-xl p-4 flex flex-col shadow-xl" style={{ maxHeight: 820 }}>
+        {/* Order Type */}
+        <div className="flex bg-[#0d0d12] border border-[#13131a] p-0.5 rounded-lg mb-4">
+          {(['Market', 'Limit', 'Stop'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setOrderType(t)}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                orderType === t ? 'bg-[#181822] text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-[#8e8e9f] hover:text-white'
+              }`}
+            >{t}</button>
+          ))}
+        </div>
+
+        {/* Long / Short */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <button
+            onClick={() => setTradeSide('LONG')}
+            className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
+              tradeSide === 'LONG'
+                ? 'bg-[#10b981] text-white border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
+                : 'border-[#13131a] text-[#8e8e9f] hover:text-[#10b981]'
+            }`}
+          >Buy / Long</button>
+          <button
+            onClick={() => setTradeSide('SHORT')}
+            className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
+              tradeSide === 'SHORT'
+                ? 'bg-[#ef4444] text-white border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
+                : 'border-[#13131a] text-[#8e8e9f] hover:text-[#ef4444]'
+            }`}
+          >Sell / Short</button>
+        </div>
+
+        {/* Margin Mode */}
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-[#8e8e9f]">Margin Mode</span>
+          <div className="flex bg-[#0d0d12] border border-[#13131a] p-0.5 rounded-md text-[10px]">
+            {['CROSS', 'ISOLATED'].map(mode => (
+              <button
+                key={mode}
+                onClick={() => setMarginMode(mode as any)}
+                className={`px-2 py-0.5 font-bold rounded transition-colors ${
+                  marginMode === mode ? 'bg-[#181822] text-[#8b5cf6] border border-[#8b5cf6]/15' : 'text-[#6e6e7f] hover:text-[#c7c7d6]'
+                }`}
+              >{mode}</button>
+            ))}
+          </div>
+        </div>
+
+        {/* Price */}
+        <div className="mb-3">
+          <div className="flex justify-between mb-1">
+            <span className="text-xs text-[#8e8e9f]">Price {orderType === 'Market' && <span className="text-amber-500 text-[10px] font-bold bg-amber-500/10 px-1 rounded ml-1">MARKET</span>}</span>
+            <span className="text-[10px] text-[#6e6e7f] uppercase">USDC</span>
+          </div>
+          <input
+            type="text"
+            disabled={orderType === 'Market'}
+            value={orderType === 'Market' ? activePair.lastPrice : inputPrice}
+            onChange={e => setInputPrice(e.target.value)}
+            className={`w-full px-3 py-2 bg-[#0d0d12] border rounded-lg text-xs number-mono text-white outline-none transition-colors ${
+              orderType === 'Market' ? 'border-[#13131a] text-[#8e8e9f] cursor-not-allowed' : 'border-[#13131a] focus:border-[#8b5cf6]/50'
+            }`}
+          />
+        </div>
+
+        {/* Amount */}
+        <div className="mb-3">
+          <div className="flex justify-between mb-1">
+            <span className="text-xs text-[#8e8e9f]">Amount</span>
+            <span className="text-[10px] text-[#8e8e9f] number-mono uppercase">{activePair.symbol.split('-')[0]}</span>
+          </div>
+          <input
+            type="text"
+            value={inputAmount}
+            onChange={e => setInputAmount(e.target.value)}
+            className="w-full px-3 py-2 bg-[#0d0d12] border border-[#13131a] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-white outline-none transition-colors"
+          />
+        </div>
+
+        {/* Leverage Slider */}
+        <div className="mb-5">
+          <div className="flex justify-between mb-1">
+            <span className="text-xs text-[#8e8e9f] flex items-center gap-1"><Scale size={12} /> Leverage</span>
+            <span className="text-xs font-bold text-[#8b5cf6] number-mono">{leverage}x</span>
+          </div>
+          <input
+            type="range" min="1" max="100" value={leverage}
+            onChange={e => setLeverage(parseInt(e.target.value))}
+            className="w-full h-1 bg-[#13131a] rounded-lg appearance-none cursor-pointer accent-[#8b5cf6]"
+          />
+          <div className="flex justify-between text-[9px] text-[#6e6e7f] font-bold mt-1">
+            <span>1x</span><span>25x</span><span>50x</span><span>75x</span><span>100x</span>
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="space-y-1.5 text-xs text-[#8e8e9f] border-t border-[#13131a] pt-3 mb-3">
+          {[
+            ['Order Value', `$${positionSize.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
+            ['Required Margin', `$${marginRequired.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
+            ['Est. Liq. Price', `$${calculatedLiqPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}`],
+            ['Taker Fee (0.06%)', `$${feeEstimate.toLocaleString(undefined, { maximumFractionDigits: 4 })} USDC`],
+          ].map(([label, value]) => (
+            <div key={label} className="flex justify-between">
+              <span>{label}</span>
+              <span className="number-mono text-[#c7c7d6]">{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Available */}
+        <div className="flex justify-between items-center text-[10px] bg-[#0d0d12] border border-[#13131a] px-3 py-2 rounded-lg mb-3">
+          <span className="text-[#6e6e7f]">Available Margin:</span>
+          <span className="number-mono font-bold text-white">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+        </div>
+
+        {/* Action */}
+        {walletConnected ? (
+          <button
+            onClick={handlePlaceOrder}
+            disabled={parsedAmount <= 0}
+            className={`w-full py-3 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition-all mt-auto ${
+              parsedAmount <= 0
+                ? 'bg-[#181822] text-[#6e6e7f] border border-[#1d1d28] cursor-not-allowed'
+                : tradeSide === 'LONG'
+                ? 'bg-[#10b981] hover:bg-[#12cf92] shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+                : 'bg-[#ef4444] hover:bg-[#fa5555] shadow-[0_0_15px_rgba(239,68,68,0.25)]'
+            }`}
+          >
+            {parsedAmount <= 0 ? 'Enter Amount' : tradeSide === 'LONG' ? 'Place Long / Buy' : 'Place Short / Sell'}
+          </button>
+        ) : (
+          <div className="flex items-center gap-2 justify-center p-3.5 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/15 text-[#ef4444] text-xs font-semibold mt-auto">
+            <CircleAlert size={14} className="animate-bounce shrink-0" />
+            Connect wallet to trade
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}

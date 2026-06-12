@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+:root {
+  --background: #030304;
+  --foreground: #f4f4f7;
+
+  --card-bg: #09090c;
+  --card-border: #13131a;
+  --card-hover: #161622;
+
+  --accent-blue: #3b82f6;
+  --accent-purple: #8b5cf6;
+  --accent-glow: rgba(139, 92, 246, 0.15);
+
+  --trade-green: #10b981;
+  --trade-red: #ef4444;
+
+  --font-sans: 'Outfit', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: #060608; }
+::-webkit-scrollbar-thumb { background: #1e1e28; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #2b2b3b; }
+
+.glass-card {
+  background: rgba(13, 13, 18, 0.65);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.number-mono { font-family: var(--font-mono); }
+.text-gain   { color: var(--trade-green); }
+.text-loss   { color: var(--trade-red); }
+.bg-gain-light { background-color: rgba(16, 185, 129, 0.1); }
+.bg-loss-light { background-color: rgba(239, 68, 68, 0.1); }
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.15; }
+  50%       { opacity: 0.3; }
+}
+.pulse-glow { animation: pulseGlow 4s infinite ease-in-out; }
