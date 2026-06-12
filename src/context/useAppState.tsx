@@ -56,7 +56,7 @@ interface AppContextType {
   setMarginMode: (mode: 'CROSS' | 'ISOLATED') => void;
   
   // Actions
-  connectWallet: (type: string) => void;
+  connectWallet: (type: string) => Promise<void>;
   disconnectWallet: () => void;
   claimFaucet: () => void;
   addNotification: (type: 'info' | 'success' | 'warning' | 'error', title: string, message: string) => void;
@@ -283,19 +283,56 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
-  const connectWallet = (type: string) => {
-    const addresses: Record<string, string> = {
-      MetaMask: '0x7F9e...82A1',
-      Rabby: '0x3cD2...E415',
-      WalletConnect: '0x9aE1...01B8',
-      'Coinbase Wallet': '0x5C0b...d99F'
-    };
+  const connectWallet = async (type: string) => {
+    // Try to connect to real browser wallet via window.ethereum
+    const eth = (window as any).ethereum;
+    if (eth) {
+      try {
+        const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' });
+        if (accounts && accounts.length > 0) {
+          const fullAddr = accounts[0];
+          const truncated = `${fullAddr.slice(0, 6)}...${fullAddr.slice(-4)}`;
+          setWalletConnected(true);
+          setWalletAddress(truncated);
+          setWalletType(type);
+          addNotification('success', 'Wallet Connected', `Successfully connected ${type} (${truncated}) on Arc Testnet.`);
 
-    const mockAddr = addresses[type] || '0x0000...0000';
-    setWalletConnected(true);
-    setWalletAddress(mockAddr);
-    setWalletType(type);
-    addNotification('success', 'Wallet Connected', `Successfully connected ${type} (${mockAddr}) on Arc Testnet.`);
+          // Optionally prompt user to switch to Arc Testnet (Chain ID 0x4CF5D2 = 5042002)
+          try {
+            await eth.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x4CF5D2' }],
+            });
+          } catch (switchErr: any) {
+            // If Arc Testnet isn't added to the wallet, add it
+            if (switchErr.code === 4902) {
+              try {
+                await eth.request({
+                  method: 'wallet_addEthereumChain',
+                  params: [{
+                    chainId: '0x4CF5D2',
+                    chainName: 'Arc Testnet',
+                    nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+                    rpcUrls: ['https://rpc.testnet.arc.network'],
+                    blockExplorerUrls: ['https://testnet.arcscan.app'],
+                  }],
+                });
+              } catch {
+                // User rejected adding the network — wallet is still connected
+              }
+            }
+          }
+          return;
+        }
+      } catch (err) {
+        console.error('Wallet connection rejected or failed:', err);
+        addNotification('error', 'Connection Failed', 'Wallet connection was rejected. Please try again.');
+        return;
+      }
+    }
+
+    // Fallback: no browser wallet detected
+    addNotification('error', 'No Wallet Found', 'No browser wallet detected. Please install MetaMask or Rabby to connect.');
   };
 
   const disconnectWallet = () => {

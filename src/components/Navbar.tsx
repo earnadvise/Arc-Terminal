@@ -164,7 +164,7 @@ export default function Navbar() {
                 {['MetaMask', 'Rabby', 'WalletConnect', 'Coinbase Wallet'].map(wallet => (
                   <button
                     key={wallet}
-                    onClick={() => { connectWallet(wallet); setIsWalletModalOpen(false); }}
+                    onClick={async () => { await connectWallet(wallet); setIsWalletModalOpen(false); }}
                     className="flex items-center justify-between p-3.5 rounded-xl bg-[#0d0d12] border border-[#13131a] hover:border-[#8b5cf6]/50 hover:bg-[#13131c]/50 transition-all duration-200 text-left group"
                   >
                     <div className="flex items-center gap-3">
