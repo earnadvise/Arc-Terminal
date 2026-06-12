@@ -9,7 +9,9 @@ export default function PortfolioView() {
     balances,
     positions,
     closePosition,
-    walletConnected
+    walletConnected,
+    depositFunds,
+    withdrawFunds
   } = useAppState();
 
   const [activeChartTab, setActiveChartTab] = useState<'Equity' | 'Allocation'>('Equity');
@@ -308,19 +310,58 @@ export default function PortfolioView() {
 
           <div className="space-y-3">
             {assetDetails.map(asset => (
-              <div key={asset.symbol} className="flex items-center justify-between p-2.5 bg-[#0d0d12] border border-[#13131a]/60 rounded-xl">
-                <div>
-                  <span className="text-xs font-bold text-white block">{asset.symbol}</span>
-                  <span className="text-[9px] text-[#6e6e7f] uppercase">{asset.name}</span>
+              <div key={asset.symbol} className="p-2.5 bg-[#0d0d12] border border-[#13131a]/60 rounded-xl flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-white block">{asset.symbol}</span>
+                    <span className="text-[9px] text-[#6e6e7f] uppercase">{asset.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-white block number-mono">
+                      {asset.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                    </span>
+                    <span className="text-[10px] text-[#8e8e9f] number-mono block">
+                      ${asset.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-white block number-mono">
-                    {asset.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}
-                  </span>
-                  <span className="text-[10px] text-[#8e8e9f] number-mono block">
-                    ${asset.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
-                </div>
+
+                {asset.symbol === 'USDC' && walletConnected && (
+                  <div className="flex flex-col gap-1.5 pt-1.5 border-t border-[#13131a]/40">
+                    <div className="flex justify-between text-[9px] text-[#6e6e7f] uppercase">
+                      <span>Wallet Balance:</span>
+                      <span className="number-mono font-semibold text-white">
+                        ${balances.walletUSDC.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                      </span>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          const amt = prompt('Enter USDC amount to deposit into vault:');
+                          if (amt) {
+                            const parsed = parseFloat(amt);
+                            if (parsed > 0) await depositFunds(parsed);
+                          }
+                        }}
+                        className="flex-1 py-1 rounded bg-[#8b5cf6]/20 border border-[#8b5cf6]/40 hover:bg-[#8b5cf6]/35 text-[#8b5cf6] text-[10px] font-bold transition-all cursor-pointer text-center"
+                      >
+                        Deposit
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const amt = prompt('Enter USDC amount to withdraw from vault:');
+                          if (amt) {
+                            const parsed = parseFloat(amt);
+                            if (parsed > 0) await withdrawFunds(parsed);
+                          }
+                        }}
+                        className="flex-1 py-1 rounded bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-[#ef4444] text-[10px] font-bold transition-all cursor-pointer text-center"
+                      >
+                        Withdraw
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
