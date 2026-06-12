@@ -96,7 +96,9 @@ export default function Navbar() {
                 className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#09090c] border border-[#13131a] hover:border-[#3b82f6]/50 text-sm font-medium text-white transition-all duration-200"
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="number-mono text-xs">{walletAddress}</span>
+                <span className="number-mono text-xs">
+                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : ''}
+                </span>
                 <ChevronDown size={14} className="text-[#8e8e9f]" />
               </button>
 
