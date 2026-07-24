@@ -17,10 +17,10 @@ export default function LandingView() {
 
   const features = [
     {
-      title: 'Agentic Perpetual Trading',
-      description: 'Leverage the power of AI to analyze markets, execute complex orders, and automate your strategies with natural language prompts.',
+      title: 'Arc Agent Perpetual Trading',
+      description: 'Leverage the power of Arc Agent to analyze markets, execute complex orders, and automate your strategies with natural language prompts.',
       icon: <Sparkles size={24} className="text-[#01C38E]" />,
-      badge: 'Advanced AI'
+      badge: 'Arc Agent'
     },
     {
       title: '20x Leverage Pools',
