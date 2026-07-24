@@ -528,7 +528,7 @@ export default function SwapView() {
 
               <div className="flex gap-3 pt-2">
                 <a
-                  href={`https://explorer.testnet.arc.network/tx/${txModalData.hash}`}
+                  href={`https://testnet.arcscan.app/tx/${txModalData.hash}`}
                   target="_blank"
                   rel="noreferrer"
                   className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-white text-xs font-bold transition-all shadow-[0_0_15px_rgba(139,92,246,0.4)]"

@@ -94,7 +94,7 @@ export default function Home() {
                 <p className="text-[10px] text-[#8e8e9f] mt-1 leading-normal">{n.message}</p>
                 {n.txHash && (
                   <a
-                    href={`https://explorer.testnet.arc.network/tx/${n.txHash}`}
+                    href={`https://testnet.arcscan.app/tx/${n.txHash}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold text-[#8b5cf6] hover:text-[#a78bfa] transition-colors"
