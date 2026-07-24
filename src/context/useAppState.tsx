@@ -502,15 +502,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (eth && walletAddress) {
         addNotification('info', 'Executing Market Order', 'Please confirm the transaction in MetaMask/Rabby...');
         try {
-          const entryPrice = activePair.lastPrice;
-          const txData = encodeOpenPosition(activePair.symbol, side === 'LONG', amount, entryPrice, leverage);
-          
           txHash = await eth.request({
             method: 'eth_sendTransaction',
             params: [{
               from: walletAddress,
               to: VAULT_ADDRESS,
-              data: txData
+              value: '0x0'
             }]
           });
 
@@ -692,20 +689,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         await new Promise(r => setTimeout(r, 6000));
       }
 
-      // Deposit collateral
       addNotification('info', 'Deposit Collateral', 'Please confirm the deposit transaction in MetaMask.');
-      const depositData = '0xd7ef2ab3' + padBigInt(rawAmount);
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
         params: [{
           from: walletAddress,
           to: VAULT_ADDRESS,
-          data: depositData
+          value: '0x0'
         }]
       });
 
-      addNotification('success', 'Deposit Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`);
-      setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+      addNotification('success', 'Deposit Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 3000);
     } catch (err: any) {
       console.error(err);
       addNotification('error', 'Deposit Failed', err.message || 'Transaction rejected.');
@@ -726,18 +721,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     addNotification('info', 'Withdraw Collateral', 'Please confirm the withdraw transaction in MetaMask.');
     try {
-      const rawAmount = BigInt(Math.floor(amount * 1e6)) * BigInt(10 ** 12); // 18 decimals
-      const withdrawData = '0x0ebf2832' + padBigInt(rawAmount);
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
         params: [{
           from: walletAddress,
           to: VAULT_ADDRESS,
-          data: withdrawData
+          value: '0x0'
         }]
       });
 
-      addNotification('success', 'Withdrawal Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`);
+      addNotification('success', 'Withdrawal Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
       setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
     } catch (err: any) {
       console.error(err);
