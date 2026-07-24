@@ -23,8 +23,8 @@ export default function LandingView() {
       badge: 'Advanced AI'
     },
     {
-      title: '100x Leverage Pools',
-      description: 'Trade BTC, ETH, and SOL with low fees, zero price impact, and up to 100x leverage backed by professional-grade liquidity providers.',
+      title: '20x Leverage Pools',
+      description: 'Trade BTC, ETH, and SOL with low fees, zero price impact, and up to 20x leverage backed by professional-grade liquidity providers.',
       icon: <Zap size={24} className="text-amber-400" />,
       badge: 'High Performance'
     },

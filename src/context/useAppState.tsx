@@ -77,7 +77,7 @@ interface AppContextType {
   walletConnected: boolean;
   walletAddress: string;
   walletType: string;
-  balances: { USDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number };
+  balances: { USDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number };
   notifications: AppNotification[];
   timeframe: string;
   setTimeframe: (time: string) => void;
@@ -113,7 +113,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [markets, setMarkets] = useState<Market[]>(initialMarkets);
   const [activePairSymbol, setActivePairSymbol] = useState<string>('BTC-PERP');
   const [timeframe, setTimeframe] = useState<string>('1h');
-  const [leverage, setLeverage] = useState<number>(10);
+  const [leverageState, setLeverageState] = useState<number>(10);
+  const setLeverage = (lev: number) => {
+    const clamped = Math.min(20, Math.max(1, lev));
+    setLeverageState(clamped);
+  };
+  const leverage = leverageState;
   const [marginMode, setMarginMode] = useState<'CROSS' | 'ISOLATED'>('CROSS');
 
   // Wallet & Account
@@ -126,7 +131,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     BTC: 0,
     ETH: 0,
     SOL: 0,
-    ARC: 0
+    ARC: 0,
+    EURC: 0,
+    USDT: 0
   });
 
   const walletAddressRef = useRef(walletAddress);

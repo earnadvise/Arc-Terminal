@@ -4,7 +4,7 @@ import { AppStateProvider } from "@/context/useAppState";
 
 export const metadata: Metadata = {
   title: "Arc Terminal | Modern Perpetual DEX",
-  description: "Trade perpetual futures with up to 100x leverage on Arc Testnet.",
+  description: "Trade perpetual futures with up to 20x leverage on Arc Testnet.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

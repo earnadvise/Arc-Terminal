@@ -34,13 +34,10 @@ export default function AgentsView() {
   const {
     walletConnected,
     walletAddress,
-    walletProvider,
     balances,
     positions,
     markets,
-    addNotification,
-
-    refreshBalances
+    addNotification
   } = useAppState();
 
 
@@ -77,7 +74,7 @@ export default function AgentsView() {
 
   // Chat-triggered on-chain Swap router handler
   const handleExecuteChatSwap = async () => {
-    const eth = walletProvider || (window as any).ethereum;
+    const eth = (window as any).ethereum;
     if (!eth || !walletConnected || !walletAddress) {
       addNotification('error', 'Execution Failed', 'Wallet not connected. Connect your wallet in the navbar.');
       return;
@@ -130,7 +127,7 @@ export default function AgentsView() {
 
         setChatSwapStatus('waitApproval');
         await waitForTransaction(eth, approvalTxHash);
-        addNotification('success', 'Token Approved', `${chatSwapFromToken} approved for swapping.`, approvalTxHash);
+        addNotification('success', 'Token Approved', `${chatSwapFromToken} approved for swapping.`);
       }
 
       setChatSwapStatus('swapping');
@@ -156,7 +153,7 @@ export default function AgentsView() {
       await waitForTransaction(eth, txHash);
       setChatSwapStatus('done');
 
-      addNotification('success', 'Swap Executed ✓', `Swapped ${parsed} ${chatSwapFromToken} → ${chatSwapToToken} successfully.`, txHash);
+      addNotification('success', 'Swap Executed ✓', `Swapped ${parsed} ${chatSwapFromToken} → ${chatSwapToToken} successfully.`);
       
       setMessages(prev => [...prev, {
         id: `msg-swap-success-${Date.now()}`,
@@ -164,7 +161,6 @@ export default function AgentsView() {
         content: `🎉 **Swap Successful!** Swapped **${parsed} ${chatSwapFromToken}** to **${chatSwapToToken}** on-chain.\n\nTransaction Hash: \`${txHash}\`.\nBalances will update in your wallet shortly.`,
         timestamp: new Date()
       }]);
-      setTimeout(() => refreshBalances(), 3000);
     } catch (err: any) {
       console.error(err);
       setChatSwapStatus('error');

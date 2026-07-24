@@ -40,8 +40,8 @@ const padUint = (val: bigint) => val.toString(16).padStart(64, '0');
 
 export default function VaultView() {
   const {
-    walletConnected, walletAddress, walletProvider,
-    balances, addNotification, refreshBalances, adjustBalanceOffset
+    walletConnected, walletAddress,
+    balances, addNotification
   } = useAppState();
 
   const [selectedVaultKey, setSelectedVaultKey] = useState<'USDC' | 'EURC'>('USDC');
@@ -221,7 +221,7 @@ export default function VaultView() {
     setIsProcessing(true);
     let txHash = '';
     try {
-      const eth = walletProvider || (window as any).ethereum;
+      const eth = (window as any).ethereum;
       if (!eth) throw new Error('No Web3 provider detected.');
 
       const amountWei = BigInt(Math.floor(parsed * 1e6));
@@ -254,7 +254,7 @@ export default function VaultView() {
         });
         setProcessStep('Waiting for approval…');
         await waitForTx(approvalTxHash);
-        addNotification('success', 'Token Approved ✓', `${vault.symbol} approved for vault deposit.`, approvalTxHash);
+        addNotification('success', 'Token Approved ✓', `${vault.symbol} approved for vault deposit.`);
       }
 
       // Step 2: Deposit
@@ -271,9 +271,9 @@ export default function VaultView() {
       await waitForTx(txHash);
 
       // Deposit Successful on-chain
-      addNotification('success', 'Deposit Successful ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`, txHash);
+      addNotification('success', 'Deposit Successful ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`);
       setAmount('');
-      setTimeout(() => { refreshBalances(); fetchVaultData(); }, 3000);
+      setTimeout(() => fetchVaultData(), 3000);
     } catch (e: any) {
       console.error(e);
       if (e.message?.includes('User rejected') || e.message?.includes('User denied') || e.message?.includes('rejected')) {
@@ -297,9 +297,8 @@ export default function VaultView() {
 
       localStorage.setItem('arc_vault_shares_' + selectedVaultKey + '_' + walletAddress, newShares.toString());
       localStorage.setItem('arc_vault_tvl_' + selectedVaultKey, newTvl.toString());
-      adjustBalanceOffset(selectedVaultKey, -parsed);
 
-      addNotification('success', 'Deposit Successful (Local) ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`, txHash || undefined);
+      addNotification('success', 'Deposit Successful (Local) ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`);
       setAmount('');
     } finally {
       setIsProcessing(false);
@@ -327,7 +326,7 @@ export default function VaultView() {
     setIsProcessing(true);
     let txHash = '';
     try {
-      const eth = walletProvider || (window as any).ethereum;
+      const eth = (window as any).ethereum;
       if (!eth) throw new Error('No Web3 provider detected.');
 
       setProcessStep('Confirm withdrawal in your wallet…');
@@ -344,9 +343,9 @@ export default function VaultView() {
       setProcessStep('Waiting for confirmation…');
       await waitForTx(txHash);
 
-      addNotification('success', 'Withdrawal Successful ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`, txHash);
+      addNotification('success', 'Withdrawal Successful ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`);
       setAmount('');
-      setTimeout(() => { refreshBalances(); fetchVaultData(); }, 3000);
+      setTimeout(() => fetchVaultData(), 3000);
     } catch (e: any) {
       console.error(e);
       if (e.message?.includes('User rejected') || e.message?.includes('User denied') || e.message?.includes('rejected')) {
@@ -370,9 +369,8 @@ export default function VaultView() {
 
       localStorage.setItem('arc_vault_shares_' + selectedVaultKey + '_' + walletAddress, newShares.toString());
       localStorage.setItem('arc_vault_tvl_' + selectedVaultKey, newTvl.toString());
-      adjustBalanceOffset(selectedVaultKey, parsed);
 
-      addNotification('success', 'Withdrawal Successful (Local) ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`, txHash || undefined);
+      addNotification('success', 'Withdrawal Successful (Local) ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`);
       setAmount('');
     } finally {
       setIsProcessing(false);

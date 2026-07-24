@@ -417,41 +417,72 @@ export default function MarketsView() {
             <span className="text-xs text-[#8e8e9f]">Amount</span>
             <span className="text-[10px] text-[#8e8e9f] number-mono uppercase">{activePair.symbol.split('-')[0]}</span>
           </div>
-          <input
-            type="text"
-            value={inputAmount}
-            onChange={e => setInputAmount(e.target.value)}
-            className="w-full px-3 py-2 bg-[#0d0d12] border border-[#13131a] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-white outline-none transition-colors"
-          />
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              value={inputAmount}
+              onChange={e => setInputAmount(e.target.value)}
+              className="w-full pl-3 pr-14 py-2 bg-[#0d0d12] border border-[#13131a] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-white outline-none transition-colors"
+            />
+            <button
+              onClick={() => {
+                if (!walletConnected || balances.USDC <= 0) return;
+                const maxPositionUSD = balances.USDC * leverage * 0.99; // 1% fee buffer
+                const maxSize = maxPositionUSD / parsedPrice;
+                setInputAmount(maxSize.toFixed(4));
+              }}
+              className="absolute right-2 px-2 py-0.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-bold text-white rounded transition-colors cursor-pointer"
+            >
+              MAX
+            </button>
+          </div>
         </div>
 
-        {/* Leverage Slider */}
+        {/* Leverage Slider (Capped at 20x Max) */}
         <div className="mb-5">
           <div className="flex justify-between mb-1">
-            <span className="text-xs text-[#8e8e9f] flex items-center gap-1"><Scale size={12} /> Leverage</span>
+            <span className="text-xs text-[#8e8e9f] flex items-center gap-1"><Scale size={12} /> Leverage (Max 20x)</span>
             <span className="text-xs font-bold text-[#8b5cf6] number-mono">{leverage}x</span>
           </div>
           <input
-            type="range" min="1" max="100" value={leverage}
+            type="range" min="1" max="20" value={leverage}
             onChange={e => setLeverage(parseInt(e.target.value))}
             className="w-full h-1 bg-[#13131a] rounded-lg appearance-none cursor-pointer accent-[#8b5cf6]"
           />
-          <div className="flex justify-between text-[9px] text-[#6e6e7f] font-bold mt-1">
-            <span>1x</span><span>25x</span><span>50x</span><span>75x</span><span>100x</span>
+          <div className="flex justify-between text-[9px] text-[#6e6e7f] font-bold mt-1 mb-2">
+            <span>1x</span><span>5x</span><span>10x</span><span>15x</span><span>20x</span>
+          </div>
+
+          {/* Quick-Select Leverage Presets */}
+          <div className="flex gap-1">
+            {[2, 5, 10, 15, 20].map(levVal => (
+              <button
+                key={levVal}
+                onClick={() => setLeverage(levVal)}
+                className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${
+                  leverage === levVal
+                    ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/40 shadow-sm'
+                    : 'bg-[#0d0d12] text-[#6e6e7f] border border-[#13131a] hover:text-white hover:border-[#334155]'
+                }`}
+              >
+                {levVal}x
+              </button>
+            ))}
           </div>
         </div>
 
         {/* Summary */}
         <div className="space-y-1.5 text-xs text-[#8e8e9f] border-t border-[#13131a] pt-3 mb-3">
           {[
-            ['Order Value', `$${positionSize.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
+            ['Position Value', `$${positionSize.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
             ['Required Margin', `$${marginRequired.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
+            ['Effective Leverage', `${leverage}x`],
             ['Est. Liq. Price', `$${calculatedLiqPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}`],
             ['Taker Fee (0.06%)', `$${feeEstimate.toLocaleString(undefined, { maximumFractionDigits: 4 })} USDC`],
           ].map(([label, value]) => (
             <div key={label} className="flex justify-between">
               <span>{label}</span>
-              <span className="number-mono text-[#c7c7d6]">{value}</span>
+              <span className={`number-mono ${label === 'Required Margin' ? 'text-[#01C38E] font-bold' : label === 'Effective Leverage' ? 'text-[#8b5cf6] font-bold' : 'text-[#c7c7d6]'}`}>{value}</span>
             </div>
           ))}
         </div>
