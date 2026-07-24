@@ -380,8 +380,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
         return [...prevCandles.slice(0, -1), last];
       });
-
-
     };
 
     fetchPrices();
@@ -435,18 +433,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           setWalletConnected(true);
           setWalletAddress(fullAddr);
           setWalletType(type);
-          setBalances(prev => ({
-            USDC: prev.USDC > 0 ? prev.USDC : 5000,
-            walletUSDC: prev.walletUSDC > 0 ? prev.walletUSDC : 5000,
-            BTC: prev.BTC > 0 ? prev.BTC : 0.5,
-            ETH: prev.ETH > 0 ? prev.ETH : 2.5,
-            SOL: prev.SOL > 0 ? prev.SOL : 15,
-            ARC: prev.ARC > 0 ? prev.ARC : 100,
-            EURC: prev.EURC > 0 ? prev.EURC : 2500,
-            USDT: prev.USDT > 0 ? prev.USDT : 5000
-          }));
           refreshOnChainBalances(fullAddr);
-          addNotification('success', 'Wallet Connected', `Successfully connected ${type} (${truncated}) on Arc Testnet.`);
+          addNotification('success', 'Wallet Connected', `Connected ${type} (${truncated}) on Arc Testnet.`);
 
           // Optionally prompt user to switch to Arc Testnet (Chain ID 0x4CF5D2 = 5042002)
           try {
@@ -469,7 +457,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                   }],
                 });
               } catch {
-                // User rejected adding the network — wallet is still connected
+                // User rejected adding network
               }
             }
           }
@@ -477,7 +465,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }
       } catch (err) {
         console.error('Wallet connection rejected or failed:', err);
-        addNotification('error', 'Connection Failed', 'Wallet connection was rejected. Please try again.');
         return;
       }
     }
@@ -494,33 +481,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const claimFaucet = () => {
-    if (!walletConnected) {
-      addNotification('error', 'Faucet Error', 'Please connect your wallet first.');
-      return;
-    }
+    if (!walletConnected) return;
     
-    // Increment USDC balance
+    // Increment balances for testnet demo session
     setBalances(prev => ({
       ...prev,
-      USDC: prev.USDC + 10000
+      USDC: prev.USDC + 10000,
+      EURC: prev.EURC + 5000,
+      USDT: prev.USDT + 10000,
+      ARC: prev.ARC + 50
     }));
 
-    addNotification('success', 'Arc Testnet Faucet', 'Successfully claimed 10,000 test USDC, 0.1 BTC, and 1 ETH to your testnet margin account.');
-
-    // Add faucet tx to history
-    const historyItem: HistoryItem = {
-      id: `tx-${Math.random().toString(36).substring(7)}`,
-      time: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      pair: 'USDC',
-      side: 'DEPOSIT',
-      type: 'Faucet',
-      size: '10,000 USDC',
-      price: '$1.00',
-      fee: '$0.00 USDC',
-      status: 'SUCCESS'
-    };
-
-    setHistory(prev => [historyItem, ...prev]);
+    addNotification('success', 'Arc Testnet Faucet', 'Successfully claimed 10,000 USDC, 5,000 EURC, 10,000 USDT, and 50 ARC.');
   };
 
   const placeOrder = async (
