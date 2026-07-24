@@ -502,12 +502,30 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (eth && walletAddress) {
         addNotification('info', 'Executing Market Order', 'Please confirm the transaction in MetaMask/Rabby...');
         try {
+          // Encode vault contract call: selector 0x7606c9f2
+          // Params: (string market, uint256 sizeWei)
+          // Layout: offset(0x40) + sizeWei + strLen + strData (padded to 32 bytes)
+          const market = activePair.symbol; // e.g. "BTC-PERP"
+          const sizeWei = BigInt(Math.floor(amount * 1e18)).toString(16).padStart(64, '0');
+          const strLen = market.length.toString(16).padStart(64, '0');
+          let strHex = '';
+          for (let i = 0; i < market.length; i++) {
+            strHex += market.charCodeAt(i).toString(16).padStart(2, '0');
+          }
+          strHex = strHex.padEnd(64, '0'); // pad to 32 bytes
+
+          const calldata = '0x7606c9f2' +
+            '0000000000000000000000000000000000000000000000000000000000000040' + // offset to string
+            sizeWei +   // uint256 size
+            strLen +    // string length
+            strHex;     // string data
+
           txHash = await eth.request({
             method: 'eth_sendTransaction',
             params: [{
               from: walletAddress,
               to: VAULT_ADDRESS,
-              value: '0x0'
+              data: calldata
             }]
           });
 
