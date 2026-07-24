@@ -500,17 +500,48 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setWalletType('');
   };
 
-  const claimFaucet = () => {
-    // Grant testnet faucet tokens instantly
-    setBalances(prev => ({
-      ...prev,
-      USDC: (prev.USDC || 0) + 10000,
-      EURC: (prev.EURC || 0) + 5000,
-      USDT: (prev.USDT || 0) + 10000,
-      ARC: (prev.ARC || 0) + 50
-    }));
+  const claimFaucet = async () => {
+    const eth = (window as any).ethereum;
+    if (!eth || !walletConnected) {
+      addNotification('warning', 'Wallet Required', 'Please connect your Web3 wallet to claim Arc Testnet Faucet tokens.');
+      return;
+    }
 
-    addNotification('success', 'Arc Testnet Faucet', 'Successfully claimed 10,000 USDC, 5,000 EURC, 10,000 USDT, and 50 ARC.');
+    addNotification('info', 'Faucet Transaction', 'Please confirm the Faucet transaction in your Web3 wallet...');
+
+    try {
+      const txHash = await eth.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: eth.selectedAddress || walletAddressRef.current,
+          to: '0x503B3910ff21948464AA92BaB16a6200848bD11B',
+          value: '0x0'
+        }]
+      });
+
+      if (txHash) {
+        setBalances(prev => ({
+          ...prev,
+          USDC: (prev.USDC || 0) + 1000,
+          EURC: (prev.EURC || 0) + 500,
+          USDT: (prev.USDT || 0) + 1000,
+          ARC: (prev.ARC || 0) + 10
+        }));
+
+        addNotification(
+          'success',
+          'Faucet Transaction Confirmed',
+          'Claimed 1,000 USDC Faucet tokens on Arc Testnet.',
+          txHash
+        );
+
+        setTimeout(() => {
+          refreshOnChainBalances(eth.selectedAddress || walletAddressRef.current);
+        }, 2000);
+      }
+    } catch (err: any) {
+      console.warn('Faucet transaction error:', err);
+    }
   };
 
   const placeOrder = async (
