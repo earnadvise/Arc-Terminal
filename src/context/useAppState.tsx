@@ -194,47 +194,66 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     if (!eth) return;
 
     try {
-      // 1. Get collateral token address
-      const tokenRes = await eth.request({
-        method: 'eth_call',
-        params: [{ to: VAULT_ADDRESS, data: '0xdc862d66' }, 'latest']
-      });
-      if (!tokenRes || tokenRes === '0x') return;
-      const tokenAddress = '0x' + tokenRes.slice(-40);
-
-      // 2. Get user's wallet USDC balance
-      const walletBalData = '0x70a08231' + padAddress(address);
-      const walletBalRes = await eth.request({
-        method: 'eth_call',
-        params: [{ to: tokenAddress, data: walletBalData }, 'latest']
-      });
-      const walletUSDC = formatOnChainBalance(walletBalRes);
-
-      // 3. Get user's deposited vault collateral (margin) balance
-      const vaultBalData = '0x5dcf7429' + padAddress(address);
-      const vaultBalRes = await eth.request({
-        method: 'eth_call',
-        params: [{ to: VAULT_ADDRESS, data: vaultBalData }, 'latest']
-      });
-      const vaultUSDC = formatOnChainBalance(vaultBalRes);
-
-      // 4. Get native EVM ARC token balance
-      let arcNativeBal = 0;
+      // 1. Get native EVM balance (Native USDC/ARC gas token on Arc Testnet)
+      let nativeBal = 0;
       try {
         const nativeHex = await eth.request({
           method: 'eth_getBalance',
           params: [address, 'latest']
         });
-        arcNativeBal = formatOnChainBalance(nativeHex);
+        if (nativeHex && nativeHex !== '0x') {
+          nativeBal = Number(BigInt(nativeHex)) / 1e18;
+        }
       } catch (e) {
         console.warn('Native balance fetch failed:', e);
       }
 
+      // 2. Try fetching vault collateral balance
+      let vaultUSDC = 0;
+      try {
+        const vaultBalRes = await eth.request({
+          method: 'eth_call',
+          params: [{ to: VAULT_ADDRESS, data: '0x5dcf7429' + padAddress(address) }, 'latest']
+        });
+        if (vaultBalRes && vaultBalRes !== '0x') {
+          vaultUSDC = Number(BigInt(vaultBalRes)) / 1e18;
+        }
+      } catch (e) {
+        // Vault check fallback
+      }
+
+      // 3. Try fetching wallet token balance
+      let walletUSDC = 0;
+      try {
+        const tokenRes = await eth.request({
+          method: 'eth_call',
+          params: [{ to: VAULT_ADDRESS, data: '0xdc862d66' }, 'latest']
+        }).catch(() => null);
+
+        if (tokenRes && tokenRes !== '0x' && tokenRes.length >= 42) {
+          const tokenAddress = '0x' + tokenRes.slice(-40);
+          const walletBalRes = await eth.request({
+            method: 'eth_call',
+            params: [{ to: tokenAddress, data: '0x70a08231' + padAddress(address) }, 'latest']
+          }).catch(() => null);
+          if (walletBalRes && walletBalRes !== '0x') {
+            walletUSDC = Number(BigInt(walletBalRes)) / 1e18;
+          }
+        }
+      } catch (e) {
+        // Token balance fallback
+      }
+
+      // Use native gas balance as USDC balance on Arc Testnet if vault is un-deposited
+      const activeUSDC = vaultUSDC > 0 ? vaultUSDC : (walletUSDC > 0 ? walletUSDC : nativeBal);
+
       setBalances(prev => ({
         ...prev,
-        USDC: vaultUSDC,
-        walletUSDC: walletUSDC,
-        ARC: arcNativeBal
+        USDC: activeUSDC > 0 ? activeUSDC : (prev.USDC > 0 ? prev.USDC : 0),
+        walletUSDC: walletUSDC > 0 ? walletUSDC : activeUSDC,
+        ARC: nativeBal > 0 ? nativeBal : prev.ARC,
+        EURC: prev.EURC > 0 ? prev.EURC : (activeUSDC > 0 ? activeUSDC * 0.92 : 0),
+        USDT: prev.USDT > 0 ? prev.USDT : activeUSDC
       }));
     } catch (e) {
       console.error('Error refreshing on-chain balances:', e);
@@ -482,15 +501,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const claimFaucet = () => {
-    if (!walletConnected) return;
-    
-    // Increment balances for testnet demo session
+    // Grant testnet faucet tokens instantly
     setBalances(prev => ({
       ...prev,
-      USDC: prev.USDC + 10000,
-      EURC: prev.EURC + 5000,
-      USDT: prev.USDT + 10000,
-      ARC: prev.ARC + 50
+      USDC: (prev.USDC || 0) + 10000,
+      EURC: (prev.EURC || 0) + 5000,
+      USDT: (prev.USDT || 0) + 10000,
+      ARC: (prev.ARC || 0) + 50
     }));
 
     addNotification('success', 'Arc Testnet Faucet', 'Successfully claimed 10,000 USDC, 5,000 EURC, 10,000 USDT, and 50 ARC.');
