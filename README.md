@@ -10,20 +10,20 @@
 
 ## 🌟 Overview
 
-**Arc Terminal** is a unified decentralized trading terminal designed for active traders and autonomous AI agents. Built natively on **Arc Network**, it combines agentic natural language trade execution, zero price-impact 100x perpetual derivatives, and autocompounding ERC-4626 stablecoin yield vaults into a high-performance, non-custodial Web3 interface.
+**Arc Terminal** is a unified decentralized trading terminal designed for active traders and autonomous AI agents. Built natively on **Arc Network**, it combines agentic natural language trade execution via **Arc AI**, zero price-impact perpetual derivatives, and autocompounding ERC-4626 stablecoin **Vault** liquidity pools into a high-performance, non-custodial Web3 interface.
 
 ---
 
 ## 🔥 Key Features
 
-### 🤖 1. Agentic Natural Language Execution
+### 🤖 1. Agentic Natural Language Execution (Arc AI)
 - **LLM Intent Engine:** Execute complex token swaps, open leveraged positions, and optimize portfolio allocation using natural language chat prompts (e.g. `/swap 10 USDC to EURC`).
 - **ABI Payload Encoding:** Automatically constructs optimal routing and contract payloads for one-click wallet signature approval.
 - **100% Non-Custodial:** User funds remain fully controlled by the connected Web3 wallet.
 
-### 📈 2. 100x Perpetual Derivatives
-- **Zero Price Impact:** Execute leveraged trades up to 100x on BTC, ETH, and SOL index prices.
-- **Vault LP Collateralization:** Leveraged positions are backed directly by the platform's multi-asset Yield Vault liquidity pools.
+### 📈 2. 20x Perpetual Derivatives
+- **Zero Price Impact:** Execute leveraged trades up to 20x on BTC, ETH, and SOL index prices.
+- **Vault LP Collateralization:** Leveraged positions are backed directly by the platform's multi-asset Vault liquidity pools.
 - **Max Position Sizing:** Built-in dynamic MAX button calculating exact position limits accounting for margin, leverage, and fee buffers.
 
 ### 🏦 3. Real Yield Vaults (ERC-4626)
@@ -32,7 +32,7 @@
 
 ### 🛡️ 4. Direct RPC Failover Architecture
 - **Zero-Latency Reads:** Routes read queries directly to `rpc.testnet.arc.network`, bypassing browser wallet read timeouts.
-- **Resilient Polling:** 3x retry mechanism, 5-second request timeouts, exponential backoff, and ref-guarded React state synchronization to prevent UI flickering.
+- **Resilient Polling:** 2-second fast balance polling, staggered post-transaction refreshes, 3x retry mechanism, 5-second request timeouts, and ref-guarded React state synchronization to prevent UI flickering.
 
 ---
 
@@ -42,8 +42,9 @@
 | Contract / Protocol | Address | Description |
 | :--- | :--- | :--- |
 | **Synthra V3 SwapRouter** | `0xA545bCB1Bd7985c59ea162aB1748A0803434C31b` | Concentrated Liquidity AMM Swap Router |
-| **USDC Yield Vault** | `0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9` | ERC-4626 Vault (`aUSDC` Shares, 5.0% APY) |
-| **EURC Yield Vault** | `0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E` | ERC-4626 Vault (`aEURC` Shares, 4.5% APY) |
+| **Perpetuals Vault** | `0x503B3910ff21948464AA92BaB16a6200848bD11B` | Perpetual Derivatives Core Trading Contract |
+| **USDC Vault** | `0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9` | ERC-4626 Yield Vault (`aUSDC` Shares, 5.0% APY) |
+| **EURC Vault** | `0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E` | ERC-4626 Yield Vault (`aEURC` Shares, 4.5% APY) |
 
 ### 🪙 Supported Arc Testnet Tokens
 | Token | Decimals | Address |
