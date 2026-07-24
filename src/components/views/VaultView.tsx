@@ -13,7 +13,7 @@ const VAULTS = {
   USDC: {
     symbol: 'USDC',
     shareSymbol: 'aUSDC',
-    name: 'USDC Arc Vault',
+    name: 'USDC Vault',
     tokenAddress: '0x3600000000000000000000000000000000000000',
     vaultAddress: '0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9',
     apy: 5.0,
@@ -24,7 +24,7 @@ const VAULTS = {
   EURC: {
     symbol: 'EURC',
     shareSymbol: 'aEURC',
-    name: 'EURC Arc Vault',
+    name: 'EURC Vault',
     tokenAddress: '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a',
     vaultAddress: '0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E',
     apy: 4.5,
@@ -394,7 +394,7 @@ export default function VaultView() {
       {/* Page Header */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-wide">Arc Vaults</h1>
+          <h1 className="text-2xl font-black text-white tracking-wide">Vaults</h1>
           <p className="text-xs text-[#8e8e9f]">Deposit stablecoins to compound auto-generating yield.</p>
         </div>
 

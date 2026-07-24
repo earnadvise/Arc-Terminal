@@ -23,8 +23,8 @@ export default function Navbar() {
     { id: 'Home',       label: 'Home',       icon: <HomeIcon size={15} /> },
     { id: 'Perpetuals', label: 'Perpetuals', icon: <Activity size={15} /> },
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
-    { id: 'Vault',      label: 'Arc Vault',  icon: <VaultIcon size={15} /> },
-    { id: 'Agents',     label: 'Arc Agent',  icon: <Bot size={15} /> },
+    { id: 'Vault',      label: 'Vault',   icon: <VaultIcon size={15} /> },
+    { id: 'Agents',     label: 'Arc AI',  icon: <Bot size={15} /> },
     { id: 'Portfolio',  label: 'Portfolio',  icon: <Compass size={15} /> },
     { id: 'History',    label: 'History',    icon: <HistIcon size={15} /> },
   ];
@@ -42,7 +42,7 @@ export default function Navbar() {
               A
             </div>
             <span className="text-lg font-bold tracking-wider bg-gradient-to-r from-white to-[#a3a3c2] bg-clip-text text-transparent group-hover:text-white transition-colors">
-              ARC TERMINAL AGENT
+              ARC TERMINAL AI
             </span>
           </div>
 

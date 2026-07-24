@@ -17,10 +17,10 @@ export default function LandingView() {
 
   const features = [
     {
-      title: 'Arc Agent Perpetual Trading',
-      description: 'Leverage the power of Arc Agent to analyze markets, execute complex orders, and automate your strategies with natural language prompts.',
+      title: 'Arc AI Perpetual Trading',
+      description: 'Leverage the power of Arc AI to analyze markets, execute complex orders, and automate your strategies with natural language prompts.',
       icon: <Sparkles size={24} className="text-[#01C38E]" />,
-      badge: 'Arc Agent'
+      badge: 'Arc AI'
     },
     {
       title: '20x Leverage Pools',
@@ -29,8 +29,8 @@ export default function LandingView() {
       badge: 'High Performance'
     },
     {
-      title: 'Arc Vault Optimization',
-      description: 'Deposit stablecoins directly into Arc Vault autocompounding yield pools utilizing optimized on-chain execution with up to 5% APY.',
+      title: 'Vault Optimization',
+      description: 'Deposit stablecoins directly into autocompounding yield pools utilizing optimized on-chain execution with up to 5% APY.',
       icon: <Landmark size={24} className="text-[#0052FF]" />,
       badge: 'Passive APY'
     },

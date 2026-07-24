@@ -45,7 +45,7 @@ export default function AgentsView() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: 'Hello! I am Arc Agent, your trading assistant. How can I help you today? You can ask me about your balances, open positions, market prices, or execute a token swap with the `/swap` command (e.g. `/swap 10 USDC to EURC`).',
+      content: 'Hello! I am Arc AI, your trading assistant. How can I help you today? You can ask me about your balances, open positions, market prices, or execute a token swap with the `/swap` command (e.g. `/swap 10 USDC to EURC`).',
       timestamp: new Date()
     }
   ]);
@@ -282,7 +282,7 @@ export default function AgentsView() {
           {
             id: 'welcome',
             role: 'assistant',
-            content: 'Hello! I am Arc Agent, your trading assistant. How can I help you today?',
+            content: 'Hello! I am Arc AI, your trading assistant. How can I help you today?',
             timestamp: new Date()
           }
         ]);
@@ -335,11 +335,11 @@ export default function AgentsView() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#01C38E] opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#01C38E]"></span>
             </div>
-            <span className="text-[10px] text-[#01C38E] font-extrabold uppercase tracking-wider">Arc Agent active</span>
+            <span className="text-[10px] text-[#01C38E] font-extrabold uppercase tracking-wider">Arc AI active</span>
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
             <Sparkles className="text-[#01C38E]" size={22} />
-            Arc Agent Terminal
+            Arc AI Terminal
           </h1>
         </div>
       </div>
