@@ -1,36 +1,98 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ⚡ Arc Terminal
 
-## Getting Started
+> **Next-Generation Agentic Derivatives, Spot AMM & Real-Yield Vault Interface on Arc Network.**
 
-First, run the development server:
+[![Live Web App](https://img.shields.io/badge/Web_App-arcterminalai.xyz-01C38E?style=for-the-badge&logo=vercel)](https://arcterminalai.xyz)
+[![X / Twitter](https://img.shields.io/badge/Follow-@arcterminalai-0052FF?style=for-the-badge&logo=x)](https://x.com/arcterminalai)
+[![Network](https://img.shields.io/badge/Network-Arc_Testnet-0A786A?style=for-the-badge)](https://rpc.testnet.arc.network)
 
+---
+
+## 🌟 Overview
+
+**Arc Terminal** is a unified decentralized trading terminal designed for active traders and autonomous AI agents. Built natively on **Arc Network**, it combines agentic natural language trade execution, zero price-impact 100x perpetual derivatives, and autocompounding ERC-4626 stablecoin yield vaults into a high-performance, non-custodial Web3 interface.
+
+---
+
+## 🔥 Key Features
+
+### 🤖 1. Agentic Natural Language Execution
+- **LLM Intent Engine:** Execute complex token swaps, open leveraged positions, and optimize portfolio allocation using natural language chat prompts (e.g. `/swap 10 USDC to EURC`).
+- **ABI Payload Encoding:** Automatically constructs optimal routing and contract payloads for one-click wallet signature approval.
+- **100% Non-Custodial:** User funds remain fully controlled by the connected Web3 wallet.
+
+### 📈 2. 100x Perpetual Derivatives
+- **Zero Price Impact:** Execute leveraged trades up to 100x on BTC, ETH, and SOL index prices.
+- **Vault LP Collateralization:** Leveraged positions are backed directly by the platform's multi-asset Yield Vault liquidity pools.
+- **Max Position Sizing:** Built-in dynamic MAX button calculating exact position limits accounting for margin, leverage, and fee buffers.
+
+### 🏦 3. Real Yield Vaults (ERC-4626)
+- **4.5% - 5.0% APY:** Generates organic, non-inflationary yield from perpetual trading fees, borrowing interest (funding rates), liquidations, and AMM swap fees.
+- **Autocompounding Shares:** Tokenized vault shares (`aUSDC`, `aEURC`) automatically accrue value relative to underlying `totalAssets()`.
+
+### 🛡️ 4. Direct RPC Failover Architecture
+- **Zero-Latency Reads:** Routes read queries directly to `rpc.testnet.arc.network`, bypassing browser wallet read timeouts.
+- **Resilient Polling:** 3x retry mechanism, 5-second request timeouts, exponential backoff, and ref-guarded React state synchronization to prevent UI flickering.
+
+---
+
+## 📜 On-Chain Contract & Asset Registry
+
+### ⚙️ Core Infrastructure Contracts
+| Contract / Protocol | Address | Description |
+| :--- | :--- | :--- |
+| **Synthra V3 SwapRouter** | `0xA545bCB1Bd7985c59ea162aB1748A0803434C31b` | Concentrated Liquidity AMM Swap Router |
+| **USDC Yield Vault** | `0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9` | ERC-4626 Vault (`aUSDC` Shares, 5.0% APY) |
+| **EURC Yield Vault** | `0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E` | ERC-4626 Vault (`aEURC` Shares, 4.5% APY) |
+
+### 🪙 Supported Arc Testnet Tokens
+| Token | Decimals | Address |
+| :--- | :---: | :--- |
+| **USDC** | 6 | `0x3600000000000000000000000000000000000000` |
+| **USDT** | 18 | `0x175CdB1D338945f0D851A741ccF787D343E57952` |
+| **EURC** | 6 | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` |
+| **cirBTC** | 8 | `0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF` |
+
+---
+
+## 💻 Tech Stack
+
+- **Framework:** Next.js 16 (App Router & Turbopack)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS & Framer Motion
+- **Icons:** Lucide React
+- **Web3 Integration:** Direct JSON-RPC & EIP-1193 Wallet Providers (MetaMask, Rabby, Coinbase Wallet, WalletConnect)
+
+---
+
+## 🚀 Quickstart & Local Setup
+
+### 1. Clone the Repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/earnadvise/Arc-Terminal.git
+cd Arc-Terminal
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Install Dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Run Development Server
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Build for Production
+```bash
+npm run build
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🌐 Official Links
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Live Application:** [https://arcterminalai.xyz](https://arcterminalai.xyz)
+- **Twitter / X:** [@arcterminalai](https://x.com/arcterminalai)
+- **RPC Endpoint:** `https://rpc.testnet.arc.network`
