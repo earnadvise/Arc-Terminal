@@ -79,6 +79,7 @@ interface AppContextType {
   walletAddress: string;
   walletType: string;
   balances: { USDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number };
+  setBalances: React.Dispatch<React.SetStateAction<{ USDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number }>>;
   notifications: AppNotification[];
   timeframe: string;
   setTimeframe: (time: string) => void;
@@ -779,6 +780,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         walletAddress,
         walletType,
         balances,
+        setBalances,
         notifications,
         timeframe,
         setTimeframe,

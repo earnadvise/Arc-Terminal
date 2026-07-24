@@ -89,7 +89,7 @@ function TokenSelector({
 }
 
 export default function SwapView() {
-  const { walletConnected, balances, addNotification, claimFaucet, markets } = useAppState();
+  const { walletConnected, walletAddress, balances, setBalances, addNotification, claimFaucet, markets } = useAppState();
 
   const [fromToken, setFromToken] = useState('USDC');
   const [toToken, setToToken]     = useState('EURC');
@@ -152,13 +152,12 @@ export default function SwapView() {
     if (eth && walletConnected) {
       addNotification('info', 'Confirm Swap', 'Please confirm the swap transaction in your Web3 wallet...');
       try {
-        const swapData = '0x38ed1739' + '0'.repeat(64);
         realTxHash = await eth.request({
           method: 'eth_sendTransaction',
           params: [{
-            from: eth.selectedAddress || walletConnected,
+            from: eth.selectedAddress || walletAddress,
             to: '0x503B3910ff21948464AA92BaB16a6200848bD11B',
-            data: swapData
+            value: '0x0'
           }]
         });
       } catch (err: any) {
@@ -172,6 +171,15 @@ export default function SwapView() {
     setIsSwapping(false);
 
     const received = Number(toAmount.toFixed(TOKENS.find(t => t.symbol === toToken)?.decimals ?? 4));
+
+    // Update balances locally for instant responsive UI feedback
+    if (setBalances) {
+      setBalances((prev: any) => ({
+        ...prev,
+        [fromToken]: Math.max(0, (prev[fromToken] ?? 0) - parsed),
+        [toToken]: (prev[toToken] ?? 0) + received
+      }));
+    }
 
     addNotification(
       'success',
