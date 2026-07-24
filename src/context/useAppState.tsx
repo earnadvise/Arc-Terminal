@@ -128,14 +128,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [walletType, setWalletType] = useState<string>('');
   const [balances, setBalances] = useState({
-    USDC: 10000,
-    walletUSDC: 10000,
-    BTC: 0.5,
-    ETH: 2.5,
-    SOL: 15.0,
-    ARC: 100.0,
-    EURC: 2500,
-    USDT: 5000
+    USDC: 0,
+    walletUSDC: 0,
+    BTC: 0,
+    ETH: 0,
+    SOL: 0,
+    ARC: 0,
+    EURC: 0,
+    USDT: 0
   });
 
   const walletAddressRef = useRef(walletAddress);
@@ -232,9 +232,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
       setBalances(prev => ({
         ...prev,
-        USDC: vaultUSDC > 0 ? vaultUSDC : (prev.USDC > 0 ? prev.USDC : 10000),
-        walletUSDC: walletUSDC > 0 ? walletUSDC : (prev.walletUSDC > 0 ? prev.walletUSDC : 10000),
-        ARC: arcNativeBal > 0 ? arcNativeBal : (prev.ARC > 0 ? prev.ARC : 100)
+        USDC: vaultUSDC,
+        walletUSDC: walletUSDC,
+        ARC: arcNativeBal
       }));
     } catch (e) {
       console.error('Error refreshing on-chain balances:', e);

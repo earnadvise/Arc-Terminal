@@ -19,16 +19,11 @@ export default function PortfolioView() {
   const eurcPrice = 1.085;
   const arcPrice  = 1.245;
 
-  const usdcBal = balances.USDC > 0 ? balances.USDC : 10000;
-  const eurcBal = balances.EURC > 0 ? balances.EURC : 2500;
-  const usdtBal = balances.USDT > 0 ? balances.USDT : 5000;
-  const arcBal  = balances.ARC > 0 ? balances.ARC : 100;
-
   const assetDetails = [
-    { name: 'USD Coin',   symbol: 'USDC', amount: usdcBal, price: 1.0,       value: usdcBal,            color: '#8b5cf6' },
-    { name: 'Euro Coin',  symbol: 'EURC', amount: eurcBal, price: eurcPrice, value: eurcBal * eurcPrice, color: '#3b82f6' },
-    { name: 'Tether USD', symbol: 'USDT', amount: usdtBal, price: 1.0,       value: usdtBal,            color: '#10b981' },
-    { name: 'Arc Native', symbol: 'ARC',  amount: arcBal,  price: arcPrice,  value: arcBal * arcPrice,  color: '#ec4899' },
+    { name: 'USD Coin',   symbol: 'USDC', amount: balances.USDC, price: 1.0,       value: balances.USDC,            color: '#8b5cf6' },
+    { name: 'Euro Coin',  symbol: 'EURC', amount: balances.EURC, price: eurcPrice, value: balances.EURC * eurcPrice, color: '#3b82f6' },
+    { name: 'Tether USD', symbol: 'USDT', amount: balances.USDT, price: 1.0,       value: balances.USDT,            color: '#10b981' },
+    { name: 'Arc Native', symbol: 'ARC',  amount: balances.ARC,  price: arcPrice,  value: balances.ARC * arcPrice,  color: '#ec4899' },
   ];
 
   const totalPositionsValue = positions.reduce((acc, pos) => acc + (pos.size * pos.markPrice), 0);
