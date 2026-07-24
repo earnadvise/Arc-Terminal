@@ -105,6 +105,8 @@ interface AppContextType {
   cancelOrder: (id: string) => void;
   depositFunds: (amount: number) => Promise<void>;
   withdrawFunds: (amount: number) => Promise<void>;
+  addHistoryItem: (item: Omit<HistoryItem, 'id' | 'time'>) => void;
+  clearHistory: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -146,7 +148,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   // State Lists
   const [positions, setPositions] = useState<Position[]>([]);
   const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
-  const [history, setHistory] = useState<HistoryItem[]>(initialHistory);
+  const [history, setHistory] = useState<HistoryItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('arc_terminal_user_history');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [];
+  });
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   // Candle Chart Data cache per market-timeframe
@@ -439,6 +449,31 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const dismissNotification = (id: string) => {
     setNotifications(prev => prev.filter(n => n.id !== id));
+  };
+
+  const addHistoryItem = (item: Omit<HistoryItem, 'id' | 'time'>) => {
+    const now = new Date();
+    const formattedTime = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    const newItem: HistoryItem = {
+      id: 'tx-' + Date.now() + '-' + Math.random().toString(36).substring(7),
+      time: formattedTime,
+      timestamp: Date.now(),
+      ...item
+    };
+    setHistory(prev => {
+      const updated = [newItem, ...prev].slice(0, 100);
+      try {
+        localStorage.setItem('arc_terminal_user_history', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const clearHistory = () => {
+    setHistory([]);
+    try {
+      localStorage.removeItem('arc_terminal_user_history');
+    } catch {}
   };
 
   const connectWallet = async (type: string) => {
@@ -796,6 +831,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         claimFaucet,
         addNotification,
         dismissNotification,
+        addHistoryItem,
+        clearHistory,
         placeOrder,
         closePosition,
         cancelOrder,

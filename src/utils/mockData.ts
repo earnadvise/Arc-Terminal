@@ -52,13 +52,17 @@ export interface OpenOrder {
 export interface HistoryItem {
   id: string;
   time: string;
+  timestamp?: number;
   pair: string;
-  side: 'BUY' | 'SELL' | 'LONG' | 'SHORT' | 'DEPOSIT' | 'WITHDRAW';
-  type: string; // 'Market', 'Limit', 'Stop', 'Transfer', 'Funding'
+  side: string;
+  type: string;
   size: string;
   price: string;
   fee: string;
-  status: 'COMPLETED' | 'CANCELLED' | 'FILLED' | 'SUCCESS';
+  status: 'COMPLETED' | 'CANCELLED' | 'FILLED' | 'SUCCESS' | 'FAILED' | 'PENDING';
+  category?: 'Swap' | 'Vault' | 'Perpetuals';
+  txHash?: string;
+  details?: string;
 }
 
 export interface LeaderboardTrader {
@@ -361,60 +365,4 @@ export const initialLeaderboard: LeaderboardTrader[] = [
   { rank: 10, wallet: '0x6b9d...f0e1', pnl: 1940.80, roi: 24.5, volume: 940000, winRate: 48.9, badge: 'None' }
 ];
 
-export const initialHistory: HistoryItem[] = [
-  {
-    id: 'h1',
-    time: '2026-06-11 18:24:50',
-    pair: 'BTC-PERP',
-    side: 'LONG',
-    type: 'Market',
-    size: '0.25 BTC',
-    price: '$67,120.00',
-    fee: '$10.07 USDC',
-    status: 'FILLED'
-  },
-  {
-    id: 'h2',
-    time: '2026-06-11 18:25:12',
-    pair: 'BTC-PERP',
-    side: 'BUY',
-    type: 'Limit',
-    size: '0.25 BTC',
-    price: '$66,800.00',
-    fee: '$0.00 USDC',
-    status: 'CANCELLED'
-  },
-  {
-    id: 'h3',
-    time: '2026-06-11 12:10:05',
-    pair: 'SOL-PERP',
-    side: 'SHORT',
-    type: 'Market',
-    size: '50 SOL',
-    price: '$143.50',
-    fee: '$4.31 USDC',
-    status: 'FILLED'
-  },
-  {
-    id: 'h4',
-    time: '2026-06-10 15:40:00',
-    pair: 'USDC',
-    side: 'DEPOSIT',
-    type: 'Faucet',
-    size: '10,000 USDC',
-    price: '$1.00',
-    fee: '$0.00 USDC',
-    status: 'SUCCESS'
-  },
-  {
-    id: 'h5',
-    time: '2026-06-09 08:14:23',
-    pair: 'ETH-PERP',
-    side: 'LONG',
-    type: 'Stop',
-    size: '1.5 ETH',
-    price: '$3,490.00',
-    fee: '$3.14 USDC',
-    status: 'FILLED'
-  }
-];
+export const initialHistory: HistoryItem[] = [];

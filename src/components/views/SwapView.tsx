@@ -98,7 +98,7 @@ function TokenSelector({
 }
 
 export default function SwapView() {
-  const { walletConnected, walletAddress, balances, setBalances, addNotification, claimFaucet, markets } = useAppState();
+  const { walletConnected, walletAddress, balances, setBalances, addNotification, addHistoryItem, claimFaucet, markets } = useAppState();
 
   const [fromToken, setFromToken] = useState('USDC');
   const [toToken, setToToken]     = useState('EURC');
@@ -260,6 +260,19 @@ export default function SwapView() {
       `Swapped ${parsed} ${fromToken} → ${received} ${toToken}`,
       realTxHash || undefined
     );
+
+    addHistoryItem({
+      pair: `${fromToken}/${toToken}`,
+      side: 'SWAP',
+      type: 'AMM Swap',
+      size: `${parsed} ${fromToken}`,
+      price: `1 ${fromToken} = ${(fromPrice / toPrice).toFixed(4)} ${toToken}`,
+      fee: '0.30%',
+      status: 'SUCCESS',
+      category: 'Swap',
+      txHash: realTxHash || undefined,
+      details: `${parsed} ${fromToken} → ${received} ${toToken}`
+    });
 
     if (realTxHash) {
       setTxModalData({

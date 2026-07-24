@@ -41,7 +41,7 @@ const padUint = (val: bigint) => val.toString(16).padStart(64, '0');
 export default function VaultView() {
   const {
     walletConnected, walletAddress,
-    balances, addNotification
+    balances, addNotification, addHistoryItem
   } = useAppState();
 
   const [selectedVaultKey, setSelectedVaultKey] = useState<'USDC' | 'EURC'>('USDC');
@@ -272,6 +272,18 @@ export default function VaultView() {
 
       // Deposit Successful on-chain
       addNotification('success', 'Deposit Successful ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`, txHash);
+      addHistoryItem({
+        pair: `${vault.symbol} Vault`,
+        side: 'DEPOSIT',
+        type: 'Vault Deposit',
+        size: `${parsed} ${vault.symbol}`,
+        price: '$1.00',
+        fee: '$0.00',
+        status: 'SUCCESS',
+        category: 'Vault',
+        txHash: txHash || undefined,
+        details: `${parsed} ${vault.symbol} → ${vault.shareSymbol} Shares`
+      });
       setAmount('');
       fetchVaultData();
       setTimeout(() => fetchVaultData(), 1000);
@@ -347,6 +359,18 @@ export default function VaultView() {
       await waitForTx(txHash);
 
       addNotification('success', 'Withdrawal Successful ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`, txHash);
+      addHistoryItem({
+        pair: `${vault.symbol} Vault`,
+        side: 'WITHDRAW',
+        type: 'Vault Redeem',
+        size: `${parsed} ${vault.shareSymbol}`,
+        price: '$1.00',
+        fee: '$0.00',
+        status: 'SUCCESS',
+        category: 'Vault',
+        txHash: txHash || undefined,
+        details: `${parsed} ${vault.shareSymbol} Shares → ${vault.symbol}`
+      });
       setAmount('');
       fetchVaultData();
       setTimeout(() => fetchVaultData(), 1000);
