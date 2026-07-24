@@ -1,297 +1,521 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppState } from '@/context/useAppState';
-import { Activity, Flame, TrendingUp, TrendingDown, Hourglass, HelpCircle, BarChart3, ListFilter, AlertTriangle } from 'lucide-react';
-import { motion } from 'framer-motion';
-
-interface LiquidationEvent {
-  id: string;
-  time: string;
-  symbol: string;
-  side: 'LONG' | 'SHORT';
-  value: number;
-  size: number;
-}
+import TradingViewChart from './TradingViewChart';
+import { Search, Scale, CircleAlert } from 'lucide-react';
 
 export default function PerpetualsView() {
-  const { markets, setActiveTab, setActivePairBySymbol } = useAppState();
+  const {
+    markets,
+    activePair,
+    setActivePairBySymbol,
+    positions,
+    openOrders,
+    history,
+    walletConnected,
+    balances,
+    timeframe,
+    setTimeframe,
+    leverage,
+    setLeverage,
+    marginMode,
+    setMarginMode,
+    placeOrder,
+    closePosition,
+    cancelOrder,
+    connectWallet
+  } = useAppState();
 
-  const [countdown, setCountdown] = useState('03:45:12');
-  const [liqFeed, setLiqFeed] = useState<LiquidationEvent[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState<'All' | 'Crypto' | 'Commodities' | 'Forex'>('All');
+  const [orderType, setOrderType] = useState<'Market' | 'Limit' | 'Stop'>('Market');
+  const [tradeSide, setTradeSide] = useState<'LONG' | 'SHORT'>('LONG');
+  const [inputPrice, setInputPrice] = useState<string>(activePair.lastPrice.toString());
+  const [inputAmount, setInputAmount] = useState<string>('1.0');
+  const [activeBottomTab, setActiveBottomTab] = useState<'Positions' | 'OpenOrders' | 'TradeHistory' | 'FundingHistory'>('Positions');
 
-  // Simulate countdown ticking
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const date = new Date();
-      const hours = 7 - (date.getHours() % 8);
-      const minutes = 59 - date.getMinutes();
-      const seconds = 59 - date.getSeconds();
-      
-      const format = (n: number) => n.toString().padStart(2, '0');
-      setCountdown(`${format(hours)}:${format(minutes)}:${format(seconds)}`);
-    }, 1000);
+  React.useEffect(() => {
+    setInputPrice(activePair.lastPrice.toString());
+  }, [activePair.symbol]);
 
-    return () => clearInterval(timer);
-  }, []);
+  const parsedPrice = parseFloat(inputPrice) || activePair.lastPrice;
+  const parsedAmount = parseFloat(inputAmount) || 0;
+  const positionSize = parsedAmount * (orderType === 'Market' ? activePair.lastPrice : parsedPrice);
+  const marginRequired = leverage > 0 ? positionSize / leverage : 0;
+  const feeEstimate = positionSize * 0.0006;
+  const calculatedLiqPrice = tradeSide === 'LONG'
+    ? parsedPrice * (1 - (1 / leverage) * 0.95)
+    : parsedPrice * (1 + (1 / leverage) * 0.95);
 
-  // Populate mock liquidation feed
-  useEffect(() => {
-    const generateInitialLiqs = () => {
-      const list: LiquidationEvent[] = [];
-      const symbols = ['BTC-PERP', 'ETH-PERP', 'SOL-PERP', 'ARC-PERP'];
-      for (let i = 0; i < 6; i++) {
-        const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-        const side = Math.random() > 0.5 ? 'LONG' : 'SHORT';
-        const price = symbol.startsWith('BTC') ? 67400 : symbol.startsWith('ETH') ? 3480 : symbol.startsWith('SOL') ? 145 : 1.25;
-        const size = Number((Math.random() * (symbol.startsWith('BTC') ? 1.5 : 15)).toFixed(2));
-        const value = Math.round(size * price);
-        const date = new Date();
-        date.setMinutes(date.getMinutes() - i * 15);
-
-        list.push({
-          id: `liq-${Math.random()}`,
-          time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          symbol,
-          side,
-          size,
-          value
-        });
-      }
-      setLiqFeed(list);
-    };
-
-    generateInitialLiqs();
-
-    // Stream new liquidations
-    const interval = setInterval(() => {
-      const symbols = ['BTC-PERP', 'ETH-PERP', 'SOL-PERP', 'ARC-PERP', 'SUI-PERP'];
-      const symbol = symbols[Math.floor(Math.random() * symbols.length)];
-      const side = Math.random() > 0.5 ? 'LONG' : 'SHORT';
-      const price = symbol.startsWith('BTC') ? 67400 : symbol.startsWith('ETH') ? 3480 : symbol.startsWith('SOL') ? 145 : 1.25;
-      const size = Number((Math.random() * (symbol.startsWith('BTC') ? 1.2 : 12)).toFixed(2));
-      const value = Math.round(size * price);
-      
-      const newLiq: LiquidationEvent = {
-        id: `liq-${Math.random()}`,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-        symbol,
-        side,
-        size,
-        value
-      };
-
-      setLiqFeed(prev => [newLiq, ...prev].slice(0, 10));
-    }, 8500);
-
-    return () => clearInterval(interval);
-  }, []);
-
-  // Aggregated Stats
-  const totalVolume = markets.reduce((acc, m) => acc + m.volume24h, 0);
-  const totalOI = markets.reduce((acc, m) => acc + m.openInterest, 0);
-  const averageFunding = markets.reduce((acc, m) => acc + m.fundingRate, 0) / markets.length;
-
-  // Sorted Lists
-  const topMovers = [...markets].sort((a, b) => Math.abs(b.change24h) - Math.abs(a.change24h)).slice(0, 4);
-  const trendingMarkets = [...markets].sort((a, b) => b.volume24h - a.volume24h).slice(0, 4);
-  const recentlyListed = markets.filter(m => m.symbol.includes('ARC') || m.symbol.includes('SUI') || m.symbol.includes('APT'));
-
-  const handleMoverClick = (symbol: string) => {
-    setActivePairBySymbol(symbol);
-    setActiveTab('Perpetuals');
+  const handlePlaceOrder = () => {
+    placeOrder(
+      tradeSide,
+      orderType.toUpperCase() as 'MARKET' | 'LIMIT' | 'STOP',
+      parsedPrice,
+      parsedAmount
+    );
   };
 
-  return (
-    <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 space-y-6 select-none">
-      
-      {/* 1. TOP STATS BAR */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { label: '24h Trading Volume', value: `$${totalVolume.toLocaleString()}`, change: '+14.2%', desc: 'Arc Testnet cumulative', isPositive: true },
-          { label: 'Aggregate Open Interest', value: `$${totalOI.toLocaleString()}`, change: '+8.4%', desc: 'Active leveraged contracts', isPositive: true },
-          { label: 'Funding Settled (Avg)', value: `${(averageFunding * 100).toFixed(4)}%`, desc: 'Next payment countdown', highlight: countdown, isClock: true },
-          { label: 'Testnet liquidations (24h)', value: '$1,845,900', change: '-45.1%', desc: 'Active margin liquidations', isPositive: false }
-        ].map((stat, i) => (
-          <div key={i} className="bg-[#09090c] border border-[#13131a] rounded-xl p-4 flex flex-col justify-between shadow-lg relative overflow-hidden">
-            <div className="text-xs text-[#8e8e9f] font-semibold">{stat.label}</div>
-            
-            <div className="my-2.5 flex items-baseline justify-between">
-              <span className="text-lg font-bold text-white tracking-wide number-mono">{stat.value}</span>
-              {stat.change && (
-                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                  stat.isPositive ? 'bg-emerald-500/10 text-[#10b981]' : 'bg-red-500/10 text-[#ef4444]'
-                }`}>
-                  {stat.change}
-                </span>
-              )}
-              {stat.isClock && (
-                <span className="text-xs font-bold text-[#8b5cf6] flex items-center gap-1 bg-[#8b5cf6]/10 px-2 py-0.5 rounded number-mono">
-                  <Hourglass size={12} className="animate-spin" />
-                  {stat.highlight}
-                </span>
-              )}
-            </div>
-            
-            <div className="text-[10px] text-[#6e6e7f] uppercase">{stat.desc}</div>
-          </div>
-        ))}
-      </section>
+  const filteredPairs = markets.filter(m => {
+    const matchesSearch = m.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                          m.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = categoryFilter === 'All' || m.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
 
-      {/* 2. HEATMAP SECTION */}
-      <section className="bg-[#09090c] border border-[#13131a] rounded-xl p-4 shadow-xl">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <Activity className="text-[#8b5cf6]" size={18} />
-            <h2 className="text-sm font-bold text-white tracking-wide uppercase">Market Performance Heatmap</h2>
+  return (
+    <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 xl:grid-cols-4 gap-4 select-none">
+
+      {/* ── COL 1: MARKETS SIDEBAR ─────────────────────────────────── */}
+      <section className="xl:col-span-1 bg-[#09090c] border border-[#13131a] rounded-xl p-4 flex flex-col gap-3 shadow-xl" style={{ maxHeight: 820, minHeight: 680 }}>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-bold text-white uppercase tracking-wide">Perpetual Markets</h2>
+          <div className="flex items-center gap-1.5 text-[10px] text-[#8e8e9f]">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            Live
           </div>
-          <span className="text-[10px] text-[#8e8e9f]">Box size corresponds to 24h trading volume</span>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3 h-[240px]">
-          {markets.map(m => {
-            const isGainer = m.change24h >= 0;
-            // Determine size weight based on volume rank
-            const weight = m.volume24h > 5000000000 ? 'col-span-2 row-span-2' : 'col-span-1 row-span-1';
-            
-            // Background intensity based on change magnitude
-            const absChange = Math.abs(m.change24h);
-            const intensity = Math.min(0.9, 0.15 + (absChange / 12) * 0.7);
-            
-            const background = isGainer
-              ? `rgba(16, 185, 129, ${intensity})`
-              : `rgba(239, 68, 68, ${intensity})`;
+        <div className="relative">
+          <Search className="absolute left-3 top-2.5 text-[#6e6e7f]" size={13} />
+          <input
+            type="text"
+            placeholder="Search perpetuals..."
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="w-full pl-8 pr-3 py-2 bg-[#0d0d12] border border-[#13131a] focus:border-[#8b5cf6]/50 rounded-lg text-xs text-white placeholder-[#6e6e7f] outline-none transition-colors"
+          />
+        </div>
 
+        <div className="flex bg-[#0d0d12] border border-[#13131a] p-0.5 rounded-lg">
+          {(['All', 'Crypto', 'Commodities', 'Forex'] as const).map(cat => (
+            <button
+              key={cat}
+              onClick={() => setCategoryFilter(cat)}
+              className={`flex-1 py-1 text-[9px] font-bold rounded-md transition-colors ${
+                categoryFilter === cat
+                  ? 'bg-[#181822] text-[#8b5cf6] border border-[#8b5cf6]/25'
+                  : 'text-[#8e8e9f] hover:text-white'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5">
+          <div className="grid grid-cols-4 text-[9px] font-bold text-[#6e6e7f] uppercase pb-2 border-b border-[#13131a]">
+            <span className="col-span-2">Symbol</span>
+            <span className="text-right">Price</span>
+            <span className="text-right">24h %</span>
+          </div>
+          {filteredPairs.map(m => {
+            const isSelected = m.symbol === activePair.symbol;
+            const isGainer = m.change24h >= 0;
             return (
               <div
                 key={m.symbol}
-                onClick={() => handleMoverClick(m.symbol)}
-                style={{ backgroundColor: background }}
-                className={`rounded-lg p-3 flex flex-col justify-between cursor-pointer border border-[#ffffff]/10 hover:border-white hover:scale-[1.02] transition-all duration-200 relative group`}
+                onClick={() => setActivePairBySymbol(m.symbol)}
+                className={`grid grid-cols-4 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-[#3b82f6]/10 to-[#8b5cf6]/10 border border-[#8b5cf6]/30'
+                    : 'border border-transparent hover:bg-[#13131a]/55'
+                }`}
               >
-                <div>
-                  <div className="text-xs font-bold text-white group-hover:underline">{m.symbol}</div>
-                  <div className="text-[9px] text-white/70 uppercase">{m.name}</div>
+                <div className="col-span-2">
+                  <div className="text-[11px] font-semibold text-white">{m.symbol}</div>
+                  <div className="text-[9px] text-[#6e6e7f]">{m.name}</div>
                 </div>
-                
-                <div className="text-right">
-                  <div className="text-sm font-bold text-white number-mono">
-                    {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: m.symbol.startsWith('jpy') ? 5 : 2 })}
-                  </div>
-                  <div className="text-[10px] font-bold text-white/90 number-mono">
-                    {isGainer ? '+' : ''}{m.change24h}%
-                  </div>
+                <div className="text-right text-[10px] number-mono text-[#ededf2]">
+                  {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
+                </div>
+                <div className={`text-right text-[10px] font-semibold number-mono ${isGainer ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                  {isGainer ? '+' : ''}{m.change24h}%
                 </div>
               </div>
             );
           })}
+          {filteredPairs.length === 0 && (
+            <div className="text-center text-xs text-[#6e6e7f] py-8">No results.</div>
+          )}
         </div>
       </section>
 
-      {/* 3. THREE-COLUMN INFO CARDS */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        {/* COLUMN 1: TOP MOVERS */}
-        <div className="bg-[#09090c] border border-[#13131a] rounded-xl p-4 shadow-lg">
-          <div className="flex items-center gap-2 mb-3 border-b border-[#13131a] pb-3">
-            <Flame className="text-amber-500" size={16} />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wide">Top Movers</h3>
+      {/* ── COL 2+3: CHART AREA ─────────────────────────────────────── */}
+      <section className="xl:col-span-2 flex flex-col gap-4">
+
+        {/* Pair Header Row */}
+        <div className="bg-[#09090c] border border-[#13131a] rounded-xl px-4 py-3 flex items-center gap-6 overflow-x-auto shadow-xl">
+          <div>
+            <div className="text-base font-black text-white tracking-wide">{activePair.symbol}</div>
+            <div className="text-[9px] text-[#6e6e7f] uppercase">{activePair.name}</div>
           </div>
-          <div className="space-y-2.5">
-            {topMovers.map(m => {
-              const isGainer = m.change24h >= 0;
-              return (
-                <div
-                  key={m.symbol}
-                  onClick={() => handleMoverClick(m.symbol)}
-                  className="flex items-center justify-between p-2 bg-[#0d0d12] border border-[#13131a]/60 hover:border-[#8b5cf6]/40 rounded-lg cursor-pointer transition-colors"
-                >
-                  <div>
-                    <span className="text-xs font-bold text-white block">{m.symbol}</span>
-                    <span className="text-[9px] text-[#6e6e7f] uppercase">{m.name}</span>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-xs font-bold text-white block number-mono">
-                      ${m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: m.symbol.startsWith('jpy') ? 4 : 2 })}
-                    </span>
-                    <span className={`text-[10px] font-bold number-mono flex items-center gap-0.5 justify-end ${
-                      isGainer ? 'text-[#10b981]' : 'text-[#ef4444]'
-                    }`}>
-                      {isGainer ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
-                      {isGainer ? '+' : ''}{m.change24h}%
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="h-8 w-px bg-[#13131a]" />
+          <div>
+            <div className={`text-lg font-black number-mono ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+              {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            </div>
+            <div className={`text-[9px] number-mono font-semibold ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+              {activePair.change24h >= 0 ? '+' : ''}{activePair.change24h}%
+            </div>
+          </div>
+          {[
+            { label: '24h High', value: activePair.high24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+            { label: '24h Low',  value: activePair.low24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+            { label: '24h Vol',  value: `$${(activePair.volume24h / 1e6).toFixed(2)}M` },
+            { label: 'Open Interest', value: `$${(activePair.openInterest / 1e6).toFixed(2)}M` },
+          ].map(stat => (
+            <div key={stat.label} className="shrink-0">
+              <div className="text-[9px] text-[#6e6e7f] uppercase">{stat.label}</div>
+              <div className="text-xs number-mono text-white font-semibold">{stat.value}</div>
+            </div>
+          ))}
+
+          {/* Timeframe selector */}
+          <div className="ml-auto flex items-center gap-1">
+            {['1m', '5m', '15m', '1h', '4h', '1D'].map(tf => (
+              <button
+                key={tf}
+                onClick={() => setTimeframe(tf)}
+                className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${
+                  timeframe === tf
+                    ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/30'
+                    : 'text-[#8e8e9f] hover:text-white hover:bg-[#13131a]'
+                }`}
+              >
+                {tf}
+              </button>
+            ))}
           </div>
         </div>
 
-        {/* COLUMN 2: LIQUIDATION FEED */}
-        <div className="bg-[#09090c] border border-[#13131a] rounded-xl p-4 shadow-lg flex flex-col h-[300px] overflow-hidden">
-          <div className="flex items-center gap-2 mb-3 border-b border-[#13131a] pb-3">
-            <AlertTriangle className="text-[#ef4444]" size={16} />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wide">Live Liquidation Feed</h3>
-          </div>
-          <div className="flex-1 overflow-y-auto pr-1 space-y-2">
-            {liqFeed.map(liq => (
-              <div
-                key={liq.id}
-                className="p-2.5 bg-[#ef4444]/5 border border-[#ef4444]/15 rounded-lg flex items-center justify-between"
-              >
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold text-white">{liq.symbol}</span>
-                    <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded ${
-                      liq.side === 'LONG' ? 'bg-[#ef4444]/15 text-[#ef4444]' : 'bg-[#10b981]/15 text-[#10b981]'
-                    }`}>
-                      {liq.side === 'LONG' ? 'LIQ LONG' : 'LIQ SHORT'}
-                    </span>
-                  </div>
-                  <span className="text-[9px] text-[#6e6e7f] number-mono">{liq.time}</span>
-                </div>
-                <div className="text-right">
-                  <span className="text-xs font-bold text-white block number-mono">${liq.value.toLocaleString()}</span>
-                  <span className="text-[9px] text-[#8e8e9f] number-mono">Size: {liq.size}</span>
-                </div>
-              </div>
-            ))}
+        {/* TradingView Chart */}
+        <div className="bg-[#09090c] border border-[#13131a] rounded-xl overflow-hidden shadow-xl" style={{ height: 460 }}>
+          <TradingViewChart symbol={activePair.symbol} timeframe={timeframe} />
+        </div>
 
-            {liqFeed.length === 0 && (
-              <div className="text-center text-xs text-[#6e6e7f] py-8">
-                Monitoring live contract liquidation feeds...
-              </div>
+        {/* Bottom Positions / Orders Table */}
+        <div className="bg-[#09090c] border border-[#13131a] rounded-xl p-4 flex flex-col overflow-hidden shadow-xl" style={{ minHeight: 200 }}>
+          <div className="flex items-center gap-1 mb-3 self-start">
+            {[
+              { id: 'Positions',     label: 'Positions',     count: positions.length },
+              { id: 'OpenOrders',    label: 'Open Orders',   count: openOrders.length },
+              { id: 'TradeHistory',  label: 'Trade History', count: null },
+              { id: 'FundingHistory',label: 'Funding',       count: null },
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveBottomTab(tab.id as any)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  activeBottomTab === tab.id
+                    ? 'bg-[#181822] text-[#8b5cf6] border border-[#8b5cf6]/20'
+                    : 'text-[#8e8e9f] hover:text-white'
+                }`}
+              >
+                {tab.label}
+                {tab.count !== null && tab.count > 0 && (
+                  <span className="ml-1 px-1.5 py-0.5 text-[9px] bg-[#8b5cf6]/20 text-[#8b5cf6] rounded-full">{tab.count}</span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          <div className="overflow-auto">
+            {activeBottomTab === 'Positions' && (
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#6e6e7f] border-b border-[#13131a] font-bold uppercase text-[10px]">
+                    <th className="py-2">Market</th><th>Side</th><th>Lev</th>
+                    <th>Size</th><th>Entry</th><th>Mark</th>
+                    <th>Liq</th><th>PnL</th><th className="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#13131a]">
+                  {positions.map(pos => {
+                    const isGain = pos.unrealizedPnl >= 0;
+                    return (
+                      <tr key={pos.id} className="hover:bg-[#13131a]/30 transition-colors">
+                        <td className="py-2.5 font-bold text-white">{pos.symbol}</td>
+                        <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${pos.side === 'LONG' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{pos.side}</span></td>
+                        <td className="number-mono text-[#c7c7d6]">{pos.leverage}x</td>
+                        <td className="number-mono text-white">{pos.size}</td>
+                        <td className="number-mono text-[#c7c7d6]">${pos.entryPrice.toLocaleString()}</td>
+                        <td className="number-mono text-[#c7c7d6]">${pos.markPrice.toLocaleString()}</td>
+                        <td className="number-mono text-amber-500">${pos.liqPrice.toLocaleString()}</td>
+                        <td className={`number-mono font-bold ${isGain ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                          {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
+                        </td>
+                        <td className="text-right">
+                          <button onClick={() => closePosition(pos.id)} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {positions.length === 0 && (
+                    <tr><td colSpan={9} className="text-center text-[#6e6e7f] py-6 text-xs">No active positions.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {activeBottomTab === 'OpenOrders' && (
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#6e6e7f] border-b border-[#13131a] font-bold uppercase text-[10px]">
+                    <th className="py-2">Market</th><th>Side</th><th>Type</th>
+                    <th>Price</th><th>Amount</th><th>Lev</th>
+                    <th className="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#13131a]">
+                  {openOrders.map(order => (
+                    <tr key={order.id} className="hover:bg-[#13131a]/30 transition-colors">
+                      <td className="py-2.5 font-bold text-white">{order.symbol}</td>
+                      <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${order.side === 'BUY' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{order.side === 'BUY' ? 'LONG' : 'SHORT'}</span></td>
+                      <td className="text-[#c7c7d6]">{order.type}</td>
+                      <td className="number-mono text-[#c7c7d6]">${order.price.toLocaleString()}</td>
+                      <td className="number-mono text-white">{order.amount}</td>
+                      <td className="number-mono text-[#c7c7d6]">{order.leverage}x</td>
+                      <td className="text-right">
+                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-[#8e8e9f] hover:text-white bg-[#13131a] border border-[#1e1e2c] rounded transition-all">Cancel</button>
+                      </td>
+                    </tr>
+                  ))}
+                  {openOrders.length === 0 && (
+                    <tr><td colSpan={7} className="text-center text-[#6e6e7f] py-6">No open orders.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {activeBottomTab === 'TradeHistory' && (
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#6e6e7f] border-b border-[#13131a] font-bold uppercase text-[10px]">
+                    <th className="py-2">Time</th><th>Pair</th><th>Side</th>
+                    <th>Type</th><th>Size</th><th>Price</th><th>Fee</th><th>Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#13131a]">
+                  {history.filter(h => h.side !== 'DEPOSIT' && h.side !== 'WITHDRAW').slice(0, 8).map(h => (
+                    <tr key={h.id}>
+                      <td className="py-2.5 text-[#6e6e7f] number-mono text-[10px]">{h.time}</td>
+                      <td className="font-bold text-white">{h.pair}</td>
+                      <td><span className={`text-[9px] font-bold ${h.side === 'LONG' || h.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{h.side}</span></td>
+                      <td className="text-[#c7c7d6]">{h.type}</td>
+                      <td className="number-mono text-[#c7c7d6]">{h.size}</td>
+                      <td className="number-mono text-[#c7c7d6]">{h.price}</td>
+                      <td className="number-mono text-[#6e6e7f]">{h.fee}</td>
+                      <td><span className="text-emerald-500 font-semibold text-[10px]">{h.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {activeBottomTab === 'FundingHistory' && (
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-[#6e6e7f] border-b border-[#13131a] font-bold uppercase text-[10px]">
+                    <th className="py-2">Time</th><th>Market</th><th>Rate</th><th>Settlement</th><th>Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#13131a]">
+                  <tr className="hover:bg-[#13131a]/30">
+                    <td className="py-2.5 number-mono text-[#6e6e7f] text-[10px]">2026-07-24 08:00</td>
+                    <td className="font-bold text-white">BTC-PERP</td>
+                    <td className="number-mono text-[#10b981]">0.0100%</td>
+                    <td className="number-mono text-[#ef4444]">-$0.25 USDC</td>
+                    <td className="text-emerald-500 font-semibold text-[10px]">SETTLED</td>
+                  </tr>
+                  <tr className="hover:bg-[#13131a]/30">
+                    <td className="py-2.5 number-mono text-[#6e6e7f] text-[10px]">2026-07-24 04:00</td>
+                    <td className="font-bold text-white">ETH-PERP</td>
+                    <td className="number-mono text-[#ef4444]">-0.0050%</td>
+                    <td className="number-mono text-[#10b981]">+$0.08 USDC</td>
+                    <td className="text-emerald-500 font-semibold text-[10px]">SETTLED</td>
+                  </tr>
+                </tbody>
+              </table>
             )}
           </div>
         </div>
+      </section>
 
-        {/* COLUMN 3: FUNDING COUNTDOWNS */}
-        <div className="bg-[#09090c] border border-[#13131a] rounded-xl p-4 shadow-lg">
-          <div className="flex items-center gap-2 mb-3 border-b border-[#13131a] pb-3">
-            <Hourglass className="text-[#8b5cf6]" size={16} />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wide">Active Funding Rates</h3>
-          </div>
-          <div className="space-y-2 max-h-[235px] overflow-y-auto pr-1">
-            {markets.slice(0, 6).map(m => {
-              const isPositive = m.fundingRate >= 0;
-              return (
-                <div
-                  key={m.symbol}
-                  className="flex items-center justify-between p-2 bg-[#0d0d12] border border-[#13131a]/60 rounded-lg text-xs"
-                >
-                  <span className="font-bold text-white">{m.symbol}</span>
-                  <div className="text-right">
-                    <span className={`font-semibold number-mono ${isPositive ? 'text-[#ef4444]' : 'text-[#10b981]'}`}>
-                      {isPositive ? '+' : ''}{(m.fundingRate * 100).toFixed(4)}%
-                    </span>
-                    <span className="text-[9px] text-[#6e6e7f] block">every 8 hours</span>
-                  </div>
-                </div>
-              );
-            })}
+      {/* ── COL 4: ORDER ENTRY ──────────────────────────────────────── */}
+      <section className="xl:col-span-1 bg-[#09090c] border border-[#13131a] rounded-xl p-4 flex flex-col shadow-xl" style={{ maxHeight: 820 }}>
+        {/* Order Type */}
+        <div className="flex bg-[#0d0d12] border border-[#13131a] p-0.5 rounded-lg mb-4">
+          {(['Market', 'Limit', 'Stop'] as const).map(t => (
+            <button
+              key={t}
+              onClick={() => setOrderType(t)}
+              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
+                orderType === t ? 'bg-[#181822] text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-[#8e8e9f] hover:text-white'
+              }`}
+            >{t}</button>
+          ))}
+        </div>
+
+        {/* Long / Short */}
+        <div className="grid grid-cols-2 gap-2 mb-4">
+          <button
+            onClick={() => setTradeSide('LONG')}
+            className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
+              tradeSide === 'LONG'
+                ? 'bg-[#10b981] text-white border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
+                : 'border-[#13131a] text-[#8e8e9f] hover:text-[#10b981]'
+            }`}
+          >Buy / Long</button>
+          <button
+            onClick={() => setTradeSide('SHORT')}
+            className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
+              tradeSide === 'SHORT'
+                ? 'bg-[#ef4444] text-white border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
+                : 'border-[#13131a] text-[#8e8e9f] hover:text-[#ef4444]'
+            }`}
+          >Sell / Short</button>
+        </div>
+
+        {/* Margin Mode */}
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-xs text-[#8e8e9f]">Margin Mode</span>
+          <div className="flex bg-[#0d0d12] border border-[#13131a] p-0.5 rounded-md text-[10px]">
+            {['CROSS', 'ISOLATED'].map(mode => (
+              <button
+                key={mode}
+                onClick={() => setMarginMode(mode as any)}
+                className={`px-2 py-0.5 font-bold rounded transition-colors ${
+                  marginMode === mode ? 'bg-[#181822] text-[#8b5cf6] border border-[#8b5cf6]/15' : 'text-[#6e6e7f] hover:text-[#c7c7d6]'
+                }`}
+              >{mode}</button>
+            ))}
           </div>
         </div>
 
+        {/* Price */}
+        <div className="mb-3">
+          <div className="flex justify-between mb-1">
+            <span className="text-xs text-[#8e8e9f]">Price {orderType === 'Market' && <span className="text-amber-500 text-[10px] font-bold bg-amber-500/10 px-1 rounded ml-1">MARKET</span>}</span>
+            <span className="text-[10px] text-[#6e6e7f] uppercase">USDC</span>
+          </div>
+          <input
+            type="text"
+            disabled={orderType === 'Market'}
+            value={orderType === 'Market' ? activePair.lastPrice : inputPrice}
+            onChange={e => setInputPrice(e.target.value)}
+            className={`w-full px-3 py-2 bg-[#0d0d12] border rounded-lg text-xs number-mono text-white outline-none transition-colors ${
+              orderType === 'Market' ? 'border-[#13131a] text-[#8e8e9f] cursor-not-allowed' : 'border-[#13131a] focus:border-[#8b5cf6]/50'
+            }`}
+          />
+        </div>
+
+        {/* Amount */}
+        <div className="mb-3">
+          <div className="flex justify-between mb-1">
+            <span className="text-xs text-[#8e8e9f]">Amount</span>
+            <span className="text-[10px] text-[#8e8e9f] number-mono uppercase">{activePair.symbol.split('-')[0]}</span>
+          </div>
+          <div className="relative flex items-center">
+            <input
+              type="text"
+              value={inputAmount}
+              onChange={e => setInputAmount(e.target.value)}
+              className="w-full pl-3 pr-14 py-2 bg-[#0d0d12] border border-[#13131a] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-white outline-none transition-colors"
+            />
+            <button
+              onClick={() => {
+                const available = balances.USDC > 0 ? balances.USDC : 5000;
+                const maxPositionUSD = available * leverage * 0.99;
+                const maxSize = maxPositionUSD / parsedPrice;
+                setInputAmount(maxSize.toFixed(4));
+              }}
+              className="absolute right-2 px-2 py-0.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-bold text-white rounded transition-colors cursor-pointer"
+            >
+              MAX
+            </button>
+          </div>
+        </div>
+
+        {/* Leverage Slider (Capped at 20x Max) */}
+        <div className="mb-5">
+          <div className="flex justify-between mb-1">
+            <span className="text-xs text-[#8e8e9f] flex items-center gap-1"><Scale size={12} /> Leverage (Max 20x)</span>
+            <span className="text-xs font-bold text-[#8b5cf6] number-mono">{leverage}x</span>
+          </div>
+          <input
+            type="range" min="1" max="20" value={leverage}
+            onChange={e => setLeverage(parseInt(e.target.value))}
+            className="w-full h-1 bg-[#13131a] rounded-lg appearance-none cursor-pointer accent-[#8b5cf6]"
+          />
+          <div className="flex justify-between text-[9px] text-[#6e6e7f] font-bold mt-1 mb-2">
+            <span>1x</span><span>5x</span><span>10x</span><span>15x</span><span>20x</span>
+          </div>
+
+          {/* Quick-Select Leverage Presets */}
+          <div className="flex gap-1">
+            {[2, 5, 10, 15, 20].map(levVal => (
+              <button
+                key={levVal}
+                onClick={() => setLeverage(levVal)}
+                className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${
+                  leverage === levVal
+                    ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/40 shadow-sm'
+                    : 'bg-[#0d0d12] text-[#6e6e7f] border border-[#13131a] hover:text-white hover:border-[#334155]'
+                }`}
+              >
+                {levVal}x
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Summary */}
+        <div className="space-y-1.5 text-xs text-[#8e8e9f] border-t border-[#13131a] pt-3 mb-3">
+          {[
+            ['Position Value', `$${positionSize.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
+            ['Required Margin', `$${marginRequired.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
+            ['Effective Leverage', `${leverage}x`],
+            ['Est. Liq. Price', `$${calculatedLiqPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}`],
+            ['Taker Fee (0.06%)', `$${feeEstimate.toLocaleString(undefined, { maximumFractionDigits: 4 })} USDC`],
+          ].map(([label, value]) => (
+            <div key={label} className="flex justify-between">
+              <span>{label}</span>
+              <span className={`number-mono ${label === 'Required Margin' ? 'text-[#01C38E] font-bold' : label === 'Effective Leverage' ? 'text-[#8b5cf6] font-bold' : 'text-[#c7c7d6]'}`}>{value}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Available */}
+        <div className="flex justify-between items-center text-[10px] bg-[#0d0d12] border border-[#13131a] px-3 py-2 rounded-lg mb-3">
+          <span className="text-[#6e6e7f]">Available Margin:</span>
+          <span className="number-mono font-bold text-white">${(balances.USDC > 0 ? balances.USDC : 5000).toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+        </div>
+
+        {/* Action */}
+        {walletConnected ? (
+          <button
+            onClick={handlePlaceOrder}
+            disabled={parsedAmount <= 0}
+            className={`w-full py-3 rounded-lg text-xs font-bold text-white uppercase tracking-wider transition-all ${
+              parsedAmount <= 0
+                ? 'bg-[#181822] text-[#6e6e7f] border border-[#1d1d28] cursor-not-allowed'
+                : tradeSide === 'LONG'
+                ? 'bg-[#10b981] hover:bg-[#12cf92] shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+                : 'bg-[#ef4444] hover:bg-[#fa5555] shadow-[0_0_15px_rgba(239,68,68,0.25)]'
+            }`}
+          >
+            {parsedAmount <= 0 ? 'Enter Amount' : tradeSide === 'LONG' ? 'Place Long / Buy' : 'Place Short / Sell'}
+          </button>
+        ) : (
+          <button
+            onClick={() => connectWallet('MetaMask')}
+            className="w-full py-3 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
+          >
+            Connect Wallet
+          </button>
+        )}
       </section>
     </main>
   );

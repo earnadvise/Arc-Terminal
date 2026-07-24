@@ -63,6 +63,7 @@ export interface AppNotification {
   title: string;
   message: string;
   time: string;
+  txHash?: string;
 }
 
 interface AppContextType {
@@ -91,7 +92,7 @@ interface AppContextType {
   connectWallet: (type: string) => Promise<void>;
   disconnectWallet: () => void;
   claimFaucet: () => void;
-  addNotification: (type: 'info' | 'success' | 'warning' | 'error', title: string, message: string) => void;
+  addNotification: (type: 'info' | 'success' | 'warning' | 'error', title: string, message: string, txHash?: string) => void;
   dismissNotification: (id: string) => void;
   placeOrder: (
     side: 'LONG' | 'SHORT',
@@ -126,14 +127,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [walletType, setWalletType] = useState<string>('');
   const [balances, setBalances] = useState({
-    USDC: 0,
-    walletUSDC: 0,
-    BTC: 0,
-    ETH: 0,
-    SOL: 0,
-    ARC: 0,
-    EURC: 0,
-    USDT: 0
+    USDC: 5000,
+    walletUSDC: 5000,
+    BTC: 0.5,
+    ETH: 2.5,
+    SOL: 15.0,
+    ARC: 100.0,
+    EURC: 2500,
+    USDT: 5000
   });
 
   const walletAddressRef = useRef(walletAddress);
@@ -393,7 +394,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const addNotification = (
     type: 'info' | 'success' | 'warning' | 'error',
     title: string,
-    message: string
+    message: string,
+    txHash?: string
   ) => {
     const id = Math.random().toString(36).substring(7);
     const newNotif: AppNotification = {
@@ -401,7 +403,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       type,
       title,
       message,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+      txHash
     };
     setNotifications(prev => [newNotif, ...prev].slice(0, 10)); // limit 10 notifications
   };

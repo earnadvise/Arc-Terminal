@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/context/useAppState';
-import { ArrowUpDown, ChevronDown, Settings, Info, Zap, CircleAlert, RefreshCw } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, Settings, Info, Zap, CircleAlert, RefreshCw, ExternalLink, CheckCircle2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TOKENS = [
@@ -98,6 +98,7 @@ export default function SwapView() {
   const [showSettings, setShowSettings] = useState(false);
   const [isSwapping, setIsSwapping] = useState(false);
   const [recentSwaps, setRecentSwaps] = useState<{ from: string; to: string; fromAmt: number; toAmt: number; time: string }[]>([]);
+  const [txModalData, setTxModalData] = useState<{ hash: string; from: string; to: string; fromAmt: number; toAmt: number } | null>(null);
 
   // Derive prices and 24h change from global markets state
   const prices: Record<string, number> = {
@@ -120,8 +121,8 @@ export default function SwapView() {
   const priceImpact = parsed * fromPrice > 5000 ? 0.12 : parsed * fromPrice > 1000 ? 0.05 : 0.01;
   const fee = parsed * fromPrice * 0.003; // 0.3%
 
-  const fromBalance: number = (balances as any)[fromToken] ?? 0;
-  const toBalance:   number = (balances as any)[toToken]   ?? 0;
+  const fromBalance: number = (balances as any)[fromToken] ?? 5000;
+  const toBalance:   number = (balances as any)[toToken]   ?? 2500;
 
   const flip = () => {
     setFromToken(toToken);
@@ -149,15 +150,26 @@ export default function SwapView() {
 
     setIsSwapping(true);
     // Simulate network delay
-    await new Promise(r => setTimeout(r, 1400));
+    await new Promise(r => setTimeout(r, 1200));
     setIsSwapping(false);
 
+    const txHash = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
     const received = Number(toAmount.toFixed(TOKENS.find(t => t.symbol === toToken)?.decimals ?? 4));
+
     addNotification(
       'success',
       'Swap Executed',
-      `Swapped ${parsed} ${fromToken} → ${received} ${toToken} at $${fromPrice.toLocaleString()}.`
+      `Swapped ${parsed} ${fromToken} → ${received} ${toToken}`,
+      txHash
     );
+
+    setTxModalData({
+      hash: txHash,
+      from: fromToken,
+      to: toToken,
+      fromAmt: parsed,
+      toAmt: received
+    });
 
     setRecentSwaps(prev => [
       { from: fromToken, to: toToken, fromAmt: parsed, toAmt: received, time: new Date().toLocaleTimeString() },
@@ -442,6 +454,69 @@ export default function SwapView() {
         </div>
 
       </div>
+
+      {/* ── TRANSACTION SUCCESS POPUP MODAL ───────────────────────── */}
+      <AnimatePresence>
+        {txModalData && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setTxModalData(null)}
+              className="fixed inset-0 bg-black/70 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.9, opacity: 0, y: 20 }}
+              className="relative w-full max-w-md rounded-2xl bg-[#09090c] border border-[#8b5cf6]/40 p-6 shadow-[0_0_50px_rgba(139,92,246,0.25)] z-10 text-center space-y-4"
+            >
+              <button
+                onClick={() => setTxModalData(null)}
+                className="absolute top-4 right-4 text-[#8e8e9f] hover:text-white transition-colors"
+              >
+                <X size={18} />
+              </button>
+
+              <div className="w-14 h-14 rounded-full bg-[#10b981]/15 border border-[#10b981]/40 flex items-center justify-center mx-auto text-[#10b981]">
+                <CheckCircle2 size={32} />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-extrabold text-white tracking-wide">Transaction Submitted</h3>
+                <p className="text-xs text-[#8e8e9f] mt-1">
+                  Swapped <span className="text-white font-bold">{txModalData.fromAmt} {txModalData.from}</span> → <span className="text-[#10b981] font-bold">{txModalData.toAmt} {txModalData.to}</span>
+                </p>
+              </div>
+
+              <div className="bg-[#0d0d12] border border-[#13131a] p-3 rounded-xl text-left space-y-1">
+                <div className="text-[10px] text-[#6e6e7f] uppercase font-bold">Transaction Hash</div>
+                <div className="number-mono text-xs text-[#8b5cf6] break-all select-all font-semibold">
+                  {txModalData.hash}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <a
+                  href={`https://explorer.testnet.arc.network/tx/${txModalData.hash}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-white text-xs font-bold transition-all shadow-[0_0_15px_rgba(139,92,246,0.4)]"
+                >
+                  View on Arc Explorer <ExternalLink size={14} />
+                </a>
+                <button
+                  onClick={() => setTxModalData(null)}
+                  className="px-4 py-3 rounded-xl bg-[#13131a] hover:bg-[#1c1c28] text-xs font-semibold text-[#8e8e9f] hover:text-white transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </main>
   );
 }

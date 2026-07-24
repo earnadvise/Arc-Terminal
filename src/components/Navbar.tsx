@@ -42,7 +42,7 @@ export default function Navbar() {
               A
             </div>
             <span className="text-lg font-bold tracking-wider bg-gradient-to-r from-white to-[#a3a3c2] bg-clip-text text-transparent group-hover:text-white transition-colors">
-              ARC TERMINAL
+              ARC TERMINAL AI
             </span>
           </div>
 

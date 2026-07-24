@@ -92,6 +92,16 @@ export default function Home() {
                   </button>
                 </div>
                 <p className="text-[10px] text-[#8e8e9f] mt-1 leading-normal">{n.message}</p>
+                {n.txHash && (
+                  <a
+                    href={`https://explorer.testnet.arc.network/tx/${n.txHash}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold text-[#8b5cf6] hover:text-[#a78bfa] transition-colors"
+                  >
+                    View on Arc Explorer ↗
+                  </a>
+                )}
                 <span className="text-[8px] text-[#6e6e7f] number-mono mt-1.5 block">{n.time}</span>
               </div>
             </motion.div>
