@@ -5,6 +5,14 @@ import { useAppState } from '@/context/useAppState';
 import { ArrowUpDown, ChevronDown, Settings, Info, Zap, CircleAlert, RefreshCw, ExternalLink, CheckCircle2, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import {
+  ARC_TOKENS,
+  SWAP_ROUTER_ADDRESS,
+  getPoolFee,
+  encodeExactInputSingle,
+  toWei
+} from '@/lib/swapRouter';
+
 const TOKENS = [
   { symbol: 'USDC',  name: 'USD Coin',   decimals: 2, color: '#8b5cf6' },
   { symbol: 'EURC',  name: 'Euro Coin',  decimals: 2, color: '#3b82f6' },
@@ -156,17 +164,47 @@ export default function SwapView() {
     let realTxHash = '';
 
     if (eth && walletConnected) {
-      addNotification('info', 'Confirm Swap', 'Please confirm the swap transaction in your Web3 wallet...');
+      addNotification('info', 'Confirm Swap', 'Please confirm the Synthra V3 swap in your Web3 wallet...');
       try {
-        realTxHash = await eth.request({
-          method: 'eth_sendTransaction',
-          params: [{
-            from: eth.selectedAddress || walletAddress,
-            to: '0x503B3910ff21948464AA92BaB16a6200848bD11B',
-            value: '0x0'
-          }]
-        });
+        const tokenIn = ARC_TOKENS[fromToken];
+        const tokenOut = ARC_TOKENS[toToken];
+        const userAddr = eth.selectedAddress || walletAddress;
+
+        if (tokenIn && tokenOut) {
+          const fee = getPoolFee(fromToken, toToken);
+          const amountInWei = toWei(parsed, tokenIn.decimals);
+          const minOutWei = toWei(toAmount * 0.99, tokenOut.decimals);
+
+          const swapData = encodeExactInputSingle(
+            tokenIn.address,
+            tokenOut.address,
+            fee,
+            userAddr,
+            amountInWei,
+            minOutWei,
+            BigInt(0)
+          );
+
+          realTxHash = await eth.request({
+            method: 'eth_sendTransaction',
+            params: [{
+              from: userAddr,
+              to: SWAP_ROUTER_ADDRESS,
+              data: swapData
+            }]
+          });
+        } else {
+          realTxHash = await eth.request({
+            method: 'eth_sendTransaction',
+            params: [{
+              from: userAddr,
+              to: SWAP_ROUTER_ADDRESS,
+              value: '0x0'
+            }]
+          });
+        }
       } catch (err: any) {
+        console.error('Swap execution error:', err);
         setIsSwapping(false);
         return;
       }
