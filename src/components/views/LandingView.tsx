@@ -29,8 +29,8 @@ export default function LandingView() {
       badge: 'High Performance'
     },
     {
-      title: 'Yield Vault Optimization',
-      description: 'Deposit stablecoins directly into autocompounding yield pools utilizing optimized on-chain execution with up to 5% APY.',
+      title: 'Arc Vault Optimization',
+      description: 'Deposit stablecoins directly into Arc Vault autocompounding yield pools utilizing optimized on-chain execution with up to 5% APY.',
       icon: <Landmark size={24} className="text-[#0052FF]" />,
       badge: 'Passive APY'
     },
@@ -82,7 +82,7 @@ export default function LandingView() {
             </h1>
             
             <p className="text-[#8e8e9f] text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-semibold">
-              Execute leveraged orders, optimize yields, and deploy custom stablecoin vaults in a unified trading terminal designed for active traders and AI agents.
+              Execute leveraged orders, optimize yields, and deploy custom Arc Vaults in a unified trading terminal designed for active traders and AI agents.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">

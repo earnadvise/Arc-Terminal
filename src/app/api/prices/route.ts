@@ -15,7 +15,7 @@ export async function GET() {
 
   // Default fallback prices if all external APIs are unreachable
   const fallbacks: Record<string, PriceData> = {
-    'BTC-PERP': { lastPrice: 65420.50, change24h: 1.85, high24h: 66200.00, low24h: 64100.00, volume24h: 2845012000 },
+    'BTC-PERP': { lastPrice: 64144.00, change24h: 1.36, high24h: 65120.00, low24h: 63800.00, volume24h: 2845012000 },
     'ETH-PERP': { lastPrice: 3480.20, change24h: -0.42, high24h: 3550.00, low24h: 3420.00, volume24h: 1420950000 },
     'SOL-PERP': { lastPrice: 145.80, change24h: 3.12, high24h: 149.50, low24h: 141.20, volume24h: 890400000 },
     'SUI-PERP': { lastPrice: 1.85, change24h: 4.50, high24h: 1.92, low24h: 1.76, volume24h: 310200000 },
@@ -25,7 +25,7 @@ export async function GET() {
     'eur-PERP': { lastPrice: 1.0850, change24h: 0.05, high24h: 1.0880, low24h: 1.0820, volume24h: 154020000 },
     'gbp-PERP': { lastPrice: 1.2720, change24h: -0.12, high24h: 1.2760, low24h: 1.2680, volume24h: 98400000 },
     'jpy-PERP': { lastPrice: 157.40, change24h: 0.15, high24h: 158.10, low24h: 156.80, volume24h: 245080000 },
-    'ARC-PERP': { lastPrice: 65420.50, change24h: 1.85, high24h: 66200.00, low24h: 64100.00, volume24h: 2845012000 },
+    'ARC-PERP': { lastPrice: 64144.00, change24h: 1.36, high24h: 65120.00, low24h: 63800.00, volume24h: 2845012000 },
   };
 
   // 1. Try Binance

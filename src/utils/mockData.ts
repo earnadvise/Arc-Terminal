@@ -87,15 +87,15 @@ export const initialMarkets: Market[] = [
     symbol: 'BTC-PERP',
     name: 'Bitcoin',
     category: 'Crypto',
-    lastPrice: 67425.50,
-    prevPrice: 65880.00,
-    change24h: 2.34,
+    lastPrice: 64144.00,
+    prevPrice: 63280.00,
+    change24h: 1.36,
     volume24h: 12450800000,
     openInterest: 824500000,
     fundingRate: 0.0001, // 0.01%
     nextFundingTime: Date.now() + 4 * 60 * 60 * 1000,
-    high24h: 68120.00,
-    low24h: 65540.00
+    high24h: 65120.00,
+    low24h: 63800.00
   },
   {
     symbol: 'ETH-PERP',
