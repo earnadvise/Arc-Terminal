@@ -174,7 +174,7 @@ export default function VaultView() {
   useEffect(() => {
     if (!walletConnected || !walletAddress) return;
     fetchVaultData();
-    const interval = setInterval(fetchVaultData, 8000);
+    const interval = setInterval(fetchVaultData, 2000);
     return () => clearInterval(interval);
   }, [walletConnected, walletAddress, fetchVaultData]);
 
@@ -273,7 +273,10 @@ export default function VaultView() {
       // Deposit Successful on-chain
       addNotification('success', 'Deposit Successful ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`);
       setAmount('');
-      setTimeout(() => fetchVaultData(), 3000);
+      fetchVaultData();
+      setTimeout(() => fetchVaultData(), 1000);
+      setTimeout(() => fetchVaultData(), 2500);
+      setTimeout(() => fetchVaultData(), 5000);
     } catch (e: any) {
       console.error(e);
       if (e.message?.includes('User rejected') || e.message?.includes('User denied') || e.message?.includes('rejected')) {
@@ -345,7 +348,10 @@ export default function VaultView() {
 
       addNotification('success', 'Withdrawal Successful ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`);
       setAmount('');
-      setTimeout(() => fetchVaultData(), 3000);
+      fetchVaultData();
+      setTimeout(() => fetchVaultData(), 1000);
+      setTimeout(() => fetchVaultData(), 2500);
+      setTimeout(() => fetchVaultData(), 5000);
     } catch (e: any) {
       console.error(e);
       if (e.message?.includes('User rejected') || e.message?.includes('User denied') || e.message?.includes('rejected')) {
@@ -388,7 +394,7 @@ export default function VaultView() {
       {/* Page Header */}
       <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-wide">Yield Vaults</h1>
+          <h1 className="text-2xl font-black text-white tracking-wide">Arc Vaults</h1>
           <p className="text-xs text-[#8e8e9f]">Deposit stablecoins to compound auto-generating yield.</p>
         </div>
 

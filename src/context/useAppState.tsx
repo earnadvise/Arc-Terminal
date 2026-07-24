@@ -266,7 +266,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       refreshOnChainBalances(walletAddress);
       const interval = setInterval(() => {
         refreshOnChainBalances(walletAddressRef.current);
-      }, 8000);
+      }, 2000);
       return () => clearInterval(interval);
     }
   }, [walletConnected, walletAddress]);
@@ -718,7 +718,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       });
 
       addNotification('success', 'Deposit Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
-      setTimeout(() => refreshOnChainBalances(walletAddress), 3000);
+      refreshOnChainBalances(walletAddress);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 1000);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 2500);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 5000);
     } catch (err: any) {
       console.error(err);
       addNotification('error', 'Deposit Failed', err.message || 'Transaction rejected.');
@@ -749,7 +752,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       });
 
       addNotification('success', 'Withdrawal Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
-      setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+      refreshOnChainBalances(walletAddress);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 1000);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 2500);
+      setTimeout(() => refreshOnChainBalances(walletAddress), 5000);
     } catch (err: any) {
       console.error(err);
       addNotification('error', 'Withdrawal Failed', err.message || 'Transaction rejected.');
