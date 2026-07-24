@@ -431,10 +431,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     };
     setNotifications(prev => [newNotif, ...prev].slice(0, 5));
 
-    // Auto-dismiss within 2.5 seconds
+    // Auto-dismiss within 6 seconds
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 2500);
+    }, 6000);
   };
 
   const dismissNotification = (id: string) => {

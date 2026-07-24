@@ -254,7 +254,7 @@ export default function VaultView() {
         });
         setProcessStep('Waiting for approval…');
         await waitForTx(approvalTxHash);
-        addNotification('success', 'Token Approved ✓', `${vault.symbol} approved for vault deposit.`);
+        addNotification('success', 'Token Approved ✓', `${vault.symbol} approved for vault deposit.`, approvalTxHash);
       }
 
       // Step 2: Deposit
@@ -271,7 +271,7 @@ export default function VaultView() {
       await waitForTx(txHash);
 
       // Deposit Successful on-chain
-      addNotification('success', 'Deposit Successful ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`);
+      addNotification('success', 'Deposit Successful ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`, txHash);
       setAmount('');
       fetchVaultData();
       setTimeout(() => fetchVaultData(), 1000);
@@ -346,7 +346,7 @@ export default function VaultView() {
       setProcessStep('Waiting for confirmation…');
       await waitForTx(txHash);
 
-      addNotification('success', 'Withdrawal Successful ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`);
+      addNotification('success', 'Withdrawal Successful ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`, txHash);
       setAmount('');
       fetchVaultData();
       setTimeout(() => fetchVaultData(), 1000);
