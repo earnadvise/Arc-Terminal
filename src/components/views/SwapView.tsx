@@ -121,8 +121,8 @@ export default function SwapView() {
   const priceImpact = parsed * fromPrice > 5000 ? 0.12 : parsed * fromPrice > 1000 ? 0.05 : 0.01;
   const fee = parsed * fromPrice * 0.003; // 0.3%
 
-  const fromBalance: number = (balances as any)[fromToken] ?? 5000;
-  const toBalance:   number = (balances as any)[toToken]   ?? 2500;
+  const fromBalance: number = (balances as any)[fromToken] ?? 0;
+  const toBalance:   number = (balances as any)[toToken]   ?? 0;
 
   const flip = () => {
     setFromToken(toToken);

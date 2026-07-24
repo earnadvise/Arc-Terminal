@@ -426,10 +426,10 @@ export default function PerpetualsView() {
             />
             <button
               onClick={() => {
-                const available = balances.USDC > 0 ? balances.USDC : 5000;
+                const available = balances.USDC;
                 const maxPositionUSD = available * leverage * 0.99;
                 const maxSize = maxPositionUSD / parsedPrice;
-                setInputAmount(maxSize.toFixed(4));
+                setInputAmount(maxSize > 0 ? maxSize.toFixed(4) : '0');
               }}
               className="absolute right-2 px-2 py-0.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-bold text-white rounded transition-colors cursor-pointer"
             >
@@ -490,7 +490,7 @@ export default function PerpetualsView() {
         {/* Available */}
         <div className="flex justify-between items-center text-[10px] bg-[#0d0d12] border border-[#13131a] px-3 py-2 rounded-lg mb-3">
           <span className="text-[#6e6e7f]">Available Margin:</span>
-          <span className="number-mono font-bold text-white">${(balances.USDC > 0 ? balances.USDC : 5000).toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+          <span className="number-mono font-bold text-white">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
         </div>
 
         {/* Action */}
