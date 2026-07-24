@@ -436,8 +436,8 @@ export default function SwapView() {
         <div className="flex items-start gap-3 p-4 bg-[#3b82f6]/5 border border-[#3b82f6]/15 rounded-xl text-xs text-[#8e8e9f]">
           <Info size={16} className="text-[#3b82f6] shrink-0 mt-0.5" />
           <p>
-            Arc Terminal Swap uses a simulated AMM on <span className="text-white font-medium">Arc Testnet</span>. All tokens are testnet-only with zero real-world value.
-            Claim free tokens from the <button onClick={claimFaucet} className="text-[#8b5cf6] hover:underline">Faucet</button> to start swapping.
+            Arc Terminal Swap utilizes automated liquidity pools on <span className="text-white font-medium">Arc Testnet</span>.
+            Claim tokens from the <button onClick={claimFaucet} className="text-[#8b5cf6] hover:underline font-bold">Faucet</button> to start swapping.
           </p>
         </div>
 

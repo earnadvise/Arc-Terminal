@@ -198,7 +198,7 @@ export default function LandingView() {
             Ready to trade with next-gen speed?
           </h2>
           <p className="text-xs sm:text-sm text-[#8e8e9f] max-w-lg mx-auto font-semibold">
-            Connect your wallet, grab mock assets from the faucet, and execute your first swap or leverage order in seconds.
+            Connect your wallet, claim assets from the faucet, and execute your first swap or leverage order in seconds.
           </p>
 
           <div className="flex justify-center">

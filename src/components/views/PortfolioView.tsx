@@ -186,7 +186,7 @@ export default function PortfolioView() {
                   </svg>
                 </div>
                 <div className="text-[10px] text-[#6e6e7f] text-center italic">
-                  * Performance simulated based on 7-day testnet activity metrics
+                  * 7-day performance analytics
                 </div>
               </div>
             ) : (
@@ -287,7 +287,7 @@ export default function PortfolioView() {
           <div className="flex gap-2 items-start p-3 bg-amber-500/5 border border-amber-500/15 rounded-lg mt-4">
             <ShieldAlert size={16} className="text-amber-500 shrink-0 mt-0.5" />
             <p className="text-[10px] text-[#8e8e9f] leading-normal">
-              On Arc Testnet, if margin usage exceeds 100%, your open positions will be closed via simulated liquidation. Claim Faucet tokens to refill margin.
+              On Arc Testnet, if margin usage exceeds 100%, your open positions will be closed via liquidation. Claim Faucet tokens to refill margin.
             </p>
           </div>
         </div>

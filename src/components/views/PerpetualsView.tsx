@@ -111,7 +111,7 @@ export default function PerpetualsView() {
           { label: '24h Trading Volume', value: `$${totalVolume.toLocaleString()}`, change: '+14.2%', desc: 'Arc Testnet cumulative', isPositive: true },
           { label: 'Aggregate Open Interest', value: `$${totalOI.toLocaleString()}`, change: '+8.4%', desc: 'Active leveraged contracts', isPositive: true },
           { label: 'Funding Settled (Avg)', value: `${(averageFunding * 100).toFixed(4)}%`, desc: 'Next payment countdown', highlight: countdown, isClock: true },
-          { label: 'Testnet liquidations (24h)', value: '$1,845,900', change: '-45.1%', desc: 'Mock margin liquidations', isPositive: false }
+          { label: 'Testnet liquidations (24h)', value: '$1,845,900', change: '-45.1%', desc: 'Active margin liquidations', isPositive: false }
         ].map((stat, i) => (
           <div key={i} className="bg-[#09090c] border border-[#13131a] rounded-xl p-4 flex flex-col justify-between shadow-lg relative overflow-hidden">
             <div className="text-xs text-[#8e8e9f] font-semibold">{stat.label}</div>
