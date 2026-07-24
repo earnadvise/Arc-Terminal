@@ -5,7 +5,7 @@ import { useAppState, AppTab } from '@/context/useAppState';
 import {
   Wallet, Coins, ChevronDown, LogOut, ShieldAlert,
   BarChart2, Activity, Compass, History as HistIcon,
-  ArrowLeftRight, Network
+  ArrowLeftRight, Network, Vault as VaultIcon, Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,6 +23,8 @@ export default function Navbar() {
     { id: 'Markets',    label: 'Markets',    icon: <BarChart2 size={15} /> },
     { id: 'Perpetuals', label: 'Perpetuals', icon: <Activity size={15} /> },
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
+    { id: 'Vault',      label: 'Arc Vault',  icon: <VaultIcon size={15} /> },
+    { id: 'Agents',     label: 'Arc AI',     icon: <Bot size={15} /> },
     { id: 'Portfolio',  label: 'Portfolio',  icon: <Compass size={15} /> },
     { id: 'History',    label: 'History',    icon: <HistIcon size={15} /> },
   ];

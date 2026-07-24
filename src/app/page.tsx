@@ -10,6 +10,8 @@ import PerpetualsView from '@/components/views/PerpetualsView';
 import PortfolioView  from '@/components/views/PortfolioView';
 import HistoryView    from '@/components/views/HistoryView';
 import SwapView       from '@/components/views/SwapView';
+import VaultView      from '@/components/views/VaultView';
+import AgentsView     from '@/components/views/AgentsView';
 
 import { Info, CheckCircle2, AlertTriangle, XCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -22,6 +24,8 @@ export default function Home() {
       case 'Markets':    return <MarketsView />;
       case 'Perpetuals': return <PerpetualsView />;
       case 'Swap':       return <SwapView />;
+      case 'Vault':      return <VaultView />;
+      case 'Agents':     return <AgentsView />;
       case 'Portfolio':  return <PortfolioView />;
       case 'History':    return <HistoryView />;
       default:           return <MarketsView />;
