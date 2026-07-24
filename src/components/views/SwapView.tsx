@@ -36,13 +36,11 @@ function TokenSelector({
   onChange,
   exclude,
   label,
-  prices,
 }: {
   selected: string;
   onChange: (s: string) => void;
   exclude: string;
   label: string;
-  prices: Record<string, number>;
 }) {
   const [open, setOpen] = useState(false);
   const token = TOKENS.find(t => t.symbol === selected)!;
@@ -89,9 +87,6 @@ function TokenSelector({
                 <div>
                   <div className="text-xs font-bold text-white">{t.symbol}</div>
                   <div className="text-[9px] text-[#6e6e7f]">{t.name}</div>
-                </div>
-                <div className="ml-auto text-[10px] number-mono text-[#8e8e9f]">
-                  ${(prices[t.symbol] ?? 0).toLocaleString(undefined, { maximumFractionDigits: 4 })}
                 </div>
               </button>
             ))}
@@ -357,7 +352,7 @@ export default function SwapView() {
           {/* From Box */}
           <div className="bg-[#0d0d12] border border-[#13131a] hover:border-[#1e1e2c] rounded-xl p-4 transition-colors">
             <div className="flex items-center justify-between mb-3">
-              <TokenSelector selected={fromToken} onChange={setFromToken} exclude={toToken} label="You Pay" prices={prices} />
+              <TokenSelector selected={fromToken} onChange={setFromToken} exclude={toToken} label="You Pay" />
               <div className="text-right">
                 <div className="text-[10px] text-[#6e6e7f] mb-1">
                   Balance: <span className="number-mono text-[#8e8e9f]">{fromBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
@@ -374,9 +369,6 @@ export default function SwapView() {
               placeholder="0.00"
               className="w-full bg-transparent text-2xl font-black text-white placeholder-[#2a2a3a] outline-none number-mono"
             />
-            <div className="text-xs text-[#6e6e7f] number-mono mt-1">
-              ≈ ${(parsed * fromPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
-            </div>
           </div>
 
           {/* Flip Button */}
@@ -392,16 +384,13 @@ export default function SwapView() {
           {/* To Box */}
           <div className="bg-[#0d0d12] border border-[#13131a] rounded-xl p-4">
             <div className="flex items-center justify-between mb-3">
-              <TokenSelector selected={toToken} onChange={setToToken} exclude={fromToken} label="You Receive" prices={prices} />
+              <TokenSelector selected={toToken} onChange={setToToken} exclude={fromToken} label="You Receive" />
               <div className="text-right text-[10px] text-[#6e6e7f]">
                 Balance: <span className="number-mono text-[#8e8e9f]">{toBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })}</span>
               </div>
             </div>
             <div className={`text-2xl font-black number-mono ${toAmount > 0 ? 'text-[#10b981]' : 'text-[#2a2a3a]'}`}>
               {toAmount > 0 ? toAmount.toLocaleString(undefined, { maximumFractionDigits: toToken_?.decimals ?? 4 }) : '0.00'}
-            </div>
-            <div className="text-xs text-[#6e6e7f] number-mono mt-1">
-              ≈ ${(toAmount * toPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
             </div>
           </div>
 
@@ -413,31 +402,8 @@ export default function SwapView() {
               className="bg-[#0d0d12] border border-[#13131a] rounded-xl p-3.5 space-y-2 text-xs overflow-hidden"
             >
               <div className="flex justify-between text-[#8e8e9f]">
-                <span>Rate</span>
-                <span className="number-mono text-white">
-                  1 {fromToken} = {(fromPrice / toPrice).toLocaleString(undefined, { maximumFractionDigits: 6 })} {toToken}
-                </span>
-              </div>
-              <div className="flex justify-between text-[#8e8e9f]">
-                <span>Price Impact</span>
-                <span className={`number-mono font-semibold ${priceImpact > 0.1 ? 'text-[#ef4444]' : 'text-[#10b981]'}`}>
-                  ~{(priceImpact).toFixed(2)}%
-                </span>
-              </div>
-              <div className="flex justify-between text-[#8e8e9f]">
-                <span>LP Fee (0.30%)</span>
-                <span className="number-mono text-white">${fee.toFixed(4)} USDC</span>
-              </div>
-              <div className="flex justify-between text-[#8e8e9f]">
                 <span>Max Slippage</span>
                 <span className="number-mono text-[#8b5cf6]">{slippage}%</span>
-              </div>
-              <div className="h-[1px] bg-[#13131a]" />
-              <div className="flex justify-between font-semibold">
-                <span className="text-[#8e8e9f]">Min. Received</span>
-                <span className="number-mono text-white">
-                  {(toAmount * (1 - parseFloat(slippage) / 100)).toLocaleString(undefined, { maximumFractionDigits: toToken_?.decimals ?? 4 })} {toToken}
-                </span>
               </div>
             </motion.div>
           )}
@@ -483,49 +449,12 @@ export default function SwapView() {
         {/* Powered by */}
         <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#6e6e7f]">
           <Zap size={11} className="text-[#8b5cf6]" />
-          Powered by Arc Testnet AMM · 0.30% LP Fee
+          Powered by Arc Testnet AMM
         </div>
       </div>
 
       {/* ── RIGHT: INFO PANELS ──────────────────────────────────────── */}
       <div className="flex-1 space-y-5">
-
-        {/* Live Price Grid */}
-        <div className="bg-[#09090c] border border-[#13131a] rounded-2xl p-5 shadow-xl">
-          <div className="flex items-center gap-2 mb-4 pb-3 border-b border-[#13131a]">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <h3 className="text-xs font-bold text-white uppercase tracking-wide">Live Token Prices</h3>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3">
-            {TOKENS.map(t => {
-              const price = prices[t.symbol] ?? 0;
-              const change = change24h[t.symbol] ?? 0;
-              return (
-                <div
-                  key={t.symbol}
-                  onClick={() => { setFromToken('USDC'); setToToken(t.symbol === 'USDC' ? 'ETH' : t.symbol); }}
-                  className="bg-[#0d0d12] border border-[#13131a] hover:border-[#8b5cf6]/40 rounded-xl p-3 cursor-pointer transition-all hover:bg-[#13131c]/50 group"
-                >
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <span
-                      className="w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-black text-white"
-                      style={{ backgroundColor: t.color + '33' }}
-                    >
-                      {t.symbol.slice(0, 2)}
-                    </span>
-                    <span className="text-xs font-bold text-white group-hover:text-[#8b5cf6] transition-colors">{t.symbol}</span>
-                  </div>
-                  <div className="text-sm font-bold text-white number-mono">
-                    ${price.toLocaleString(undefined, { maximumFractionDigits: t.symbol === 'BTC' || t.symbol === 'XAU' ? 2 : 4 })}
-                  </div>
-                  <div className={`text-[10px] font-semibold number-mono mt-0.5 ${change >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                    {change >= 0 ? '+' : ''}{change.toFixed(2)}%
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
 
         {/* Recent Swaps */}
         <div className="bg-[#09090c] border border-[#13131a] rounded-2xl p-5 shadow-xl">
