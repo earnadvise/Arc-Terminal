@@ -10,7 +10,13 @@ import {
   SWAP_ROUTER_ADDRESS,
   getPoolFee,
   encodeExactInputSingle,
-  toWei
+  encodeApprove,
+  checkAllowance,
+  waitForTransaction,
+  toWei,
+  MAX_UINT256,
+  getPoolExchangeRate,
+  calculateMinOutput
 } from '@/lib/swapRouter';
 
 const TOKENS = [
@@ -164,52 +170,81 @@ export default function SwapView() {
     let realTxHash = '';
 
     if (eth && walletConnected) {
-      addNotification('info', 'Confirm Swap', 'Please confirm the Synthra V3 swap in your Web3 wallet...');
       try {
+        const accounts = await eth.request({ method: 'eth_requestAccounts' });
+        const userAddr = accounts[0];
         const tokenIn = ARC_TOKENS[fromToken];
         const tokenOut = ARC_TOKENS[toToken];
-        const userAddr = eth.selectedAddress || walletAddress;
 
-        if (tokenIn && tokenOut) {
-          const fee = getPoolFee(fromToken, toToken);
-          const amountInWei = toWei(parsed, tokenIn.decimals);
-          const minOutWei = toWei(toAmount * 0.99, tokenOut.decimals);
-
-          const swapData = encodeExactInputSingle(
-            tokenIn.address,
-            tokenOut.address,
-            fee,
-            userAddr,
-            amountInWei,
-            minOutWei,
-            BigInt(0)
-          );
-
-          realTxHash = await eth.request({
-            method: 'eth_sendTransaction',
-            params: [{
-              from: userAddr,
-              to: SWAP_ROUTER_ADDRESS,
-              data: swapData
-            }]
-          });
-        } else {
-          realTxHash = await eth.request({
-            method: 'eth_sendTransaction',
-            params: [{
-              from: userAddr,
-              to: SWAP_ROUTER_ADDRESS,
-              value: '0x0'
-            }]
-          });
+        if (!tokenIn || !tokenOut) {
+          addNotification('error', 'Unsupported Pair', `Token pair ${fromToken}/${toToken} is not supported on Synthra V3.`);
+          setIsSwapping(false);
+          return;
         }
+
+        const amountInWei = toWei(parsed, tokenIn.decimals);
+
+        // ── Step 1: Check & Approve ERC-20 allowance ──
+        addNotification('info', 'Checking Allowance', `Checking ${fromToken} allowance for Synthra V3 Router...`);
+        const currentAllowance = await checkAllowance(eth, tokenIn.address, userAddr, SWAP_ROUTER_ADDRESS);
+
+        if (currentAllowance < amountInWei) {
+          addNotification('info', 'Approval Required', `Approving ${fromToken} for Synthra V3 Router. Please confirm in your wallet...`);
+          const approveData = encodeApprove(SWAP_ROUTER_ADDRESS, MAX_UINT256);
+          const approveTxHash = await eth.request({
+            method: 'eth_sendTransaction',
+            params: [{
+              from: userAddr,
+              to: tokenIn.address,
+              data: approveData
+            }]
+          });
+          addNotification('info', 'Approval Pending', `Waiting for approval tx to be mined...`);
+          await waitForTransaction(eth, approveTxHash);
+          addNotification('success', 'Approved', `${fromToken} approved for Synthra V3 Router.`);
+        }
+
+        // ── Step 2: Execute Swap via exactInputSingle ──
+        addNotification('info', 'Confirm Swap', 'Please confirm the Synthra V3 swap in your wallet...');
+        const fee = getPoolFee(fromToken, toToken);
+
+        // Use 1% slippage on the expected output
+        const minOutWei = toWei(toAmount * 0.99, tokenOut.decimals);
+
+        const swapData = encodeExactInputSingle(
+          tokenIn.address,
+          tokenOut.address,
+          fee,
+          userAddr,
+          amountInWei,
+          minOutWei,
+          BigInt(0)
+        );
+
+        realTxHash = await eth.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: userAddr,
+            to: SWAP_ROUTER_ADDRESS,
+            data: swapData
+          }]
+        });
+
+        // ── Step 3: Wait for swap tx to be mined ──
+        addNotification('info', 'Swap Pending', 'Waiting for swap transaction to be confirmed on-chain...');
+        await waitForTransaction(eth, realTxHash);
+
       } catch (err: any) {
         console.error('Swap execution error:', err);
+        const msg = err?.message || err?.data?.message || 'Transaction was rejected or failed.';
+        addNotification('error', 'Swap Failed', msg);
         setIsSwapping(false);
         return;
       }
     } else {
-      await new Promise(r => setTimeout(r, 600));
+      addNotification('warning', 'Wallet Not Connected', 'Connect your wallet to execute on-chain swaps.');
+      setIsSwapping(false);
+      return;
     }
 
     setIsSwapping(false);
