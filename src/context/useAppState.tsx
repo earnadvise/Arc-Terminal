@@ -12,7 +12,7 @@ import {
   initialHistory
 } from '../utils/mockData';
 
-export type AppTab = 'Markets' | 'Perpetuals' | 'Swap' | 'Vault' | 'Agents' | 'Portfolio' | 'History';
+export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Agents' | 'Portfolio' | 'History';
 
 const getPrecision = (symbol: string): number => {
   const s = symbol.toLowerCase();
@@ -109,7 +109,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   // Navigation & Markets
-  const [activeTab, setActiveTab] = useState<AppTab>('Markets');
+  const [activeTab, setActiveTab] = useState<AppTab>('Home');
   const [markets, setMarkets] = useState<Market[]>(initialMarkets);
   const [activePairSymbol, setActivePairSymbol] = useState<string>('BTC-PERP');
   const [timeframe, setTimeframe] = useState<string>('1h');

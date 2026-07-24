@@ -5,7 +5,7 @@ import { useAppState } from '@/context/useAppState';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
-import MarketsView    from '@/components/views/MarketsView';
+import LandingView    from '@/components/views/LandingView';
 import PerpetualsView from '@/components/views/PerpetualsView';
 import PortfolioView  from '@/components/views/PortfolioView';
 import HistoryView    from '@/components/views/HistoryView';
@@ -21,14 +21,14 @@ export default function Home() {
 
   const renderView = () => {
     switch (activeTab) {
-      case 'Markets':    return <MarketsView />;
+      case 'Home':       return <LandingView />;
       case 'Perpetuals': return <PerpetualsView />;
       case 'Swap':       return <SwapView />;
       case 'Vault':      return <VaultView />;
       case 'Agents':     return <AgentsView />;
       case 'Portfolio':  return <PortfolioView />;
       case 'History':    return <HistoryView />;
-      default:           return <MarketsView />;
+      default:           return <LandingView />;
     }
   };
 

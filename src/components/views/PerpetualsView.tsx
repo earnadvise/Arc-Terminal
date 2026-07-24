@@ -99,7 +99,7 @@ export default function PerpetualsView() {
 
   const handleMoverClick = (symbol: string) => {
     setActivePairBySymbol(symbol);
-    setActiveTab('Markets');
+    setActiveTab('Perpetuals');
   };
 
   return (

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useAppState, AppTab } from '@/context/useAppState';
 import {
   Wallet, Coins, ChevronDown, LogOut, ShieldAlert,
-  BarChart2, Activity, Compass, History as HistIcon,
+  Home as HomeIcon, Activity, Compass, History as HistIcon,
   ArrowLeftRight, Network, Vault as VaultIcon, Bot
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -20,7 +20,7 @@ export default function Navbar() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const navItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'Markets',    label: 'Markets',    icon: <BarChart2 size={15} /> },
+    { id: 'Home',       label: 'Home',       icon: <HomeIcon size={15} /> },
     { id: 'Perpetuals', label: 'Perpetuals', icon: <Activity size={15} /> },
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
     { id: 'Vault',      label: 'Arc Vault',  icon: <VaultIcon size={15} /> },
@@ -36,7 +36,7 @@ export default function Navbar() {
         <div className="flex items-center gap-8">
           <div
             className="flex items-center gap-2 cursor-pointer group"
-            onClick={() => setActiveTab('Markets')}
+            onClick={() => setActiveTab('Home')}
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#3b82f6] to-[#8b5cf6] flex items-center justify-center font-bold text-sm tracking-widest shadow-[0_0_15px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform duration-200">
               A
