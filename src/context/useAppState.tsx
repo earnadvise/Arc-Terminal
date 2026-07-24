@@ -435,6 +435,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           setWalletConnected(true);
           setWalletAddress(fullAddr);
           setWalletType(type);
+          setBalances(prev => ({
+            USDC: prev.USDC > 0 ? prev.USDC : 5000,
+            walletUSDC: prev.walletUSDC > 0 ? prev.walletUSDC : 5000,
+            BTC: prev.BTC > 0 ? prev.BTC : 0.5,
+            ETH: prev.ETH > 0 ? prev.ETH : 2.5,
+            SOL: prev.SOL > 0 ? prev.SOL : 15,
+            ARC: prev.ARC > 0 ? prev.ARC : 100,
+            EURC: prev.EURC > 0 ? prev.EURC : 2500,
+            USDT: prev.USDT > 0 ? prev.USDT : 5000
+          }));
+          refreshOnChainBalances(fullAddr);
           addNotification('success', 'Wallet Connected', `Successfully connected ${type} (${truncated}) on Arc Testnet.`);
 
           // Optionally prompt user to switch to Arc Testnet (Chain ID 0x4CF5D2 = 5042002)
