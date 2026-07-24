@@ -6,22 +6,15 @@ import { ArrowUpDown, ChevronDown, Settings, Info, Zap, CircleAlert, RefreshCw }
 import { motion, AnimatePresence } from 'framer-motion';
 
 const TOKENS = [
-  { symbol: 'USDC',  name: 'USD Coin',       decimals: 2,  color: '#8b5cf6' },
-  { symbol: 'BTC',   name: 'Bitcoin',         decimals: 6,  color: '#f59e0b' },
-  { symbol: 'ETH',   name: 'Ethereum',        decimals: 6,  color: '#3b82f6' },
-  { symbol: 'SOL',   name: 'Solana',          decimals: 4,  color: '#10b981' },
-  { symbol: 'XAU',   name: 'Gold (Synth)',    decimals: 2,  color: '#fbbf24' },
-  { symbol: 'XAG',   name: 'Silver (Synth)',  decimals: 4,  color: '#94a3b8' },
+  { symbol: 'USDC',  name: 'USD Coin',   decimals: 2, color: '#8b5cf6' },
+  { symbol: 'EURC',  name: 'Euro Coin',  decimals: 2, color: '#3b82f6' },
+  { symbol: 'USDT',  name: 'Tether USD', decimals: 2, color: '#10b981' },
 ];
 
-// Mock oracle prices against USDC
 const PRICES: Record<string, number> = {
-  USDC: 1,
-  BTC:  67425.50,
-  ETH:  3482.40,
-  SOL:  146.85,
-  XAU:  2322.80,
-  XAG:  29.125,
+  USDC: 1.0,
+  EURC: 1.085,
+  USDT: 1.0,
 };
 
 function TokenSelector({
@@ -99,7 +92,7 @@ export default function SwapView() {
   const { walletConnected, balances, addNotification, claimFaucet, markets } = useAppState();
 
   const [fromToken, setFromToken] = useState('USDC');
-  const [toToken, setToToken]     = useState('ETH');
+  const [toToken, setToToken]     = useState('EURC');
   const [fromAmount, setFromAmount] = useState('');
   const [slippage, setSlippage]     = useState('0.5');
   const [showSettings, setShowSettings] = useState(false);

@@ -126,7 +126,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [walletType, setWalletType] = useState<string>('');
   const [balances, setBalances] = useState({
-    USDC: 5000,
+    USDC: 0,
     walletUSDC: 0,
     BTC: 0,
     ETH: 0,
@@ -216,10 +216,23 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       });
       const vaultUSDC = formatOnChainBalance(vaultBalRes);
 
+      // 4. Get native EVM ARC token balance
+      let arcNativeBal = 0;
+      try {
+        const nativeHex = await eth.request({
+          method: 'eth_getBalance',
+          params: [address, 'latest']
+        });
+        arcNativeBal = formatOnChainBalance(nativeHex);
+      } catch (e) {
+        console.warn('Native balance fetch failed:', e);
+      }
+
       setBalances(prev => ({
         ...prev,
-        USDC: vaultUSDC,      // Vault margin balance
-        walletUSDC: walletUSDC // Wallet balance
+        USDC: vaultUSDC,       // Vault margin balance
+        walletUSDC: walletUSDC,// Wallet USDC balance
+        ARC: arcNativeBal      // Native EVM ARC balance
       }));
     } catch (e) {
       console.error('Error refreshing on-chain balances:', e);

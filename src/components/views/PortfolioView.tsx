@@ -16,24 +16,20 @@ export default function PortfolioView() {
 
   const [activeChartTab, setActiveChartTab] = useState<'Equity' | 'Allocation'>('Equity');
 
-  // Calculates total assets values
-  const btcPrice = 67425.50;
-  const ethPrice = 3482.40;
-  const solPrice = 146.85;
-  const arcPrice = 1.2450;
+  const eurcPrice = 1.085;
+  const arcPrice  = 1.245;
 
   const assetDetails = [
-    { name: 'USDC', symbol: 'USDC', amount: balances.USDC, price: 1.0, value: balances.USDC, color: '#8b5cf6' },
-    { name: 'Bitcoin', symbol: 'BTC', amount: balances.BTC, price: btcPrice, value: balances.BTC * btcPrice, color: '#f59e0b' },
-    { name: 'Ethereum', symbol: 'ETH', amount: balances.ETH, price: ethPrice, value: balances.ETH * ethPrice, color: '#3b82f6' },
-    { name: 'Solana', symbol: 'SOL', amount: balances.SOL, price: solPrice, value: balances.SOL * solPrice, color: '#10b981' },
-    { name: 'Arc Native', symbol: 'ARC', amount: balances.ARC, price: arcPrice, value: balances.ARC * arcPrice, color: '#ec4899' },
+    { name: 'USD Coin',   symbol: 'USDC', amount: balances.USDC, price: 1.0,       value: balances.USDC,            color: '#8b5cf6' },
+    { name: 'Euro Coin',  symbol: 'EURC', amount: balances.EURC, price: eurcPrice, value: balances.EURC * eurcPrice, color: '#3b82f6' },
+    { name: 'Tether USD', symbol: 'USDT', amount: balances.USDT, price: 1.0,       value: balances.USDT,            color: '#10b981' },
+    { name: 'Arc Native', symbol: 'ARC',  amount: balances.ARC,  price: arcPrice,  value: balances.ARC * arcPrice,  color: '#ec4899' },
   ];
 
   const totalPositionsValue = positions.reduce((acc, pos) => acc + (pos.size * pos.markPrice), 0);
   const totalMarginLocked = positions.reduce((acc, pos) => acc + pos.margin, 0);
   const unrealizedPnL = positions.reduce((acc, pos) => acc + pos.unrealizedPnl, 0);
-  const realizedPnL = 1245.50; // Mock historical realized profits
+  const realizedPnL = 0.0;
   
   // Total balance = Collateral Value + Unrealized PnL
   const collateralValue = assetDetails.reduce((acc, asset) => acc + asset.value, 0);
@@ -230,7 +226,7 @@ export default function PortfolioView() {
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#09090c] rounded-full m-4 border border-[#13131a]">
                     <span className="text-[10px] text-[#8e8e9f] font-bold uppercase tracking-widest">Assets</span>
-                    <span className="text-xs font-bold text-white number-mono">5 Tokens</span>
+                    <span className="text-xs font-bold text-white number-mono">4 Tokens</span>
                   </div>
                 </div>
               </div>
