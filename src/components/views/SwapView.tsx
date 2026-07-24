@@ -208,16 +208,15 @@ export default function SwapView() {
         addNotification('info', 'Confirm Swap', 'Please confirm the Synthra V3 swap in your wallet...');
         const fee = getPoolFee(fromToken, toToken);
 
-        // Use 1% slippage on the expected output
-        const minOutWei = toWei(toAmount * 0.99, tokenOut.decimals);
-
+        // Use amountOutMinimum = 0 for testnet (pool price may differ from UI display price)
+        // This prevents reverts when the on-chain pool rate diverges from the UI estimate
         const swapData = encodeExactInputSingle(
           tokenIn.address,
           tokenOut.address,
           fee,
           userAddr,
           amountInWei,
-          minOutWei,
+          BigInt(0),  // amountOutMinimum = 0 (testnet, accept any output)
           BigInt(0)
         );
 
