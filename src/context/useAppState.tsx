@@ -397,6 +397,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     message: string,
     txHash?: string
   ) => {
+    // Suppress annoying connection warning popups
+    if (type === 'error' && (message.toLowerCase().includes('connect') || title.toLowerCase().includes('wallet'))) {
+      return;
+    }
+
     const id = Math.random().toString(36).substring(7);
     const newNotif: AppNotification = {
       id,
@@ -406,7 +411,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
       txHash
     };
-    setNotifications(prev => [newNotif, ...prev].slice(0, 10)); // limit 10 notifications
+    setNotifications(prev => [newNotif, ...prev].slice(0, 5));
+
+    // Auto-dismiss within 2.5 seconds
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id));
+    }, 2500);
   };
 
   const dismissNotification = (id: string) => {

@@ -135,15 +135,11 @@ export default function SwapView() {
   };
 
   const handleSwap = async () => {
-    if (!walletConnected) {
-      addNotification('error', 'Wallet Required', 'Connect your wallet to swap tokens on Arc Testnet.');
-      return;
-    }
     if (parsed <= 0) {
       addNotification('warning', 'Invalid Amount', 'Enter an amount to swap.');
       return;
     }
-    if (parsed > fromBalance) {
+    if (fromBalance > 0 && parsed > fromBalance) {
       addNotification('error', 'Insufficient Balance', `You only have ${fromBalance} ${fromToken} available.`);
       return;
     }
@@ -151,29 +147,26 @@ export default function SwapView() {
     setIsSwapping(true);
 
     const eth = (window as any).ethereum;
-    let txHash = '';
+    let realTxHash = '';
 
-    if (eth) {
+    if (eth && walletConnected) {
       addNotification('info', 'Confirm Swap', 'Please confirm the swap transaction in your Web3 wallet...');
       try {
-        // Encode Swap transaction data
         const swapData = '0x38ed1739' + '0'.repeat(64);
-        txHash = await eth.request({
+        realTxHash = await eth.request({
           method: 'eth_sendTransaction',
           params: [{
-            from: eth.selectedAddress,
+            from: eth.selectedAddress || walletConnected,
             to: '0x503B3910ff21948464AA92BaB16a6200848bD11B',
             data: swapData
           }]
         });
       } catch (err: any) {
         setIsSwapping(false);
-        addNotification('error', 'Swap Cancelled', err.message || 'Transaction rejected in wallet.');
         return;
       }
     } else {
-      await new Promise(r => setTimeout(r, 1200));
-      txHash = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
+      await new Promise(r => setTimeout(r, 600));
     }
 
     setIsSwapping(false);
@@ -182,18 +175,25 @@ export default function SwapView() {
 
     addNotification(
       'success',
-      'Swap Executed On-Chain',
+      'Swap Executed',
       `Swapped ${parsed} ${fromToken} → ${received} ${toToken}`,
-      txHash
+      realTxHash || undefined
     );
 
-    setTxModalData({
-      hash: txHash,
-      from: fromToken,
-      to: toToken,
-      fromAmt: parsed,
-      toAmt: received
-    });
+    if (realTxHash) {
+      setTxModalData({
+        hash: realTxHash,
+        from: fromToken,
+        to: toToken,
+        fromAmt: parsed,
+        toAmt: received
+      });
+
+      // Auto dismiss modal popup within 3 seconds
+      setTimeout(() => {
+        setTxModalData(null);
+      }, 3000);
+    }
 
     setRecentSwaps(prev => [
       { from: fromToken, to: toToken, fromAmt: parsed, toAmt: received, time: new Date().toLocaleTimeString() },
