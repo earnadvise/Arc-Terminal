@@ -102,16 +102,22 @@ export default function SwapView() {
 
   // Derive prices and 24h change from global markets state
   const prices: Record<string, number> = {
-    USDC: 1,
+    USDC: 1.0,
+    EURC: 1.085,
+    USDT: 1.0,
   };
   const change24h: Record<string, number> = {
-    USDC: 0,
+    USDC: 0.0,
+    EURC: 0.15,
+    USDT: 0.02,
   };
 
   markets.forEach(m => {
     const tokenSymbol = m.symbol.split('-')[0].toUpperCase();
-    prices[tokenSymbol] = m.lastPrice;
-    change24h[tokenSymbol] = m.change24h;
+    if (m.lastPrice > 0) {
+      prices[tokenSymbol] = m.lastPrice;
+      change24h[tokenSymbol] = m.change24h;
+    }
   });
 
   const fromPrice = prices[fromToken] ?? 1;
@@ -474,15 +480,6 @@ export default function SwapView() {
               No swaps yet. Execute your first swap above.
             </div>
           )}
-        </div>
-
-        {/* Info Card */}
-        <div className="flex items-start gap-3 p-4 bg-[#3b82f6]/5 border border-[#3b82f6]/15 rounded-xl text-xs text-[#8e8e9f]">
-          <Info size={16} className="text-[#3b82f6] shrink-0 mt-0.5" />
-          <p>
-            Arc Terminal Swap utilizes automated liquidity pools on <span className="text-white font-medium">Arc Testnet</span>.
-            Claim tokens from the <button onClick={claimFaucet} className="text-[#8b5cf6] hover:underline font-bold">Faucet</button> to start swapping.
-          </p>
         </div>
 
       </div>
