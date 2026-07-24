@@ -442,8 +442,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const connectWallet = async (type: string) => {
-    // Try to connect to real browser wallet via window.ethereum
-    const eth = (window as any).ethereum;
+    // Detect Rabby or standard EVM provider
+    const eth = (window as any).rabby || (window as any).ethereum;
     if (eth) {
       try {
         const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' });
@@ -455,32 +455,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           setWalletType(type);
           refreshOnChainBalances(fullAddr);
           addNotification('success', 'Wallet Connected', `Connected ${type} (${truncated}) on Arc Testnet.`);
-
-          // Optionally prompt user to switch to Arc Testnet (Chain ID 0x4CF5D2 = 5042002)
-          try {
-            await eth.request({
-              method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x4CF5D2' }],
-            });
-          } catch (switchErr: any) {
-            // If Arc Testnet isn't added to the wallet, add it
-            if (switchErr.code === 4902) {
-              try {
-                await eth.request({
-                  method: 'wallet_addEthereumChain',
-                  params: [{
-                    chainId: '0x4CF5D2',
-                    chainName: 'Arc Testnet',
-                    nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
-                    rpcUrls: ['https://rpc.testnet.arc.network'],
-                    blockExplorerUrls: ['https://testnet.arcscan.app'],
-                  }],
-                });
-              } catch {
-                // User rejected adding network
-              }
-            }
-          }
           return;
         }
       } catch (err) {
@@ -489,59 +463,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // Fallback: no browser wallet detected
-    addNotification('error', 'No Wallet Found', 'No browser wallet detected. Please install MetaMask or Rabby to connect.');
+    addNotification('error', 'No Wallet Found', `No ${type} detected. Please install ${type} to connect.`);
   };
 
   const disconnectWallet = () => {
-    addNotification('info', 'Wallet Disconnected', `Disconnected ${walletType} wallet.`);
+    addNotification('info', 'Wallet Disconnected', `Disconnected wallet.`);
     setWalletConnected(false);
     setWalletAddress('');
     setWalletType('');
   };
 
-  const claimFaucet = async () => {
-    const eth = (window as any).ethereum;
-    if (!eth || !walletConnected) {
-      addNotification('warning', 'Wallet Required', 'Please connect your Web3 wallet to claim Arc Testnet Faucet tokens.');
-      return;
+  const claimFaucet = () => {
+    if (typeof window !== 'undefined') {
+      window.open('https://faucet.circle.com/', '_blank');
     }
-
-    addNotification('info', 'Faucet Transaction', 'Please confirm the Faucet transaction in your Web3 wallet...');
-
-    try {
-      const txHash = await eth.request({
-        method: 'eth_sendTransaction',
-        params: [{
-          from: eth.selectedAddress || walletAddressRef.current,
-          to: '0x503B3910ff21948464AA92BaB16a6200848bD11B',
-          value: '0x0'
-        }]
-      });
-
-      if (txHash) {
-        setBalances(prev => ({
-          ...prev,
-          USDC: (prev.USDC || 0) + 1000,
-          EURC: (prev.EURC || 0) + 500,
-          USDT: (prev.USDT || 0) + 1000,
-          ARC: (prev.ARC || 0) + 10
-        }));
-
-        addNotification(
-          'success',
-          'Faucet Transaction Confirmed',
-          'Claimed 1,000 USDC Faucet tokens on Arc Testnet.',
-          txHash
-        );
-
-        setTimeout(() => {
-          refreshOnChainBalances(eth.selectedAddress || walletAddressRef.current);
-        }, 2000);
-      }
-    } catch (err: any) {
-      console.warn('Faucet transaction error:', err);
-    }
+    addNotification('info', 'Circle Testnet Faucet', 'Opened Circle Faucet (faucet.circle.com) to request testnet USDC.');
   };
 
   const placeOrder = async (
