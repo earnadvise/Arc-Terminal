@@ -84,7 +84,7 @@ export function getPoolAddress(tokenInSymbol: string, tokenOutSymbol: string): s
 
 
 // ─── Low-Level Helpers ────────────────────────────────────────────
-const padAddress = (addr: string) =>
+export const padAddress = (addr: string) =>
   addr.toLowerCase().replace('0x', '').padStart(64, '0');
 
 const padUint = (val: bigint) => val.toString(16).padStart(64, '0');

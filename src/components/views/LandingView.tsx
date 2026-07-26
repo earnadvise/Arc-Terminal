@@ -93,24 +93,6 @@ export default function LandingView() {
                 Launch Terminal
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
               </button>
-              
-              {!walletConnected ? (
-                <button
-                  onClick={() => connectWallet('MetaMask')}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-slate-800/40 border border-slate-700 hover:border-slate-500 text-white font-bold rounded-xl transition-all cursor-pointer"
-                >
-                  <Wallet size={16} />
-                  Connect Wallet
-                </button>
-              ) : (
-                <button
-                  onClick={() => setActiveTab('Portfolio')}
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-slate-800/40 border border-[#01C38E]/30 text-[#01C38E] font-bold rounded-xl transition-all cursor-pointer"
-                >
-                  View My Portfolio
-                  <ChevronRight size={16} />
-                </button>
-              )}
             </div>
           </div>
 
@@ -121,8 +103,8 @@ export default function LandingView() {
               
               <div className="flex items-center justify-between border-b border-[#334155] pb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#01C38E] animate-ping" />
-                  <span className="text-xs font-bold text-white tracking-wider">BTC-PERP TICKER</span>
+                  <div className="w-3 h-3 rounded-full bg-[#01C38E]" />
+                  <span className="text-xs font-bold text-white tracking-wider">BTC Market Price</span>
                 </div>
                 <span className="text-[10px] text-[#8e8e9f] font-bold">1m Realtime Feed</span>
               </div>
@@ -154,61 +136,6 @@ export default function LandingView() {
                 </div>
               </div>
             </div>
-          </div>
-        </section>
-
-        {/* FEATURES GRID */}
-        <section className="space-y-8">
-          <div className="text-center max-w-xl mx-auto space-y-2">
-            <h2 className="text-2xl font-black text-white uppercase tracking-wider">Premium Execution Suite</h2>
-            <p className="text-xs text-[#8e8e9f] font-semibold">
-              Everything you need to navigate derivatives trading on the Arc network safely and reliably.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {features.map((feature, idx) => (
-              <div 
-                key={idx} 
-                className="bg-[#111827]/60 border border-[#334155] hover:border-[#01C38E]/30 rounded-2xl p-5 backdrop-blur-md transition-all space-y-4 group relative overflow-hidden"
-              >
-                <div className="absolute top-0 right-0 px-3 py-1 bg-white/5 border-l border-b border-[#334155] rounded-bl-xl text-[9px] font-bold text-[#8e8e9f]">
-                  {feature.badge}
-                </div>
-                
-                <div className="p-3 bg-white/5 border border-white/5 rounded-xl inline-block">
-                  {feature.icon}
-                </div>
-                
-                <div className="space-y-1.5">
-                  <h3 className="text-sm font-bold text-white uppercase group-hover:text-[#01C38E] transition-colors">{feature.title}</h3>
-                  <p className="text-xs text-[#8e8e9f] leading-relaxed font-semibold">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* CALL TO ACTION ACCENT BOX */}
-        <section className="bg-gradient-to-tr from-[#0b1329] via-[#111827] to-[#1e293b] border border-[#334155] rounded-3xl p-8 relative overflow-hidden text-center space-y-6 shadow-2xl">
-          <div className="absolute -top-12 -left-12 w-48 h-48 bg-[#01C38E]/5 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-12 -right-12 w-48 h-48 bg-[#0052FF]/5 rounded-full blur-3xl pointer-events-none" />
-          
-          <h2 className="text-2xl sm:text-3xl font-black text-white uppercase tracking-wider">
-            Ready to trade with next-gen speed?
-          </h2>
-          <p className="text-xs sm:text-sm text-[#8e8e9f] max-w-lg mx-auto font-semibold">
-            Connect your wallet, claim assets from the faucet, and execute your first swap or leverage order in seconds.
-          </p>
-
-          <div className="flex justify-center">
-            <button
-              onClick={() => setActiveTab('Perpetuals')}
-              className="flex items-center gap-2 px-8 py-3.5 bg-white text-[#0f172a] hover:bg-slate-200 font-extrabold rounded-xl shadow-xl transition-all cursor-pointer group"
-            >
-              Enter Trading Terminal
-              <Play size={14} className="fill-[#0f172a] group-hover:translate-x-0.5 transition-transform" />
-            </button>
           </div>
         </section>
 

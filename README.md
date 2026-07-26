@@ -23,10 +23,9 @@
 
 ## 📸 Screenshots
 
-*(Replace with actual screenshot URLs/paths once uploaded to repository)*
-![Landing Page](./public/screenshot-landing.jpg)
-![Swap Interface](./public/screenshot-swap.jpg)
-![Perpetuals Trading](./public/screenshot-perps.jpg)
+![Interface View 1](./public/screenshot-1.png)
+![Interface View 2](./public/screenshot-2.png)
+![Interface View 3](./public/screenshot-3.png)
 
 ---
 

@@ -35,12 +35,14 @@ export default function Navbar() {
         {/* Logo */}
         <div className="flex items-center gap-8">
           <div
-            className="flex items-center gap-2 cursor-pointer group"
+            className="flex items-center gap-1 cursor-pointer group"
             onClick={() => setActiveTab('Home')}
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#3b82f6] to-[#8b5cf6] flex items-center justify-center font-bold text-sm tracking-widest shadow-[0_0_15px_rgba(139,92,246,0.5)] group-hover:scale-105 transition-transform duration-200">
-              A
-            </div>
+            <img 
+              src="/logo.jpg" 
+              alt="Arc Terminal Logo" 
+              className="w-10 h-10 rounded-lg shadow-[0_0_15px_rgba(139,92,246,0.3)] group-hover:scale-105 transition-transform duration-200 object-cover" 
+            />
             <span className="text-lg font-bold tracking-wider bg-gradient-to-r from-white to-[#a3a3c2] bg-clip-text text-transparent group-hover:text-white transition-colors">
               ARC TERMINAL AI
             </span>
@@ -97,7 +99,7 @@ export default function Navbar() {
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                 className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-[#09090c] border border-[#13131a] hover:border-[#3b82f6]/50 text-sm font-medium text-white transition-all duration-200"
               >
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <div className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span className="number-mono text-xs">
                   {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : ''}
                 </span>
