@@ -8,13 +8,29 @@
 
 ---
 
-## 🌟 Overview
+## 🌟 Project Overview
 
 **Arc Terminal** is a unified decentralized trading terminal designed for active traders and autonomous AI agents. Built natively on **Arc Network**, it combines agentic natural language trade execution via **Arc AI**, zero price-impact perpetual derivatives, and autocompounding ERC-4626 stablecoin **Vault** liquidity pools into a high-performance, non-custodial Web3 interface.
 
 ---
 
-## 🔥 Key Features
+## 🔗 Live Demo & Video
+
+- **Live Demo Link:** [https://arcterminalai.xyz](https://arcterminalai.xyz)
+- **Demo Video Link:** [Watch Demo Video on YouTube](https://youtu.be/sW4ftxIae-o)
+
+---
+
+## 📸 Screenshots
+
+*(Replace with actual screenshot URLs/paths once uploaded to repository)*
+![Landing Page](./public/screenshot-landing.jpg)
+![Swap Interface](./public/screenshot-swap.jpg)
+![Perpetuals Trading](./public/screenshot-perps.jpg)
+
+---
+
+## 🔥 Features
 
 ### 🤖 1. Agentic Natural Language Execution (Arc AI)
 - **LLM Intent Engine:** Execute complex token swaps, open leveraged positions, and optimize portfolio allocation using natural language chat prompts (e.g. `/swap 10 USDC to EURC`).
@@ -32,11 +48,19 @@
 
 ### 🛡️ 4. Direct RPC Failover Architecture
 - **Zero-Latency Reads:** Routes read queries directly to `rpc.testnet.arc.network`, bypassing browser wallet read timeouts.
-- **Resilient Polling:** 2-second fast balance polling, staggered post-transaction refreshes, 3x retry mechanism, 5-second request timeouts, and ref-guarded React state synchronization to prevent UI flickering.
+- **Resilient Polling:** 2-second fast balance polling, staggered post-transaction refreshes, and state synchronization to prevent UI flickering.
 
 ---
 
-## 📜 On-Chain Contract & Asset Registry
+## 🔵 Circle Products Used
+
+Arc Terminal heavily relies on Circle's stablecoin infrastructure for routing, settlement, and yield generation:
+- **USDC:** Used as the primary base currency for swap routing, perpetual margin collateral, and our primary ERC-4626 Yield Vault.
+- **EURC:** Supported for FX swaps against USDC and has its own dedicated Yield Vault.
+
+---
+
+## 📜 Smart Contract Addresses (Arc Testnet)
 
 ### ⚙️ Core Infrastructure Contracts
 | Contract / Protocol | Address | Description |
@@ -46,7 +70,7 @@
 | **USDC Vault** | `0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9` | ERC-4626 Yield Vault (`aUSDC` Shares, 5.0% APY) |
 | **EURC Vault** | `0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E` | ERC-4626 Yield Vault (`aEURC` Shares, 4.5% APY) |
 
-### 🪙 Supported Arc Testnet Tokens
+### 🪙 Supported Tokens
 | Token | Decimals | Address |
 | :--- | :---: | :--- |
 | **USDC** | 6 | `0x3600000000000000000000000000000000000000` |
@@ -56,17 +80,7 @@
 
 ---
 
-## 💻 Tech Stack
-
-- **Framework:** Next.js 16 (App Router & Turbopack)
-- **Language:** TypeScript
-- **Styling:** Tailwind CSS & Framer Motion
-- **Icons:** Lucide React
-- **Web3 Integration:** Direct JSON-RPC & EIP-1193 Wallet Providers (MetaMask, Rabby, Coinbase Wallet, WalletConnect)
-
----
-
-## 🚀 Quickstart & Local Setup
+## 🚀 Installation Instructions
 
 ### 1. Clone the Repository
 ```bash
@@ -89,11 +103,3 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```bash
 npm run build
 ```
-
----
-
-## 🌐 Official Links
-
-- **Live Application:** [https://arcterminalai.xyz](https://arcterminalai.xyz)
-- **Twitter / X:** [@arcterminalai](https://x.com/arcterminalai)
-- **RPC Endpoint:** `https://rpc.testnet.arc.network`
