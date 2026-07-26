@@ -506,6 +506,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setWalletConnected(false);
     setWalletAddress('');
     setWalletType('');
+    setBalances({
+      USDC: 0,
+      walletUSDC: 0,
+      BTC: 0,
+      ETH: 0,
+      SOL: 0,
+      ARC: 0,
+      EURC: 0,
+      USDT: 0
+    });
   };
 
   const claimFaucet = () => {
