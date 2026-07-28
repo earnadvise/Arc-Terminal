@@ -25,17 +25,8 @@ export default function ArcSafePayView() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'IDLE' | 'APPROVING' | 'CREATING'>('IDLE');
   
-  // Local state to simulate active payments for the demo
-  const [payments, setPayments] = useState<Payment[]>([
-    {
-      id: 'mock-1',
-      receiver: '0x1234567890123456789012345678901234567890',
-      amount: '50.00',
-      isActive: true,
-      status: 'LOCKED',
-      date: new Date().toISOString()
-    }
-  ]);
+  // Start with an empty array. (Mock data removed so it doesn't show 2 transactions)
+  const [payments, setPayments] = useState<Payment[]>([]);
 
   const handleMax = () => {
     setAmount(balances.walletUSDC ? balances.walletUSDC.toString() : '0');
@@ -85,10 +76,21 @@ export default function ArcSafePayView() {
       const tx = await arcPayContract.createPayment(receiver, USDC_ADDRESS, amountWei);
       const receipt = await tx.wait();
 
+      // Extract the real payment ID from the event logs
+      let paymentIdStr = Math.random().toString(36).substring(7); // fallback
+      for (const log of receipt.logs) {
+        try {
+          const parsed = arcPayContract.interface.parseLog({ topics: log.topics.slice(), data: log.data });
+          if (parsed && parsed.name === 'PaymentCreated') {
+            paymentIdStr = parsed.args[0].toString(); // the uint256 paymentId
+          }
+        } catch (e) {}
+      }
+
       addNotification('success', 'SafePay Created', 'Your funds are securely locked in escrow.', receipt.hash);
       
       const newPayment: Payment = {
-        id: Math.random().toString(36).substring(7),
+        id: paymentIdStr,
         receiver,
         amount,
         isActive: true,
@@ -111,8 +113,6 @@ export default function ArcSafePayView() {
     if (!walletConnected || !(window as any).ethereum) return;
     
     try {
-      // In production, we'd use the real payment ID from the contract.
-      // Here we simulate success on the local state since we use mock IDs.
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
       const arcPayContract = new ethers.Contract(
@@ -124,9 +124,12 @@ export default function ArcSafePayView() {
         signer
       );
 
-      // We would do: await arcPayContract[action](actualId);
+      // Trigger the real MetaMask transaction
+      addNotification('info', `Initiating ${action}`, `Please confirm the transaction in your wallet.`);
+      const tx = await arcPayContract[action](paymentId);
+      const receipt = await tx.wait();
       
-      addNotification('success', `SafePay ${action === 'cancel' ? 'Cancelled' : 'Released'}`, `The transaction was successful.`);
+      addNotification('success', `SafePay ${action === 'cancel' ? 'Cancelled' : 'Released'}`, `The transaction was successful.`, receipt.hash);
       
       setPayments(prev => prev.map(p => 
         p.id === paymentId ? { ...p, isActive: false, status: action === 'cancel' ? 'CANCELLED' : 'RELEASED' } : p
