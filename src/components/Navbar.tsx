@@ -25,7 +25,6 @@ export default function Navbar() {
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
     { id: 'Vault',      label: 'Vault',   icon: <VaultIcon size={15} /> },
     { id: 'Agents',     label: 'Arc AI',  icon: <Bot size={15} /> },
-    { id: 'Bridge',     label: 'Bridge',     icon: <LinkIcon size={15} /> },
     { id: 'History',    label: 'History',    icon: <HistIcon size={15} /> },
   ];
 
