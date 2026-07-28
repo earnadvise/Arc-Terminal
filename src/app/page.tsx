@@ -10,6 +10,7 @@ import PerpetualsView from '@/components/views/PerpetualsView';
 import HistoryView    from '@/components/views/HistoryView';
 import SwapView       from '@/components/views/SwapView';
 import VaultView      from '@/components/views/VaultView';
+import UndoPayView    from '@/components/views/UndoPayView';
 import AgentsView     from '@/components/views/AgentsView';
 
 import { Info, CheckCircle2, AlertTriangle, XCircle, X } from 'lucide-react';
@@ -24,6 +25,7 @@ export default function Home() {
       case 'Perpetuals': return <PerpetualsView />;
       case 'Swap':       return <SwapView />;
       case 'Vault':      return <VaultView />;
+      case 'UndoPay':    return <UndoPayView />;
       case 'Agents':     return <AgentsView />;
       case 'History':    return <HistoryView />;
       default:           return <LandingView />;
