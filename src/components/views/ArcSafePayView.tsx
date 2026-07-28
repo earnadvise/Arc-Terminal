@@ -76,15 +76,13 @@ export default function ArcSafePayView() {
       const tx = await arcPayContract.createPayment(receiver, USDC_ADDRESS, amountWei);
       const receipt = await tx.wait();
 
-      // Extract the real payment ID from the event logs
-      let paymentIdStr = Math.random().toString(36).substring(7); // fallback
-      for (const log of receipt.logs) {
-        try {
-          const parsed = arcPayContract.interface.parseLog({ topics: log.topics.slice(), data: log.data });
-          if (parsed && parsed.name === 'PaymentCreated') {
-            paymentIdStr = parsed.args[0].toString(); // the uint256 paymentId
-          }
-        } catch (e) {}
+      // Extract the real payment ID from the contract state directly
+      let paymentIdStr = '0';
+      try {
+        const nextId = await arcPayContract.nextPaymentId();
+        paymentIdStr = (nextId - 1n).toString();
+      } catch (e) {
+        console.error("Failed to fetch nextPaymentId", e);
       }
 
       addNotification('success', 'SafePay Created', 'Your funds are securely locked in escrow.', receipt.hash);
