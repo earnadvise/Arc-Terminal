@@ -65,10 +65,17 @@ export default function BridgeView() {
         const srcRpc = getRpcUrl(sourceChain);
         const srcUsdc = USDC_ADDRESSES[sourceChain];
         if (srcUsdc && srcUsdc !== '0x0000000000000000000000000000000000000000') {
-          const srcProvider = new ethers.JsonRpcProvider(srcRpc);
-          const srcContract = new ethers.Contract(srcUsdc, ['function balanceOf(address) view returns (uint256)'], srcProvider);
-          const bal = await srcContract.balanceOf(address);
-          setSourceBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+          try {
+            const srcProvider = new ethers.JsonRpcProvider(srcRpc);
+            const srcContract = new ethers.Contract(srcUsdc, ['function balanceOf(address) view returns (uint256)'], srcProvider);
+            const bal = await srcContract.balanceOf(address);
+            setSourceBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+          } catch (e) {
+            // Fallback to wallet provider if public RPC fails
+            const srcContract = new ethers.Contract(srcUsdc, ['function balanceOf(address) view returns (uint256)'], provider);
+            const bal = await srcContract.balanceOf(address);
+            setSourceBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+          }
         } else {
           setSourceBalance('0.00');
         }
@@ -77,10 +84,17 @@ export default function BridgeView() {
         const destRpc = getRpcUrl(destChain);
         const destUsdc = USDC_ADDRESSES[destChain];
         if (destUsdc && destUsdc !== '0x0000000000000000000000000000000000000000') {
-          const destProvider = new ethers.JsonRpcProvider(destRpc);
-          const destContract = new ethers.Contract(destUsdc, ['function balanceOf(address) view returns (uint256)'], destProvider);
-          const bal = await destContract.balanceOf(address);
-          setDestBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+          try {
+            const destProvider = new ethers.JsonRpcProvider(destRpc);
+            const destContract = new ethers.Contract(destUsdc, ['function balanceOf(address) view returns (uint256)'], destProvider);
+            const bal = await destContract.balanceOf(address);
+            setDestBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+          } catch (e) {
+            // Fallback to wallet provider if public RPC fails
+            const destContract = new ethers.Contract(destUsdc, ['function balanceOf(address) view returns (uint256)'], provider);
+            const bal = await destContract.balanceOf(address);
+            setDestBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+          }
         } else {
           setDestBalance('0.00');
         }
