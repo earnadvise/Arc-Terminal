@@ -23,7 +23,7 @@ const USDC_ADDRESSES: Record<string, string> = {
   'Arbitrum Sepolia': '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
   'Base Sepolia': '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
   'Linea Sepolia': '0x0000000000000000000000000000000000000000',
-  'Arc Testnet': '0x0000000000000000000000000000000000000000'
+  'Arc Testnet': '0x3600000000000000000000000000000000000000'
 };
 
 export default function BridgeView() {
