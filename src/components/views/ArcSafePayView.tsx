@@ -69,20 +69,26 @@ export default function ArcSafePayView() {
       setStep('CREATING');
       const arcPayContract = new ethers.Contract(
         ARC_PAY_ADDRESS,
-        ['function createPayment(address receiver, address token, uint256 amount) external returns (uint256)'],
+        [
+          'function createPayment(address receiver, address token, uint256 amount) external returns (uint256)',
+          'event PaymentCreated(uint256 indexed paymentId, address indexed sender, address indexed receiver, address token, uint256 amount)'
+        ],
         signer
       );
 
       const tx = await arcPayContract.createPayment(receiver, USDC_ADDRESS, amountWei);
       const receipt = await tx.wait();
 
-      // Extract the real payment ID from the contract state directly
+      // Extract the real payment ID from the event logs
       let paymentIdStr = '0';
-      try {
-        const nextId = await arcPayContract.nextPaymentId();
-        paymentIdStr = (Number(nextId) - 1).toString();
-      } catch (e) {
-        console.error("Failed to fetch nextPaymentId", e);
+      for (const log of receipt.logs) {
+        try {
+          const parsed = arcPayContract.interface.parseLog({ topics: log.topics.slice(), data: log.data });
+          if (parsed && parsed.name === 'PaymentCreated') {
+            paymentIdStr = parsed.args[0].toString(); // the uint256 paymentId
+            break;
+          }
+        } catch (e) {}
       }
 
       addNotification('success', 'SafePay Created', 'Your funds are securely locked in escrow.', receipt.hash);
