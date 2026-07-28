@@ -2,7 +2,7 @@
 pragma solidity ^0.8.20;
 
 /**
- * @dev Interface for standard ERC20 functions needed for the UndoPay escrow
+ * @dev Interface for standard ERC20 functions needed for the ArcReversiblePayment escrow
  */
 interface IERC20 {
     function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
@@ -12,8 +12,8 @@ interface IERC20 {
 
 /**
  * @title ArcReversiblePayment
- * @dev An escrow contract for ERC20 tokens that allows the sender to reclaim
- * funds within a specified duration window.
+ * @dev A manual escrow contract for ERC20 tokens that allows the sender to manually
+ * cancel or release funds without a time limit.
  */
 contract ArcReversiblePayment {
     struct Payment {
@@ -21,7 +21,6 @@ contract ArcReversiblePayment {
         address receiver;
         address token;
         uint256 amount;
-        uint256 unlockTime;
         bool isActive;
     }
 
@@ -33,10 +32,9 @@ contract ArcReversiblePayment {
         address indexed sender,
         address indexed receiver,
         address token,
-        uint256 amount,
-        uint256 unlockTime
+        uint256 amount
     );
-    event PaymentReclaimed(uint256 indexed paymentId, address indexed sender, uint256 amount);
+    event PaymentCancelled(uint256 indexed paymentId, address indexed sender, uint256 amount);
     event PaymentReleased(uint256 indexed paymentId, address indexed receiver, uint256 amount);
 
     /**
@@ -44,13 +42,11 @@ contract ArcReversiblePayment {
      * @param receiver The address receiving the funds
      * @param token The ERC20 token address (e.g., USDC)
      * @param amount The amount of tokens
-     * @param durationSeconds The duration in seconds the sender has to reclaim the funds
      */
     function createPayment(
         address receiver,
         address token,
-        uint256 amount,
-        uint256 durationSeconds
+        uint256 amount
     ) external returns (uint256) {
         require(receiver != address(0), "Invalid receiver");
         require(amount > 0, "Amount must be greater than 0");
@@ -68,39 +64,37 @@ contract ArcReversiblePayment {
             receiver: receiver,
             token: token,
             amount: amount,
-            unlockTime: block.timestamp + durationSeconds,
             isActive: true
         });
 
-        emit PaymentCreated(paymentId, msg.sender, receiver, token, amount, payments[paymentId].unlockTime);
+        emit PaymentCreated(paymentId, msg.sender, receiver, token, amount);
         return paymentId;
     }
 
     /**
-     * @dev Reclaims an active payment. Only callable by the sender before unlock time.
-     * @param paymentId The ID of the payment to reclaim
+     * @dev Cancels an active payment. Only callable by the sender.
+     * @param paymentId The ID of the payment to cancel
      */
-    function reclaim(uint256 paymentId) external {
+    function cancel(uint256 paymentId) external {
         Payment storage p = payments[paymentId];
         require(p.isActive, "Payment is not active");
-        require(msg.sender == p.sender, "Only sender can reclaim");
-        require(block.timestamp < p.unlockTime, "Reclaim window has expired");
+        require(msg.sender == p.sender, "Only sender can cancel");
 
         p.isActive = false;
 
         require(IERC20(p.token).transfer(p.sender, p.amount), "Token transfer failed");
 
-        emit PaymentReclaimed(paymentId, p.sender, p.amount);
+        emit PaymentCancelled(paymentId, p.sender, p.amount);
     }
 
     /**
-     * @dev Releases an active payment to the receiver. Callable by anyone after unlock time.
+     * @dev Releases an active payment to the receiver. Only callable by the sender.
      * @param paymentId The ID of the payment to release
      */
     function release(uint256 paymentId) external {
         Payment storage p = payments[paymentId];
         require(p.isActive, "Payment is not active");
-        require(block.timestamp >= p.unlockTime, "Payment is still locked");
+        require(msg.sender == p.sender, "Only sender can release");
 
         p.isActive = false;
 

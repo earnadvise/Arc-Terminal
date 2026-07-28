@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAppState } from '@/context/useAppState';
-import { ShieldAlert, Clock, CheckCircle2, RefreshCw, XCircle, Timer, ArrowRight, Lock } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { ShieldCheck, CheckCircle2, RefreshCw, Lock, Unlock, XCircle, ArrowRight } from 'lucide-react';
 import { ethers } from 'ethers';
 
 // Arc Testnet USDC address
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 // Deployed ArcReversiblePayment Contract Address
-const ARC_PAY_ADDRESS = '0xBc4f301CCb5f2e09B543EFe40e280e5A65177091'; // Replace after deployment
+const ARC_PAY_ADDRESS = '0x0000000000000000000000000000000000000000'; // Replace after deployment
 
 interface Payment {
   id: string;
   receiver: string;
   amount: string;
-  unlockTime: number;
   isActive: boolean;
+  status: 'LOCKED' | 'RELEASED' | 'CANCELLED';
+  date: string;
 }
 
 export default function ArcSafePayView() {
@@ -22,19 +22,20 @@ export default function ArcSafePayView() {
 
   const [receiver, setReceiver] = useState('');
   const [amount, setAmount] = useState('');
-  const [duration, setDuration] = useState('30'); // Default 30 seconds
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'IDLE' | 'APPROVING' | 'CREATING'>('IDLE');
-  const [payments, setPayments] = useState<Payment[]>([]);
-  const [now, setNow] = useState(Math.floor(Date.now() / 1000));
-
-  // Update current time every second for the countdown timers
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setNow(Math.floor(Date.now() / 1000));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  
+  // Local state to simulate active payments for the demo
+  const [payments, setPayments] = useState<Payment[]>([
+    {
+      id: 'mock-1',
+      receiver: '0x1234567890123456789012345678901234567890',
+      amount: '50.00',
+      isActive: true,
+      status: 'LOCKED',
+      date: new Date().toISOString()
+    }
+  ]);
 
   const handleMax = () => {
     setAmount(balances.walletUSDC ? balances.walletUSDC.toString() : '0');
@@ -55,7 +56,7 @@ export default function ArcSafePayView() {
     }
 
     if (ARC_PAY_ADDRESS === '0x0000000000000000000000000000000000000000') {
-      addNotification('error', 'Not Deployed', 'Reversible Payment contract is not deployed yet.');
+      addNotification('error', 'Not Deployed', 'SafePay contract is not deployed yet.');
       return;
     }
 
@@ -63,8 +64,7 @@ export default function ArcSafePayView() {
     try {
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
-      
-      const amountWei = ethers.parseUnits(amount, 6); // USDC has 6 decimals
+      const amountWei = ethers.parseUnits(amount, 6);
 
       // 1. Approve USDC
       setStep('APPROVING');
@@ -81,22 +81,22 @@ export default function ArcSafePayView() {
       setStep('CREATING');
       const arcPayContract = new ethers.Contract(
         ARC_PAY_ADDRESS,
-        ['function createPayment(address receiver, address token, uint256 amount, uint256 durationSeconds) external returns (uint256)'],
+        ['function createPayment(address receiver, address token, uint256 amount) external returns (uint256)'],
         signer
       );
 
-      const tx = await arcPayContract.createPayment(receiver, USDC_ADDRESS, amountWei, parseInt(duration));
+      const tx = await arcPayContract.createPayment(receiver, USDC_ADDRESS, amountWei);
       const receipt = await tx.wait();
 
-      addNotification('success', 'Payment Created', 'Your escrow payment has been created successfully.', receipt.hash);
+      addNotification('success', 'SafePay Created', 'Your funds are securely locked in escrow.', receipt.hash);
       
-      // Simulate adding to local state (in production, we'd fetch events)
       const newPayment: Payment = {
-        id: Math.random().toString(36).substring(7), // Mock ID
+        id: Math.random().toString(36).substring(7),
         receiver,
         amount,
-        unlockTime: Math.floor(Date.now() / 1000) + parseInt(duration),
-        isActive: true
+        isActive: true,
+        status: 'LOCKED',
+        date: new Date().toISOString()
       };
       setPayments(prev => [newPayment, ...prev]);
 
@@ -110,31 +110,29 @@ export default function ArcSafePayView() {
     setStep('IDLE');
   };
 
-  const handleAction = async (paymentId: string, action: 'reclaim' | 'release') => {
+  const handleAction = async (paymentId: string, action: 'cancel' | 'release') => {
     if (!walletConnected || !(window as any).ethereum) return;
     
-    // Note: Since we are using mock IDs for the local state right now, 
-    // interacting with the real contract will fail unless we fetch the actual real uint256 paymentId from events.
-    // This is a UI simulation of the action.
     try {
+      // In production, we'd use the real payment ID from the contract.
+      // Here we simulate success on the local state since we use mock IDs.
       const provider = new ethers.BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
       const arcPayContract = new ethers.Contract(
         ARC_PAY_ADDRESS,
         [
-          'function reclaim(uint256 paymentId) external',
+          'function cancel(uint256 paymentId) external',
           'function release(uint256 paymentId) external'
         ],
         signer
       );
 
-      // We would pass the real uint256 ID here. For now, we just update local state to simulate.
-      // await undoPayContract[action](realPaymentId);
+      // We would do: await arcPayContract[action](actualId);
       
-      addNotification('success', `Payment ${action === 'reclaim' ? 'Reclaimed' : 'Released'}`, `The transaction was successful.`);
+      addNotification('success', `SafePay ${action === 'cancel' ? 'Cancelled' : 'Released'}`, `The transaction was successful.`);
       
       setPayments(prev => prev.map(p => 
-        p.id === paymentId ? { ...p, isActive: false } : p
+        p.id === paymentId ? { ...p, isActive: false, status: action === 'cancel' ? 'CANCELLED' : 'RELEASED' } : p
       ));
     } catch (err: any) {
       console.error(err);
@@ -143,225 +141,160 @@ export default function ArcSafePayView() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto custom-scrollbar">
-      <div className="max-w-6xl mx-auto p-6 min-h-full">
+    <div className="flex-1 overflow-y-auto custom-scrollbar p-6">
+      <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Header Section */}
-        <div className="mb-12 text-center md:text-left mt-8">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#3b82f6]/10 border border-[#3b82f6]/20 text-[#3b82f6] text-xs font-semibold mb-6">
-            <Lock size={12} />
-            Web3 Escrow Payments
-          </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight mb-4 leading-tight">
-            Crypto Payments <br className="hidden md:block" />
-            <span className="text-[#3b82f6]">with a Second Chance</span>
-          </h1>
-          <p className="text-[#8e8e9f] text-lg max-w-xl mx-auto md:mx-0 leading-relaxed">
-            Arc Reversible Payments protect your crypto transfers with an adjustable escrow reclaim window. 
-            If you accidentally enter the wrong address, you can reclaim your funds before the transfer becomes final.
-          </p>
+        {/* Header */}
+        <div className="flex items-center gap-4 border-b border-[#1c1c28] pb-6">
+          <div className="p-3 bg-[#3b82f6]/10 rounded-xl">
+            <ShieldCheck className="w-8 h-8 text-[#3b82f6]" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold text-white tracking-tight">Arc SafePay</h1>
+            <p className="text-[#8e8e9f] text-sm mt-1">Manual escrow. Lock your funds, and release them only when you are ready.</p>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {/* Creation Bar */}
+        <div className="bg-[#09090c] border border-[#1c1c28] rounded-2xl p-6 shadow-lg">
+          <h2 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+            <Lock size={16} className="text-[#3b82f6]"/> New Escrow Payment
+          </h2>
+          <div className="flex flex-col md:flex-row gap-4 items-end">
+            <div className="flex-1 w-full">
+              <label className="block text-xs font-medium text-[#6e6e7f] mb-1.5 ml-1">Receiver Address</label>
+              <input
+                type="text"
+                placeholder="0x..."
+                value={receiver}
+                onChange={(e) => setReceiver(e.target.value)}
+                className="w-full bg-[#13131a] border border-[#1c1c28] rounded-xl px-4 py-3 text-white placeholder-[#6e6e7f] focus:outline-none focus:border-[#3b82f6] transition-colors number-mono text-sm"
+              />
+            </div>
+            <div className="w-full md:w-64">
+              <div className="flex justify-between items-center mb-1.5 ml-1 mr-1">
+                <label className="block text-xs font-medium text-[#6e6e7f]">Amount (USDC)</label>
+                <span className="text-xs text-[#8e8e9f]">Bal: {balances.walletUSDC ? balances.walletUSDC.toFixed(2) : '0.00'}</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-full bg-[#13131a] border border-[#1c1c28] rounded-xl pl-4 pr-16 py-3 text-white placeholder-[#6e6e7f] focus:outline-none focus:border-[#3b82f6] transition-colors number-mono text-sm"
+                />
+                <button
+                  onClick={handleMax}
+                  className="absolute right-2 top-2 bottom-2 px-2 rounded-lg bg-[#1c1c28] text-[#8e8e9f] text-xs font-semibold hover:text-white transition-colors"
+                >
+                  MAX
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={handleCreatePayment}
+              disabled={isProcessing || !walletConnected}
+              className={`w-full md:w-auto px-8 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all ${
+                isProcessing || !walletConnected
+                  ? 'bg-[#1c1c28] text-[#6e6e7f] cursor-not-allowed'
+                  : 'bg-[#3b82f6] hover:bg-[#2563eb] text-white shadow-lg shadow-[#3b82f6]/20'
+              }`}
+            >
+              {isProcessing ? <RefreshCw className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
+              {step === 'APPROVING' ? 'Approving...' : isProcessing ? 'Creating...' : 'Lock Funds'}
+            </button>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="bg-[#09090c] border border-[#1c1c28] rounded-2xl overflow-hidden shadow-lg">
+          <div className="p-5 border-b border-[#1c1c28] flex justify-between items-center bg-[#13131a]/50">
+            <h2 className="text-sm font-semibold text-white">Your SafePay Escrows</h2>
+          </div>
           
-          {/* Left Column: Features & Active Payments */}
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-5 rounded-2xl bg-[#09090c] border border-[#13131a] hover:border-[#3b82f6]/30 transition-colors">
-                <ShieldAlert size={24} className="text-[#3b82f6] mb-3" />
-                <h3 className="text-white font-bold mb-1">Escrow Protection</h3>
-                <p className="text-xs text-[#8e8e9f]">Funds are securely locked in a smart contract before being released.</p>
-              </div>
-              <div className="p-5 rounded-2xl bg-[#09090c] border border-[#13131a] hover:border-[#8b5cf6]/30 transition-colors">
-                <Timer size={24} className="text-[#8b5cf6] mb-3" />
-                <h3 className="text-white font-bold mb-1">Reclaim Window</h3>
-                <p className="text-xs text-[#8e8e9f]">Recover your payment if you notice a mistake before the timer expires.</p>
-              </div>
-            </div>
-
-            {/* Active Payments List */}
-            <div className="rounded-3xl border border-[#1c1c28] bg-[#09090c]/80 backdrop-blur-xl overflow-hidden p-6">
-              <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                <History className="w-5 h-5 text-[#8e8e9f]" />
-                Recent Escrows
-              </h2>
-              
-              <div className="space-y-3">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-[#1c1c28] text-[#6e6e7f] text-xs uppercase tracking-wider bg-[#09090c]">
+                  <th className="px-6 py-4 font-semibold">Status</th>
+                  <th className="px-6 py-4 font-semibold">Date</th>
+                  <th className="px-6 py-4 font-semibold">Receiver</th>
+                  <th className="px-6 py-4 font-semibold">Amount (USDC)</th>
+                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#1c1c28]">
                 {payments.length === 0 ? (
-                  <div className="text-center py-8 text-[#6e6e7f] text-sm">
-                    No active escrow payments found.
-                  </div>
+                  <tr>
+                    <td colSpan={5} className="px-6 py-12 text-center text-[#6e6e7f] text-sm">
+                      No SafePay transactions found.
+                    </td>
+                  </tr>
                 ) : (
-                  payments.map(payment => {
-                    const timeRemaining = payment.unlockTime - now;
-                    const canReclaim = payment.isActive && timeRemaining > 0;
-                    const canRelease = payment.isActive && timeRemaining <= 0;
-
-                    return (
-                      <div key={payment.id} className="p-4 rounded-xl border border-[#1c1c28] bg-[#13131a]/50 flex items-center justify-between">
-                        <div>
-                          <div className="text-sm font-semibold text-white mb-1">
-                            {payment.amount} USDC
-                          </div>
-                          <div className="text-xs text-[#8e8e9f] number-mono">
-                            To: {payment.receiver.slice(0,6)}...{payment.receiver.slice(-4)}
-                          </div>
-                        </div>
-                        
-                        <div className="text-right flex flex-col items-end">
-                          {payment.isActive ? (
-                            <>
-                              <div className={`text-xs font-bold mb-2 ${canReclaim ? 'text-amber-500' : 'text-emerald-500'}`}>
-                                {canReclaim ? `Locks in ${timeRemaining}s` : 'Ready to Release'}
-                              </div>
-                              <div className="flex gap-2">
-                                {canReclaim && (
-                                  <button 
-                                    onClick={() => handleAction(payment.id, 'reclaim')}
-                                    className="px-3 py-1.5 rounded-lg bg-amber-500/10 text-amber-500 hover:bg-amber-500/20 text-xs font-semibold transition-colors"
-                                  >
-                                    Reclaim
-                                  </button>
-                                )}
-                                {canRelease && (
-                                  <button 
-                                    onClick={() => handleAction(payment.id, 'release')}
-                                    className="px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 text-xs font-semibold transition-colors"
-                                  >
-                                    Release
-                                  </button>
-                                )}
-                              </div>
-                            </>
-                          ) : (
-                            <div className="text-xs text-[#6e6e7f] font-semibold flex items-center gap-1">
-                              <CheckCircle2 size={12} /> Settled
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: Send Form */}
-          <div className="flex justify-center md:justify-end">
-            <div className="w-full max-w-md rounded-3xl border border-[#1c1c28] bg-[#09090c]/80 backdrop-blur-xl overflow-hidden shadow-2xl relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6]" />
-              
-              <div className="p-8">
-                <h2 className="text-2xl font-bold text-white mb-6">Create Payment</h2>
-                
-                <div className="space-y-5">
-                  {/* Receiver */}
-                  <div>
-                    <label className="block text-xs font-semibold text-[#8e8e9f] mb-2 uppercase tracking-wider">
-                      Receiver Address
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="text"
-                        placeholder="0x..."
-                        value={receiver}
-                        onChange={(e) => setReceiver(e.target.value)}
-                        className="w-full bg-[#13131a] border border-[#1c1c28] rounded-xl px-4 py-3.5 text-white placeholder-[#6e6e7f] focus:outline-none focus:border-[#3b82f6] transition-colors number-mono text-sm"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Amount */}
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="block text-xs font-semibold text-[#8e8e9f] uppercase tracking-wider">
-                        Amount
-                      </label>
-                      <span className="text-xs text-[#8e8e9f]">
-                        Balance: {balances.walletUSDC ? balances.walletUSDC.toFixed(2) : '0.00'} USDC
-                      </span>
-                    </div>
-                    <div className="relative flex items-center">
-                      <input
-                        type="number"
-                        placeholder="0.00"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                        className="w-full bg-[#13131a] border border-[#1c1c28] rounded-xl pl-4 pr-24 py-3.5 text-white placeholder-[#6e6e7f] focus:outline-none focus:border-[#3b82f6] transition-colors number-mono text-lg"
-                      />
-                      <div className="absolute right-2 flex items-center gap-2">
-                        <button
-                          onClick={handleMax}
-                          className="px-2 py-1 rounded bg-[#1c1c28] text-xs text-[#8e8e9f] hover:text-white transition-colors"
-                        >
-                          MAX
-                        </button>
-                        <span className="text-sm font-semibold text-white mr-2">USDC</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Duration */}
-                  <div>
-                    <label className="block text-xs font-semibold text-[#8e8e9f] mb-2 uppercase tracking-wider flex items-center gap-1.5">
-                      <Clock size={14} /> Reclaim Window
-                    </label>
-                    <select
-                      value={duration}
-                      onChange={(e) => setDuration(e.target.value)}
-                      className="w-full bg-[#13131a] border border-[#1c1c28] rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#3b82f6] transition-colors appearance-none cursor-pointer"
-                    >
-                      <option value="30">30 Seconds</option>
-                      <option value="60">1 Minute</option>
-                      <option value="300">5 Minutes</option>
-                      <option value="3600">1 Hour</option>
-                      <option value="86400">1 Day</option>
-                    </select>
-                  </div>
-
-                  <div className="pt-4">
-                    {!walletConnected ? (
-                      <div className="text-center p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-500 text-sm font-semibold">
-                        Connect your wallet to create a payment
-                      </div>
-                    ) : (
-                      <button
-                        onClick={handleCreatePayment}
-                        disabled={isProcessing}
-                        className={`w-full py-4 rounded-xl flex items-center justify-center gap-2 text-sm font-bold shadow-lg transition-all duration-200 ${
-                          isProcessing 
-                            ? 'bg-[#1c1c28] text-[#6e6e7f] cursor-not-allowed'
-                            : 'bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-white'
-                        }`}
-                      >
-                        {isProcessing ? (
-                          <>
-                            <RefreshCw className="w-5 h-5 animate-spin" />
-                            {step === 'APPROVING' ? 'Approving USDC...' : 'Creating Payment...'}
-                          </>
-                        ) : (
-                          <>
-                            Create Escrow Payment <ArrowRight size={16} />
-                          </>
+                  payments.map(payment => (
+                    <tr key={payment.id} className="hover:bg-[#13131a]/50 transition-colors">
+                      <td className="px-6 py-4">
+                        {payment.status === 'LOCKED' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-semibold">
+                            <Lock size={12} /> Locked
+                          </span>
                         )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </div>
+                        {payment.status === 'RELEASED' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 text-xs font-semibold">
+                            <Unlock size={12} /> Released
+                          </span>
+                        )}
+                        {payment.status === 'CANCELLED' && (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-500 text-xs font-semibold">
+                            <XCircle size={12} /> Cancelled
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-[#8e8e9f]">
+                        {new Date(payment.date).toLocaleDateString()} {new Date(payment.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-white number-mono bg-[#1c1c28] px-2 py-1 rounded-md">
+                            {payment.receiver.slice(0, 6)}...{payment.receiver.slice(-4)}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-semibold text-white number-mono">
+                          {payment.amount}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {payment.isActive ? (
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              onClick={() => handleAction(payment.id, 'cancel')}
+                              className="px-4 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 border border-red-500/20 hover:border-red-500/30 text-xs font-bold transition-all"
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              onClick={() => handleAction(payment.id, 'release')}
+                              className="px-4 py-2 rounded-lg bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20 border border-emerald-500/20 hover:border-emerald-500/30 text-xs font-bold transition-all"
+                            >
+                              Release
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-[#6e6e7f] font-semibold">Settled</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-
         </div>
+
       </div>
     </div>
   );
 }
-
-// Temporary icon to avoid import errors if not in lucide-react
-const History = ({ className }: { className?: string }) => (
-  <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-  </svg>
-);
