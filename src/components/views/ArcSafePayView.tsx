@@ -80,7 +80,7 @@ export default function ArcSafePayView() {
       let paymentIdStr = '0';
       try {
         const nextId = await arcPayContract.nextPaymentId();
-        paymentIdStr = (nextId - 1n).toString();
+        paymentIdStr = (Number(nextId) - 1).toString();
       } catch (e) {
         console.error("Failed to fetch nextPaymentId", e);
       }
