@@ -15,8 +15,16 @@ const NETWORKS = [
   'Arc Testnet'
 ];
 
-// Placeholder for the deployed BridgingKitContract
-const BRIDGING_KIT_CONTRACT = '0x0000000000000000000000000000000000000000';
+// Deployed BridgingKitContract
+const BRIDGING_KIT_CONTRACT = '0x86467403A7A6E4B07B469a14Fd0cC1b69956b236';
+
+const USDC_ADDRESSES: Record<string, string> = {
+  'Ethereum Sepolia': '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+  'Arbitrum Sepolia': '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
+  'Base Sepolia': '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+  'Linea Sepolia': '0x0000000000000000000000000000000000000000',
+  'Arc Testnet': '0x0000000000000000000000000000000000000000'
+};
 
 export default function BridgeView() {
   const { walletConnected, balances, connectWallet } = useAppState();
@@ -53,17 +61,32 @@ export default function BridgeView() {
       const destDomain = getDomainId(destChain);
       const addressBytes32 = ethers.zeroPadValue(await signer.getAddress(), 32);
 
-      // This is where we WOULD call the smart contract.
-      // Since it's not deployed yet, we simulate the UX, but the ethers provider is ready.
+      // 2. Approve USDC
       setStep('APPROVING');
-      await new Promise(r => setTimeout(r, 2000));
+      const usdcAddress = USDC_ADDRESSES[sourceChain];
+      if (!usdcAddress || usdcAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error("USDC address not configured for this source chain");
+      }
+      
+      const usdcContract = new ethers.Contract(
+        usdcAddress,
+        ['function approve(address spender, uint256 amount) public returns (bool)'],
+        signer
+      );
+      
+      const approveTx = await usdcContract.approve(BRIDGING_KIT_CONTRACT, amountWei);
+      await approveTx.wait();
 
+      // 3. Call BridgingKitContract
       setStep('BURNING');
-      // Example of actual call:
-      // const kit = new ethers.Contract(BRIDGING_KIT_CONTRACT, ['function bridgeUSDC(uint256,uint32,bytes32)'], signer);
-      // const tx = await kit.bridgeUSDC(amountWei, destDomain, addressBytes32);
-      // await tx.wait();
-      await new Promise(r => setTimeout(r, 2500));
+      const kit = new ethers.Contract(
+        BRIDGING_KIT_CONTRACT,
+        ['function bridgeUSDC(uint256,uint32,bytes32)'],
+        signer
+      );
+      const tx = await kit.bridgeUSDC(amountWei, destDomain, addressBytes32);
+      const receipt = await tx.wait();
+
       
       setStep('ATTESTING');
       await new Promise(r => setTimeout(r, 3500));
