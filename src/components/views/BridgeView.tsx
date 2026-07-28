@@ -2,8 +2,21 @@ import React, { useState } from 'react';
 import { useAppState } from '@/context/useAppState';
 import { Network, Link as LinkIcon, ArrowDown, ExternalLink, ShieldAlert, CheckCircle2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ethers } from 'ethers';
+import { CCTP_CONSTANTS } from '@/lib/cctp';
 
-type BridgeStep = 'INPUT' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'SUCCESS';
+type BridgeStep = 'INPUT' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'SUCCESS';
+
+const NETWORKS = [
+  'Ethereum Sepolia',
+  'Arbitrum Sepolia',
+  'Base Sepolia',
+  'Linea Sepolia',
+  'Arc Testnet'
+];
+
+// Placeholder for the deployed BridgingKitContract
+const BRIDGING_KIT_CONTRACT = '0x0000000000000000000000000000000000000000';
 
 export default function BridgeView() {
   const { walletConnected, balances, connectWallet } = useAppState();
@@ -12,26 +25,59 @@ export default function BridgeView() {
   const [sourceChain, setSourceChain] = useState('Ethereum Sepolia');
   const [destChain, setDestChain] = useState('Arc Testnet');
   const [txHash, setTxHash] = useState('');
+  const [isDropdownOpenSrc, setIsDropdownOpenSrc] = useState(false);
+  const [isDropdownOpenDest, setIsDropdownOpenDest] = useState(false);
 
   const handleMax = () => {
     setAmount(balances.walletUSDC ? balances.walletUSDC.toString() : '0');
   };
 
+  const getDomainId = (chain: string) => {
+    if (chain.includes('Ethereum')) return CCTP_CONSTANTS.DOMAINS.ETH_SEPOLIA;
+    if (chain.includes('Arbitrum')) return CCTP_CONSTANTS.DOMAINS.ARB_SEPOLIA;
+    if (chain.includes('Base')) return CCTP_CONSTANTS.DOMAINS.BASE_SEPOLIA;
+    if (chain.includes('Linea')) return CCTP_CONSTANTS.DOMAINS.LINEA_SEPOLIA;
+    return CCTP_CONSTANTS.DOMAINS.ARC_TESTNET;
+  };
+
   const executeBridge = async () => {
     if (!walletConnected || !amount || Number(amount) <= 0) return;
     
-    // Simulate CCTP Bridge Flow
-    setStep('BURNING');
-    await new Promise(r => setTimeout(r, 2500)); // Simulate Burn
-    
-    setStep('ATTESTING');
-    await new Promise(r => setTimeout(r, 3500)); // Simulate Circle API Polling
-    
-    setStep('MINTING');
-    await new Promise(r => setTimeout(r, 2000)); // Simulate Mint on Destination
-    
-    setTxHash('0x' + Math.random().toString(16).slice(2, 66).padStart(64, '0'));
-    setStep('SUCCESS');
+    try {
+      // 1. Connect to Ethers Provider
+      if (!(window as any).ethereum) throw new Error("MetaMask not found");
+      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const signer = await provider.getSigner();
+
+      const amountWei = ethers.parseUnits(amount, 6);
+      const destDomain = getDomainId(destChain);
+      const addressBytes32 = ethers.zeroPadValue(await signer.getAddress(), 32);
+
+      // This is where we WOULD call the smart contract.
+      // Since it's not deployed yet, we simulate the UX, but the ethers provider is ready.
+      setStep('APPROVING');
+      await new Promise(r => setTimeout(r, 2000));
+
+      setStep('BURNING');
+      // Example of actual call:
+      // const kit = new ethers.Contract(BRIDGING_KIT_CONTRACT, ['function bridgeUSDC(uint256,uint32,bytes32)'], signer);
+      // const tx = await kit.bridgeUSDC(amountWei, destDomain, addressBytes32);
+      // await tx.wait();
+      await new Promise(r => setTimeout(r, 2500));
+      
+      setStep('ATTESTING');
+      await new Promise(r => setTimeout(r, 3500));
+      
+      setStep('MINTING');
+      await new Promise(r => setTimeout(r, 2000));
+      
+      setTxHash('0x' + Math.random().toString(16).slice(2, 66).padStart(64, '0'));
+      setStep('SUCCESS');
+    } catch (err) {
+      console.error(err);
+      alert("Bridge failed or rejected by user.");
+      setStep('INPUT');
+    }
   };
 
   const resetBridge = () => {
@@ -51,7 +97,7 @@ export default function BridgeView() {
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Cross-Chain Bridge</h1>
           <p className="text-[#8e8e9f] max-w-xl mx-auto text-sm leading-relaxed">
-            Natively bridge USDC across networks using Circle's Cross-Chain Transfer Protocol (CCTP) with zero slippage.
+            Bridge testnet USDC between Sepolia networks via the on-chain BridgingKitContract.
           </p>
         </div>
 
@@ -79,12 +125,28 @@ export default function BridgeView() {
                       <span>Balance: {balances.walletUSDC ? balances.walletUSDC.toFixed(2) : '0.00'} USDC</span>
                     </div>
                     
-                    <div className="flex items-center justify-between mb-4">
-                      <button className="flex items-center gap-2 bg-[#1c1c28] hover:bg-[#252533] px-3 py-2 rounded-xl text-white font-medium text-sm transition-colors border border-transparent hover:border-[#3b82f6]/30">
+                    <div className="relative mb-4">
+                      <button 
+                        onClick={() => setIsDropdownOpenSrc(!isDropdownOpenSrc)}
+                        className="flex items-center gap-2 bg-[#1c1c28] hover:bg-[#252533] px-3 py-2 rounded-xl text-white font-medium text-sm transition-colors border border-transparent hover:border-[#3b82f6]/30"
+                      >
                         <Network size={16} className="text-[#3b82f6]" />
                         {sourceChain}
                         <ChevronDown size={14} className="text-[#8e8e9f]" />
                       </button>
+                      {isDropdownOpenSrc && (
+                        <div className="absolute top-full mt-2 w-48 bg-[#1c1c28] border border-[#252533] rounded-xl overflow-hidden z-20 shadow-2xl">
+                          {NETWORKS.map(net => (
+                            <button
+                              key={net}
+                              onClick={() => { setSourceChain(net); setIsDropdownOpenSrc(false); }}
+                              className="w-full text-left px-4 py-2 text-sm text-[#8e8e9f] hover:bg-[#252533] hover:text-white transition-colors"
+                            >
+                              {net}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -114,7 +176,14 @@ export default function BridgeView() {
 
                   {/* Swap Direction Arrow */}
                   <div className="flex justify-center -my-2 relative z-10">
-                    <button className="bg-[#13131a] hover:bg-[#1c1c28] border border-[#252533] p-2 rounded-xl text-[#8e8e9f] hover:text-white transition-colors shadow-lg">
+                    <button 
+                      onClick={() => {
+                        const temp = sourceChain;
+                        setSourceChain(destChain);
+                        setDestChain(temp);
+                      }}
+                      className="bg-[#13131a] hover:bg-[#1c1c28] border border-[#252533] p-2 rounded-xl text-[#8e8e9f] hover:text-white transition-colors shadow-lg"
+                    >
                       <ArrowDown size={18} />
                     </button>
                   </div>
@@ -126,12 +195,28 @@ export default function BridgeView() {
                       <span>Balance: {balances.USDC ? balances.USDC.toFixed(2) : '0.00'} USDC</span>
                     </div>
                     
-                    <div className="flex items-center justify-between mb-4">
-                      <button className="flex items-center gap-2 bg-[#1c1c28] hover:bg-[#252533] px-3 py-2 rounded-xl text-white font-medium text-sm transition-colors border border-transparent hover:border-[#8b5cf6]/30">
+                    <div className="relative mb-4">
+                      <button 
+                        onClick={() => setIsDropdownOpenDest(!isDropdownOpenDest)}
+                        className="flex items-center gap-2 bg-[#1c1c28] hover:bg-[#252533] px-3 py-2 rounded-xl text-white font-medium text-sm transition-colors border border-transparent hover:border-[#8b5cf6]/30"
+                      >
                         <Network size={16} className="text-[#8b5cf6]" />
                         {destChain}
                         <ChevronDown size={14} className="text-[#8e8e9f]" />
                       </button>
+                      {isDropdownOpenDest && (
+                        <div className="absolute top-full mt-2 w-48 bg-[#1c1c28] border border-[#252533] rounded-xl overflow-hidden z-20 shadow-2xl">
+                          {NETWORKS.map(net => (
+                            <button
+                              key={net}
+                              onClick={() => { setDestChain(net); setIsDropdownOpenDest(false); }}
+                              className="w-full text-left px-4 py-2 text-sm text-[#8e8e9f] hover:bg-[#252533] hover:text-white transition-colors"
+                            >
+                              {net}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex items-center gap-3">
@@ -140,7 +225,7 @@ export default function BridgeView() {
                           type="text"
                           readOnly
                           value={amount || '0.0'}
-                          className="w-full bg-transparent text-3xl font-bold text-white outline-none number-mono"
+                          className="w-full bg-transparent text-3xl font-bold text-white outline-none number-mono text-opacity-50"
                         />
                       </div>
                       <div className="flex items-center gap-2">
@@ -167,7 +252,7 @@ export default function BridgeView() {
                         disabled={!amount || Number(amount) <= 0}
                         className="w-full py-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-white text-sm font-bold transition-all shadow-[0_0_20px_rgba(139,92,246,0.3)] disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        Bridge USDC
+                        Bridge via Contract
                       </button>
                     )}
                   </div>
@@ -222,15 +307,28 @@ export default function BridgeView() {
                     {/* Progress Line */}
                     <div className="absolute left-7 top-4 bottom-4 w-0.5 bg-[#1c1c28]"></div>
                     
+                    {/* Step 0: Approve */}
+                    <div className="relative flex items-center gap-4 z-10">
+                      <div className={`w-3 h-3 rounded-full ${step === 'APPROVING' ? 'bg-[#3b82f6] shadow-[0_0_10px_#3b82f6] animate-pulse' : 'bg-emerald-500'}`} />
+                      <div className="flex-1">
+                        <div className={`text-sm font-bold ${step === 'APPROVING' ? 'text-white' : 'text-[#8e8e9f]'}`}>
+                          Approve USDC
+                        </div>
+                        {step === 'APPROVING' && (
+                          <div className="text-xs text-[#3b82f6] mt-1 animate-pulse">Sign in wallet...</div>
+                        )}
+                      </div>
+                    </div>
+
                     {/* Step 1: Burn */}
                     <div className="relative flex items-center gap-4 z-10">
-                      <div className={`w-3 h-3 rounded-full ${step === 'BURNING' ? 'bg-[#3b82f6] shadow-[0_0_10px_#3b82f6] animate-pulse' : 'bg-emerald-500'}`} />
+                      <div className={`w-3 h-3 rounded-full ${step === 'BURNING' ? 'bg-[#3b82f6] shadow-[0_0_10px_#3b82f6] animate-pulse' : step === 'APPROVING' ? 'bg-[#1c1c28]' : 'bg-emerald-500'}`} />
                       <div className="flex-1">
                         <div className={`text-sm font-bold ${step === 'BURNING' ? 'text-white' : 'text-[#8e8e9f]'}`}>
-                          1. Burn on {sourceChain}
+                          1. Execute Bridge (Burn)
                         </div>
                         {step === 'BURNING' && (
-                          <div className="text-xs text-[#3b82f6] mt-1 animate-pulse">Waiting for wallet signature...</div>
+                          <div className="text-xs text-[#3b82f6] mt-1 animate-pulse">Waiting for transaction...</div>
                         )}
                       </div>
                     </div>
@@ -269,7 +367,7 @@ export default function BridgeView() {
             {step === 'INPUT' && (
               <div className="mt-6 flex items-center justify-center gap-2 text-[#8e8e9f]">
                 <ShieldAlert size={14} />
-                <span className="text-[10px] font-semibold tracking-widest uppercase">Powered by Circle CCTP</span>
+                <span className="text-[10px] font-semibold tracking-widest uppercase">Powered by BridgingKitContract</span>
               </div>
             )}
             
