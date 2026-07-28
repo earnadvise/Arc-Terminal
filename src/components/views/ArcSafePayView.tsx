@@ -6,7 +6,7 @@ import { ethers } from 'ethers';
 // Arc Testnet USDC address
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 // Deployed ArcReversiblePayment Contract Address
-const ARC_PAY_ADDRESS = '0x0000000000000000000000000000000000000000'; // Replace after deployment
+const ARC_PAY_ADDRESS = '0x95D00C1B48218e44Be6fF1e90D2f473A646191f0'; // Replace after deployment
 
 interface Payment {
   id: string;
