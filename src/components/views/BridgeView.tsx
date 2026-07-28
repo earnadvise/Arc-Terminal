@@ -96,9 +96,9 @@ export default function BridgeView() {
       
       setTxHash('0x' + Math.random().toString(16).slice(2, 66).padStart(64, '0'));
       setStep('SUCCESS');
-    } catch (err) {
-      console.error(err);
-      alert("Bridge failed or rejected by user.");
+    } catch (err: any) {
+      console.error("Bridge Error:", err);
+      alert("Bridge Error: " + (err.reason || err.message || "Transaction failed"));
       setStep('INPUT');
     }
   };
@@ -145,7 +145,7 @@ export default function BridgeView() {
                   <div className="p-4 rounded-2xl bg-[#13131a]/50 border border-[#1c1c28]">
                     <div className="flex justify-between text-xs text-[#8e8e9f] mb-3">
                       <span>From Network</span>
-                      <span>Balance: {balances.walletUSDC ? balances.walletUSDC.toFixed(2) : '0.00'} USDC</span>
+                      <span>Wallet Balance (Arc): {balances.walletUSDC ? balances.walletUSDC.toFixed(2) : '0.00'} USDC</span>
                     </div>
                     
                     <div className="relative mb-4">
@@ -215,7 +215,7 @@ export default function BridgeView() {
                   <div className="p-4 rounded-2xl bg-[#13131a]/50 border border-[#1c1c28]">
                     <div className="flex justify-between text-xs text-[#8e8e9f] mb-3">
                       <span>To Network (Est.)</span>
-                      <span>Balance: {balances.USDC ? balances.USDC.toFixed(2) : '0.00'} USDC</span>
+                      <span>Destination Balance (Arc): {balances.USDC ? balances.USDC.toFixed(2) : '0.00'} USDC</span>
                     </div>
                     
                     <div className="relative mb-4">
