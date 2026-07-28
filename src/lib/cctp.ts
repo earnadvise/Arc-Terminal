@@ -21,6 +21,13 @@ export const CCTP_CONSTANTS = {
     BASE_SEPOLIA: '0x7865fAfC2db2093669d92c0F33AeEF291086BEFD',
     LINEA_SEPOLIA: '0x0000000000000000000000000000000000000000',
     ARC_TESTNET: '0x0000000000000000000000000000000000000000'
+  },
+  RPCS: {
+    ETH_SEPOLIA: 'https://ethereum-sepolia-rpc.publicnode.com',
+    ARB_SEPOLIA: 'https://arbitrum-sepolia-rpc.publicnode.com',
+    BASE_SEPOLIA: 'https://base-sepolia-rpc.publicnode.com',
+    LINEA_SEPOLIA: 'https://rpc.sepolia.linea.build',
+    ARC_TESTNET: 'https://testnet-rpc.arcscan.app'
   }
 };
 

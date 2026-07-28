@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/context/useAppState';
 import { Network, Link as LinkIcon, ArrowDown, ExternalLink, ShieldAlert, CheckCircle2, ChevronDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -35,10 +35,64 @@ export default function BridgeView() {
   const [txHash, setTxHash] = useState('');
   const [isDropdownOpenSrc, setIsDropdownOpenSrc] = useState(false);
   const [isDropdownOpenDest, setIsDropdownOpenDest] = useState(false);
+  const [sourceBalance, setSourceBalance] = useState<string>('0.00');
+  const [destBalance, setDestBalance] = useState<string>('0.00');
+  const [isFetchingBalances, setIsFetchingBalances] = useState(false);
 
   const handleMax = () => {
-    setAmount(balances.walletUSDC ? balances.walletUSDC.toString() : '0');
+    setAmount(sourceBalance);
   };
+
+  const getRpcUrl = (chain: string) => {
+    if (chain.includes('Ethereum')) return CCTP_CONSTANTS.RPCS.ETH_SEPOLIA;
+    if (chain.includes('Arbitrum')) return CCTP_CONSTANTS.RPCS.ARB_SEPOLIA;
+    if (chain.includes('Base')) return CCTP_CONSTANTS.RPCS.BASE_SEPOLIA;
+    if (chain.includes('Linea')) return CCTP_CONSTANTS.RPCS.LINEA_SEPOLIA;
+    return CCTP_CONSTANTS.RPCS.ARC_TESTNET;
+  };
+
+  useEffect(() => {
+    if (!walletConnected || !(window as any).ethereum) return;
+
+    const fetchBalances = async () => {
+      setIsFetchingBalances(true);
+      try {
+        const provider = new ethers.BrowserProvider((window as any).ethereum);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        
+        // Fetch Source Balance
+        const srcRpc = getRpcUrl(sourceChain);
+        const srcUsdc = USDC_ADDRESSES[sourceChain];
+        if (srcUsdc && srcUsdc !== '0x0000000000000000000000000000000000000000') {
+          const srcProvider = new ethers.JsonRpcProvider(srcRpc);
+          const srcContract = new ethers.Contract(srcUsdc, ['function balanceOf(address) view returns (uint256)'], srcProvider);
+          const bal = await srcContract.balanceOf(address);
+          setSourceBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+        } else {
+          setSourceBalance('0.00');
+        }
+
+        // Fetch Dest Balance
+        const destRpc = getRpcUrl(destChain);
+        const destUsdc = USDC_ADDRESSES[destChain];
+        if (destUsdc && destUsdc !== '0x0000000000000000000000000000000000000000') {
+          const destProvider = new ethers.JsonRpcProvider(destRpc);
+          const destContract = new ethers.Contract(destUsdc, ['function balanceOf(address) view returns (uint256)'], destProvider);
+          const bal = await destContract.balanceOf(address);
+          setDestBalance(Number(ethers.formatUnits(bal, 6)).toFixed(2));
+        } else {
+          setDestBalance('0.00');
+        }
+
+      } catch (err) {
+        console.error("Failed to fetch balances:", err);
+      }
+      setIsFetchingBalances(false);
+    };
+
+    fetchBalances();
+  }, [sourceChain, destChain, walletConnected]);
 
   const getDomainId = (chain: string) => {
     if (chain.includes('Ethereum')) return CCTP_CONSTANTS.DOMAINS.ETH_SEPOLIA;
@@ -145,7 +199,7 @@ export default function BridgeView() {
                   <div className="p-4 rounded-2xl bg-[#13131a]/50 border border-[#1c1c28]">
                     <div className="flex justify-between text-xs text-[#8e8e9f] mb-3">
                       <span>From Network</span>
-                      <span>Wallet Balance (Arc): {balances.walletUSDC ? balances.walletUSDC.toFixed(2) : '0.00'} USDC</span>
+                      <span>Balance: {isFetchingBalances ? '...' : sourceBalance} USDC</span>
                     </div>
                     
                     <div className="relative mb-4">
@@ -215,7 +269,7 @@ export default function BridgeView() {
                   <div className="p-4 rounded-2xl bg-[#13131a]/50 border border-[#1c1c28]">
                     <div className="flex justify-between text-xs text-[#8e8e9f] mb-3">
                       <span>To Network (Est.)</span>
-                      <span>Destination Balance (Arc): {balances.USDC ? balances.USDC.toFixed(2) : '0.00'} USDC</span>
+                      <span>Balance: {isFetchingBalances ? '...' : destBalance} USDC</span>
                     </div>
                     
                     <div className="relative mb-4">
