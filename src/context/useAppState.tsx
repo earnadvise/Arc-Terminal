@@ -12,7 +12,7 @@ import {
   initialHistory
 } from '../utils/mockData';
 
-export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Agents' | 'UndoPay' | 'History';
+export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Agents' | 'SafePay' | 'History';
 
 const getPrecision = (symbol: string): number => {
   const s = symbol.toLowerCase();

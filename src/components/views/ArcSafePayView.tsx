@@ -17,7 +17,7 @@ interface Payment {
   isActive: boolean;
 }
 
-export default function UndoPayView() {
+export default function ArcSafePayView() {
   const { walletConnected, addNotification, balances } = useAppState();
 
   const [receiver, setReceiver] = useState('');
