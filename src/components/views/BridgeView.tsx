@@ -15,8 +15,14 @@ const NETWORKS = [
   'Arc Testnet'
 ];
 
-// Deployed BridgingKitContract
-const BRIDGING_KIT_CONTRACT = '0x86467403A7A6E4B07B469a14Fd0cC1b69956b236';
+// Deployed BridgingKitContracts per network
+const BRIDGING_KIT_ADDRESSES: Record<string, string> = {
+  'Ethereum Sepolia': '0x0000000000000000000000000000000000000000',
+  'Arbitrum Sepolia': '0x0000000000000000000000000000000000000000',
+  'Base Sepolia': '0x0000000000000000000000000000000000000000',
+  'Linea Sepolia': '0x0000000000000000000000000000000000000000',
+  'Arc Testnet': '0x86467403A7A6E4B07B469a14Fd0cC1b69956b236' // The one you just deployed
+};
 
 const USDC_ADDRESSES: Record<string, string> = {
   'Ethereum Sepolia': '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
@@ -136,19 +142,24 @@ export default function BridgeView() {
         throw new Error("USDC address not configured for this source chain");
       }
       
+      const kitAddress = BRIDGING_KIT_ADDRESSES[sourceChain];
+      if (!kitAddress || kitAddress === '0x0000000000000000000000000000000000000000') {
+        throw new Error(`BridgingKitContract not yet deployed on ${sourceChain}`);
+      }
+
       const usdcContract = new ethers.Contract(
         usdcAddress,
         ['function approve(address spender, uint256 amount) public returns (bool)'],
         signer
       );
       
-      const approveTx = await usdcContract.approve(BRIDGING_KIT_CONTRACT, amountWei);
+      const approveTx = await usdcContract.approve(kitAddress, amountWei);
       await approveTx.wait();
 
       // 3. Call BridgingKitContract
       setStep('BURNING');
       const kit = new ethers.Contract(
-        BRIDGING_KIT_CONTRACT,
+        kitAddress,
         ['function bridgeUSDC(uint256,uint32,bytes32)'],
         signer
       );
