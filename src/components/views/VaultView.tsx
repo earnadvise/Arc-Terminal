@@ -414,16 +414,35 @@ export default function VaultView() {
     : userShares[selectedVaultKey];
 
   return (
-    <main className="w-full h-full flex flex-col max-w-[1200px] mx-auto p-4 select-none animate-fadeIn">
+    <main className="w-full h-full flex flex-col max-w-[1000px] mx-auto p-4 sm:p-8 select-none animate-fadeIn relative">
+      {/* Ambient background glow */}
+      <div 
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] rounded-full blur-[120px] opacity-20 pointer-events-none transition-colors duration-700"
+        style={{ backgroundColor: vault.color }}
+      />
+
       {/* Page Header */}
-      <div className="mb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shrink-0">
+      <div className="mb-10 flex flex-col sm:flex-row sm:items-end justify-between gap-6 shrink-0 relative z-10">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-wide">Vaults</h1>
-          <p className="text-xs text-[#8e8e9f]">Deposit stablecoins to compound auto-generating yield.</p>
+          <motion.h1 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-4xl md:text-5xl font-black text-white tracking-tight mb-2"
+          >
+            Yield Vaults
+          </motion.h1>
+          <motion.p 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="text-sm text-[#8e8e9f]"
+          >
+            Deposit stablecoins to earn auto-compounding yield.
+          </motion.p>
         </div>
 
-        {/* Vault Selector Row */}
-        <div className="flex gap-2">
+        {/* Vault Selector - Segmented Control */}
+        <div className="flex bg-[#111827]/80 p-1 rounded-2xl border border-white/5 backdrop-blur-xl">
           {(['USDC', 'EURC'] as const).map(key => {
             const v = VAULTS[key];
             const isSelected = selectedVaultKey === key;
@@ -431,175 +450,238 @@ export default function VaultView() {
               <button
                 key={key}
                 onClick={() => { setSelectedVaultKey(key); setAmount(''); }}
-                className={`px-4 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
-                  isSelected
-                    ? `bg-white/5 text-white shadow-lg`
-                    : 'bg-transparent border-white/5 text-[#8e8e9f] hover:text-white'
+                className={`relative px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all z-10 ${
+                  isSelected ? 'text-white' : 'text-[#6e6e7f] hover:text-white'
                 }`}
-                style={{
-                  borderColor: isSelected ? v.color : 'rgba(255,255,255,0.05)',
-                  boxShadow: isSelected ? `0 0 15px ${v.color}15` : 'none'
-                }}
               >
+                {isSelected && (
+                  <motion.div
+                    layoutId="activeTab"
+                    className="absolute inset-0 rounded-xl"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: `1px solid ${v.color}30` }}
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
                 <span
-                  className="w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-white"
-                  style={{ backgroundColor: v.color }}
+                  className="relative z-10 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-white shadow-lg"
+                  style={{ backgroundColor: v.color, boxShadow: isSelected ? `0 0 10px ${v.color}80` : 'none' }}
                 >
                   {v.symbol.slice(0, 2)}
                 </span>
-                {v.symbol} ({v.apy}% APY)
+                <span className="relative z-10">{v.symbol}</span>
               </button>
             );
           })}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 min-h-0 flex-1">
-        {/* Left Column: Action card (Deposit/Withdraw) */}
-        <div className="md:col-span-7 bg-[#111827]/60 border border-[#334155] rounded-2xl p-5 backdrop-blur-md flex flex-col gap-4">
-          <div className="flex border-b border-[#334155] pb-px shrink-0">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 flex-1 relative z-10">
+        
+        {/* Left Column: Action card */}
+        <div className="lg:col-span-7 bg-[#09090b]/80 border border-white/5 rounded-3xl p-6 md:p-8 backdrop-blur-2xl flex flex-col shadow-2xl relative overflow-hidden">
+          {/* Subtle top edge highlight */}
+          <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+
+          {/* Action Tabs */}
+          <div className="flex gap-6 border-b border-white/5 pb-4 mb-6">
             <button
               onClick={() => { setActiveTab('deposit'); setAmount(''); }}
-              className={`flex-1 pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-                activeTab === 'deposit'
-                  ? 'border-[#01C38E] text-[#01C38E]'
-                  : 'border-transparent text-[#8e8e9f] hover:text-white'
+              className={`text-lg font-bold transition-all relative ${
+                activeTab === 'deposit' ? 'text-white' : 'text-[#6e6e7f] hover:text-[#8e8e9f]'
               }`}
             >
               Deposit
+              {activeTab === 'deposit' && (
+                <motion.div layoutId="actionTab" className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-[#01C38E] shadow-[0_0_10px_#01C38E]" />
+              )}
             </button>
             <button
               onClick={() => { setActiveTab('withdraw'); setAmount(''); }}
-              className={`flex-1 pb-3 text-sm font-bold border-b-2 transition-all cursor-pointer ${
-                activeTab === 'withdraw'
-                  ? 'border-[#8b5cf6] text-[#8b5cf6]'
-                  : 'border-transparent text-[#8e8e9f] hover:text-white'
+              className={`text-lg font-bold transition-all relative ${
+                activeTab === 'withdraw' ? 'text-white' : 'text-[#6e6e7f] hover:text-[#8e8e9f]'
               }`}
             >
               Withdraw
+              {activeTab === 'withdraw' && (
+                <motion.div layoutId="actionTab" className="absolute -bottom-[17px] left-0 right-0 h-0.5 bg-[#8b5cf6] shadow-[0_0_10px_#8b5cf6]" />
+              )}
             </button>
           </div>
 
-          <div className="flex flex-col gap-4 flex-1">
-            <div className="flex justify-between items-center text-xs text-[#8e8e9f] font-semibold">
+          <div className="flex flex-col flex-1">
+            <div className="flex justify-between items-center text-sm text-[#8e8e9f] font-medium mb-3">
               <span>Amount</span>
-              <span className="number-mono">
-                {activeTab === 'deposit' ? 'Wallet Balance' : 'Vault Balance'}:{' '}
-                {!vaultDataLoaded && walletConnected
-                  ? '---'
-                  : maxBalance.toFixed(activeTab === 'deposit' ? 2 : 4)}{' '}
-                {activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}
+              <span className="flex items-center gap-1.5 cursor-pointer hover:text-white transition-colors" onClick={() => setAmount(maxBalance.toString())}>
+                {activeTab === 'deposit' ? 'Wallet' : 'Vault'}:{' '}
+                <span className="text-white font-semibold">
+                  {!vaultDataLoaded && walletConnected ? '---' : maxBalance.toFixed(activeTab === 'deposit' ? 2 : 4)}
+                </span>
+                <span className="text-xs">{activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
               </span>
             </div>
 
-            <div className="flex items-center bg-[#1e293b] border border-[#334155] focus-within:border-[#01C38E]/50 rounded-2xl px-4 py-3 transition-all relative">
+            {/* Premium Massive Input */}
+            <div className="flex items-center bg-[#13131a]/50 border border-white/5 focus-within:border-white/20 rounded-2xl px-6 py-5 transition-all">
               <input
                 type="number"
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={isProcessing}
-                className="bg-transparent border-none text-white text-lg font-bold w-full focus:outline-none number-mono"
+                className="bg-transparent border-none text-white text-4xl md:text-5xl font-black w-full focus:outline-none number-mono tracking-tight"
+                style={{ caretColor: vault.color }}
               />
-              <button
-                onClick={() => setAmount(maxBalance.toString())}
-                disabled={isProcessing}
-                className="px-3 py-1 bg-white/5 border border-white/10 hover:border-white/20 text-[10px] font-bold text-white rounded-lg transition-colors cursor-pointer"
-              >
-                MAX
-              </button>
+              <div className="flex flex-col items-end gap-2 shrink-0">
+                <div className="flex items-center gap-2 bg-[#1c1c28] px-3 py-1.5 rounded-lg border border-white/5">
+                  <span
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-white shadow-lg"
+                    style={{ backgroundColor: vault.color }}
+                  >
+                    {activeTab === 'deposit' ? vault.symbol.slice(0, 2) : vault.shareSymbol.slice(0, 3)}
+                  </span>
+                  <span className="text-sm font-bold text-white">{activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
+                </div>
+                <button
+                  onClick={() => setAmount(maxBalance.toString())}
+                  disabled={isProcessing}
+                  className="text-xs font-bold text-[#3b82f6] hover:text-[#60a5fa] transition-colors"
+                >
+                  USE MAX
+                </button>
+              </div>
             </div>
 
             {/* Simulated Return */}
-            {parsedAmount > 0 && (
-              <div className="p-4 bg-white/5 border border-white/5 rounded-xl space-y-2">
-                <div className="flex justify-between text-xs text-gray-400">
-                  <span>You {activeTab === 'deposit' ? 'deposit' : 'redeem'}</span>
-                  <span className="text-white font-bold">{parsedAmount.toFixed(2)} {activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
-                </div>
-                <div className="flex justify-between text-xs text-gray-400">
-                  <span>You receive</span>
-                  <span className="text-[#01C38E] font-black">~{parsedAmount.toFixed(4)} {activeTab === 'deposit' ? vault.shareSymbol : vault.symbol}</span>
-                </div>
-              </div>
-            )}
+            <AnimatePresence>
+              {parsedAmount > 0 && (
+                <motion.div 
+                  initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                  animate={{ opacity: 1, height: 'auto', marginTop: 24 }}
+                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="p-5 bg-white/[0.02] border border-white/5 rounded-2xl space-y-3">
+                    <div className="flex justify-between text-sm text-[#8e8e9f]">
+                      <span>You {activeTab === 'deposit' ? 'deposit' : 'redeem'}</span>
+                      <span className="text-white font-bold">{parsedAmount.toFixed(2)} {activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-[#8e8e9f] items-center">
+                      <span>You receive</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-black text-lg" style={{ color: activeTab === 'deposit' ? '#01C38E' : '#8b5cf6' }}>
+                          ~{parsedAmount.toFixed(4)} {activeTab === 'deposit' ? vault.shareSymbol : vault.symbol}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-            {walletConnected ? (
-              <button
-                onClick={activeTab === 'deposit' ? handleDeposit : handleWithdraw}
-                disabled={isProcessing || parsedAmount <= 0}
-                className={`w-full py-3 mt-auto rounded-xl text-white font-bold text-sm tracking-wide shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                  parsedAmount <= 0 
-                    ? 'bg-slate-700/50 text-slate-500 cursor-not-allowed border border-white/5' 
-                    : activeTab === 'deposit'
-                      ? 'bg-gradient-to-r from-[#0A786A] to-[#01C38E] hover:from-[#068f7d] hover:to-[#08d49a] shadow-[#01C38E]/10'
-                      : 'bg-gradient-to-r from-indigo-600 to-[#8b5cf6] hover:from-indigo-700 hover:to-[#9f7aea] shadow-[#8b5cf6]/10'
-                }`}
-              >
-                {isProcessing ? (
-                  <>
-                     <RefreshCw size={15} className="animate-spin" />
-                     <span>{processStep || 'Processing transaction…'}</span>
-                  </>
-                ) : activeTab === 'deposit' ? (
-                  <>
-                    <ArrowDownToLine size={15} />
-                    <span>Deposit {vault.symbol}</span>
-                  </>
-                ) : (
-                  <>
-                    <ArrowUpFromLine size={15} />
-                    <span>Withdraw {vault.symbol}</span>
-                  </>
-                )}
-              </button>
-            ) : (
-              <div className="py-4 bg-[#1e293b] border border-[#334155] rounded-xl flex flex-col items-center justify-center text-center gap-2">
-                <Lock size={18} className="text-[#8e8e9f] animate-pulse" />
-                <span className="text-xs font-bold text-[#8e8e9f]">Wallet Not Connected</span>
-                <span className="text-[10px] text-[#6e6e7f] px-4">Connect your wallet to deposit assets.</span>
-              </div>
-            )}
+            <div className="mt-auto pt-6">
+              {walletConnected ? (
+                <button
+                  onClick={activeTab === 'deposit' ? handleDeposit : handleWithdraw}
+                  disabled={isProcessing || parsedAmount <= 0}
+                  className="w-full py-4 rounded-2xl text-white font-bold text-lg tracking-wide transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{ 
+                    backgroundColor: activeTab === 'deposit' ? '#01C38E' : '#8b5cf6',
+                    boxShadow: parsedAmount > 0 && !isProcessing ? `0 0 30px ${activeTab === 'deposit' ? '#01C38E' : '#8b5cf6'}40` : 'none'
+                  }}
+                >
+                  {/* Subtle shine effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                  
+                  {isProcessing ? (
+                    <>
+                       <RefreshCw size={20} className="animate-spin" />
+                       <span>{processStep || 'Processing transaction…'}</span>
+                    </>
+                  ) : activeTab === 'deposit' ? (
+                    <>
+                      <ArrowDownToLine size={20} />
+                      <span>Deposit {vault.symbol}</span>
+                    </>
+                  ) : (
+                    <>
+                      <ArrowUpFromLine size={20} />
+                      <span>Withdraw {vault.symbol}</span>
+                    </>
+                  )}
+                </button>
+              ) : (
+                <div className="py-6 bg-white/[0.02] border border-white/5 rounded-2xl flex flex-col items-center justify-center text-center gap-3 backdrop-blur-sm">
+                  <div className="p-3 rounded-full bg-white/5">
+                    <Lock size={20} className="text-[#8e8e9f]" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-white mb-1">Wallet Not Connected</div>
+                    <div className="text-xs text-[#6e6e7f]">Connect your wallet to start earning yield.</div>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Right Column: Stats (Stacked vertically to save space) */}
-        <div className="md:col-span-5 flex flex-col gap-4 min-h-0">
+        {/* Right Column: Stats */}
+        <div className="lg:col-span-5 flex flex-col gap-6 min-h-0">
+          
+          {/* My Position Card */}
+          <div className="bg-[#09090b]/80 border border-white/5 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden group">
+            <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none" />
+            <div className="flex items-center justify-between mb-4 relative z-10">
+              <span className="text-[#8e8e9f] text-sm font-semibold">Your Position</span>
+              <Coins size={20} className="text-[#8e8e9f]" />
+            </div>
+            <div className="text-4xl font-black text-white number-mono mb-2 relative z-10">
+              ${(userValue[selectedVaultKey] || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </div>
+            <div className="flex justify-between items-center text-xs text-[#6e6e7f] relative z-10 font-medium">
+              <span>{userShares[selectedVaultKey].toLocaleString(undefined, { maximumFractionDigits: 4 })} {vault.shareSymbol}</span>
+            </div>
+          </div>
+
           {/* TVL Stat */}
-          <div className="bg-[#111827]/40 border border-[#334155] rounded-2xl p-4 backdrop-blur-sm relative overflow-hidden flex-1 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[#8e8e9f] text-xs font-semibold uppercase tracking-wider">Total Value Locked</span>
-              <Landmark size={18} className="text-[#8e8e9f]" />
+          <div className="bg-[#09090b]/80 border border-white/5 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[#8e8e9f] text-sm font-semibold">Total Value Locked</span>
+              <Landmark size={20} className="text-[#8e8e9f]" />
             </div>
-            <div className="text-2xl font-black text-white number-mono">
-              ${vaultTVL[selectedVaultKey].toLocaleString(undefined, { minimumFractionDigits: 2 })}
+            <div className="text-3xl font-black text-white number-mono mb-1">
+              ${vaultTVL[selectedVaultKey].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <div className="text-[10px] text-[#6e6e7f] mt-1">Managed securely by smart contract</div>
           </div>
 
           {/* APY Stat */}
-          <div className="bg-[#111827]/40 border border-[#334155] rounded-2xl p-4 backdrop-blur-sm relative overflow-hidden flex-1 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[#8e8e9f] text-xs font-semibold uppercase tracking-wider">Current APY</span>
-              <TrendingUp size={18} className="text-[#01C38E]" />
+          <div className="bg-[#09090b]/80 border border-white/5 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-[#8e8e9f] text-sm font-semibold">Current APY</span>
+              <div className="px-2 py-1 rounded-md text-[10px] font-bold" style={{ backgroundColor: `${vault.color}20`, color: vault.color }}>
+                AUTO-COMPOUNDING
+              </div>
             </div>
-            <div className="text-2xl font-black text-[#01C38E] number-mono">
+            <div className="text-5xl font-black number-mono mb-4" style={{ color: vault.color, textShadow: `0 0 30px ${vault.color}60` }}>
               {vault.apy.toFixed(1)}%
             </div>
-            {/* Sparkline */}
-            <div className="flex items-end gap-1.5 h-6 mt-2">
+            
+            {/* Minimalist Sparkline */}
+            <div className="flex items-end gap-1 h-10 w-full opacity-60 group-hover:opacity-100 transition-opacity">
               {sparkData.map((val, idx) => (
-                <div
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: `${(val / maxSpark) * 100}%` }}
+                  transition={{ delay: idx * 0.05, duration: 0.5, type: 'spring' }}
                   key={idx}
-                  className="flex-1 bg-white/5 rounded-t-sm"
+                  className="flex-1 rounded-t-sm"
                   style={{
-                    height: `${(val / maxSpark) * 100}%`,
-                    backgroundColor: idx === sparkData.length - 1 ? vault.color : 'rgba(255,255,255,0.08)'
+                    backgroundColor: idx === sparkData.length - 1 ? vault.color : 'rgba(255,255,255,0.1)'
                   }}
                 />
               ))}
             </div>
           </div>
+
         </div>
       </div>
     </main>
