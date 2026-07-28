@@ -55,10 +55,7 @@ export default function ArcSafePayView() {
       return;
     }
 
-    if (ARC_PAY_ADDRESS === '0x0000000000000000000000000000000000000000') {
-      addNotification('error', 'Not Deployed', 'SafePay contract is not deployed yet.');
-      return;
-    }
+
 
     setIsProcessing(true);
     try {
