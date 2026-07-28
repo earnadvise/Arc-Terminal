@@ -7,7 +7,7 @@ import Footer from '@/components/Footer';
 
 import LandingView    from '@/components/views/LandingView';
 import PerpetualsView from '@/components/views/PerpetualsView';
-import PortfolioView  from '@/components/views/PortfolioView';
+import BridgeView  from '@/components/views/BridgeView';
 import HistoryView    from '@/components/views/HistoryView';
 import SwapView       from '@/components/views/SwapView';
 import VaultView      from '@/components/views/VaultView';
@@ -26,7 +26,7 @@ export default function Home() {
       case 'Swap':       return <SwapView />;
       case 'Vault':      return <VaultView />;
       case 'Agents':     return <AgentsView />;
-      case 'Portfolio':  return <PortfolioView />;
+      case 'Bridge':     return <BridgeView />;
       case 'History':    return <HistoryView />;
       default:           return <LandingView />;
     }
