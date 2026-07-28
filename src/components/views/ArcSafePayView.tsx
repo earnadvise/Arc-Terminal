@@ -148,7 +148,7 @@ export default function ArcSafePayView() {
             <ShieldCheck className="w-8 h-8 text-[#3b82f6]" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-white tracking-tight">Arc SafePay</h1>
+            <h1 className="text-3xl font-bold text-white tracking-tight">SafePay</h1>
             <p className="text-[#8e8e9f] text-sm mt-1">Manual escrow. Lock your funds, and release them only when you are ready.</p>
           </div>
         </div>
