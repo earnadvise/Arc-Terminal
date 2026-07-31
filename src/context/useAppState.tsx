@@ -208,54 +208,26 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     if (!eth) return;
 
     try {
-      // 1. Get native EVM balance (Native USDC/ARC gas token on Arc Testnet)
+      // Execute all RPC read calls concurrently for maximum speed
+      const [nativeHex, vaultBalRes, walletBalRes] = await Promise.all([
+        eth.request({ method: 'eth_getBalance', params: [address, 'latest'] }).catch(() => null),
+        eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0x5dcf7429' + padAddress(address) }, 'latest'] }).catch(() => null),
+        eth.request({ method: 'eth_call', params: [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest'] }).catch(() => null)
+      ]);
+
       let nativeBal = 0;
-      try {
-        const nativeHex = await eth.request({
-          method: 'eth_getBalance',
-          params: [address, 'latest']
-        });
-        if (nativeHex && nativeHex !== '0x') {
-          nativeBal = Number(BigInt(nativeHex)) / 1e18;
-        }
-      } catch (e) {
-        console.warn('Native balance fetch failed:', e);
+      if (nativeHex && nativeHex !== '0x') {
+        nativeBal = Number(BigInt(nativeHex)) / 1e18;
       }
 
-      // 2. Try fetching vault collateral balance
       let vaultUSDC = 0;
-      try {
-        const vaultBalRes = await eth.request({
-          method: 'eth_call',
-          params: [{ to: VAULT_ADDRESS, data: '0x5dcf7429' + padAddress(address) }, 'latest']
-        });
-        if (vaultBalRes && vaultBalRes !== '0x') {
-          vaultUSDC = Number(BigInt(vaultBalRes)) / 1e6;
-        }
-      } catch (e) {
-        // Vault check fallback
+      if (vaultBalRes && vaultBalRes !== '0x') {
+        vaultUSDC = Number(BigInt(vaultBalRes)) / 1e6;
       }
 
-      // 3. Try fetching wallet token balance
       let walletUSDC = 0;
-      try {
-        const tokenRes = await eth.request({
-          method: 'eth_call',
-          params: [{ to: VAULT_ADDRESS, data: '0xb2016bd4' }, 'latest']
-        }).catch(() => null);
-
-        if (tokenRes && tokenRes !== '0x' && tokenRes.length >= 42) {
-          const tokenAddress = '0x' + tokenRes.slice(-40);
-          const walletBalRes = await eth.request({
-            method: 'eth_call',
-            params: [{ to: tokenAddress, data: '0x70a08231' + padAddress(address) }, 'latest']
-          }).catch(() => null);
-          if (walletBalRes && walletBalRes !== '0x') {
-            walletUSDC = Number(BigInt(walletBalRes)) / 1e6;
-          }
-        }
-      } catch (e) {
-        // Token balance fallback
+      if (walletBalRes && walletBalRes !== '0x') {
+        walletUSDC = Number(BigInt(walletBalRes)) / 1e6;
       }
 
       // Strictly use true on-chain balances without mock fallbacks
