@@ -492,8 +492,8 @@ export default function PerpetualsView() {
         {/* Available */}
         <div className="flex flex-col gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg mb-3">
           <div className="flex justify-between items-center text-[10px]">
-            <span className="text-slate-400">Available Margin:</span>
-            <span className="number-mono font-bold text-slate-900">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+            <span className="text-slate-400">Vault Margin:</span>
+            <span className="number-mono font-bold text-slate-900">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
           </div>
           <div className="flex gap-2">
             <button onClick={() => {

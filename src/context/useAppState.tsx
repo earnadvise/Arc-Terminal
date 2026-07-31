@@ -26,12 +26,16 @@ const getPrecision = (symbol: string): number => {
   return 2;
 };
 
-const encodeOpenPosition = (symbol: string, isLong: boolean, size: number, entryPrice: number, leverage: number) => {
+const encodeOpenPosition = (symbol: string, isLong: boolean, amount: number, entryPrice: number, leverage: number) => {
   const selector = '67491bd2'; // openPosition(string,bool,uint256,uint256,uint256)
   const offsetHex = 'a0'.padStart(64, '0');
   const isLongHex = (isLong ? 1 : 0).toString(16).padStart(64, '0');
-  const sizeWei = BigInt(Math.floor(size * 1e6));
+  
+  // Size must be the full position size in USDC, not just the token amount
+  const positionSize = amount * entryPrice;
+  const sizeWei = BigInt(Math.floor(positionSize * 1e6));
   const sizeHex = sizeWei.toString(16).padStart(64, '0');
+  
   const priceWei = BigInt(Math.floor(entryPrice * 1e6));
   const priceHex = priceWei.toString(16).padStart(64, '0');
   const leverageHex = leverage.toString(16).padStart(64, '0');
@@ -79,8 +83,8 @@ interface AppContextType {
   walletConnected: boolean;
   walletAddress: string;
   walletType: string;
-  balances: { USDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number };
-  setBalances: React.Dispatch<React.SetStateAction<{ USDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number }>>;
+  balances: { USDC: number; walletUSDC: number; vaultUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number };
+  setBalances: React.Dispatch<React.SetStateAction<{ USDC: number; walletUSDC: number; vaultUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number }>>;
   notifications: AppNotification[];
   timeframe: string;
   setTimeframe: (time: string) => void;
@@ -136,6 +140,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [balances, setBalances] = useState({
     USDC: 0,
     walletUSDC: 0,
+    vaultUSDC: 0,
     BTC: 0,
     ETH: 0,
     SOL: 0,
@@ -265,14 +270,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       const localUSDC = vaultUSDC + walletUSDC;
       const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
 
-      setBalances(prev => ({
-        ...prev,
-        USDC: activeUSDC,
-        walletUSDC: walletUSDC,
+      setBalances({
+        USDC: localUSDC + unifiedBalances.USDC, // Total Combined Balance
+        walletUSDC,                             // Just MetaMask Wallet USDC
+        vaultUSDC,                              // Just Vault Collateral USDC
+        BTC: nativeBal,
+        ETH: 0,
+        SOL: 0,
         ARC: nativeBal,
         EURC: activeUSDC > 0 ? activeUSDC * 0.92 : 0,
         USDT: activeUSDC
-      }));
+      });
     } catch (e) {
       console.error('Error refreshing on-chain balances:', e);
     }
@@ -545,6 +553,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setBalances({
       USDC: 0,
       walletUSDC: 0,
+      vaultUSDC: 0,
       BTC: 0,
       ETH: 0,
       SOL: 0,
@@ -821,8 +830,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (balances.USDC < amount) {
-      addNotification('error', 'Withdrawal Failed', 'Insufficient margin deposited.');
+    if (balances.vaultUSDC < amount) {
+      addNotification('error', 'Withdrawal Failed', 'Insufficient margin deposited in the Vault. Please check your Exact Vault Balance.');
       return;
     }
 
