@@ -418,7 +418,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     };
 
     fetchPrices();
-    const interval = setInterval(fetchPrices, 3000);
+    const interval = setInterval(fetchPrices, 1000); // Updated to 1 second for faster real-time feedback
 
     return () => clearInterval(interval);
   }, [activePairSymbol]);
