@@ -792,6 +792,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       addNotification('error', 'Deposit Failed', 'Wallet not connected.');
       return;
     }
+    if (balances.USDC < amount) {
+      addNotification('error', 'Insufficient Balance', `You only have ${balances.USDC} USDC available.`);
+      return;
+    }
 
     addNotification('info', 'Initiating Deposit', 'Checking allowance and preparing transactions...');
     try {
@@ -815,7 +819,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (currentAllowance < rawAmount) {
         addNotification('info', 'Approve USDC', 'Please approve the vault to spend your USDC in MetaMask.');
         const approveData = '0x095ea7b3' + padAddress(VAULT_ADDRESS) + padBigInt(rawAmount);
-        await eth.request({
+        const approveTxHash = await eth.request({
           method: 'eth_sendTransaction',
           params: [{
             from: walletAddress,
@@ -824,7 +828,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           }]
         });
         addNotification('info', 'Approval Sent', 'Waiting for approval transaction confirmation...');
-        await new Promise(r => setTimeout(r, 6000));
+        
+        let receipt = null;
+        while (!receipt) {
+          receipt = await eth.request({
+            method: 'eth_getTransactionReceipt',
+            params: [approveTxHash]
+          });
+          if (!receipt) await new Promise(r => setTimeout(r, 2000));
+        }
+        if (receipt.status === '0x0' || receipt.status === 0) {
+          throw new Error('Approval transaction failed on-chain.');
+        }
       }
 
       addNotification('info', 'Deposit Collateral', 'Please confirm the deposit transaction in MetaMask.');
