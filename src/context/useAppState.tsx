@@ -580,23 +580,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       if (eth && walletAddress) {
         addNotification('info', 'Executing Market Order', 'Please confirm the transaction in MetaMask/Rabby...');
         try {
-          // Encode vault contract call: selector 0x7606c9f2
-          // Params: (string market, uint256 sizeWei)
-          // Layout: offset(0x40) + sizeWei + strLen + strData (padded to 32 bytes)
-          const market = activePair.symbol; // e.g. "BTC-PERP"
-          const sizeWei = BigInt(Math.floor(amount * 1e18)).toString(16).padStart(64, '0');
-          const strLen = market.length.toString(16).padStart(64, '0');
-          let strHex = '';
-          for (let i = 0; i < market.length; i++) {
-            strHex += market.charCodeAt(i).toString(16).padStart(2, '0');
-          }
-          strHex = strHex.padEnd(64, '0'); // pad to 32 bytes
-
-          const calldata = '0x7606c9f2' +
-            '0000000000000000000000000000000000000000000000000000000000000040' + // offset to string
-            sizeWei +   // uint256 size
-            strLen +    // string length
-            strHex;     // string data
+          // Encode vault contract call
+          const calldata = encodeOpenPosition(
+            activePair.symbol,
+            side === 'LONG',
+            amount,
+            activePair.lastPrice,
+            leverage
+          );
 
           // Unified Balance Kit Integration
           // If the user does not have enough local balance but has enough aggregated cross-chain balance,
@@ -654,13 +645,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         };
 
         setPositions(prev => [newPosition, ...prev]);
-        
-        // Deduct margin from balances for UI responsiveness
-        setBalances(prev => ({
-          ...prev,
-          USDC: Math.max(0, prev.USDC - requiredMargin),
-          walletUSDC: Math.max(0, prev.walletUSDC - requiredMargin)
-        }));
         
         // Add to history
         const historyItem: HistoryItem = {
@@ -736,13 +720,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         'Position Closed',
         `Closed ${pos.side} position on ${pos.symbol} at mark price $${pos.markPrice.toFixed(getPrecision(pos.symbol))}. PnL: $${pos.unrealizedPnl.toFixed(2)}`
       );
-
-      // Immediately return margin and add PnL to balance for UI responsiveness
-      setBalances(prev => ({
-        ...prev,
-        USDC: prev.USDC + pos.margin + pos.unrealizedPnl,
-        walletUSDC: prev.walletUSDC + pos.margin + pos.unrealizedPnl
-      }));
 
       // Record close in history
       const historyItem: HistoryItem = {

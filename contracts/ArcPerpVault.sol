@@ -21,6 +21,8 @@ contract ArcPerpVault {
     
     // Mapping from user address to their deposited collateral balance
     mapping(address => uint256) public userCollateral;
+    // Mapping from user address to their locked margin
+    mapping(address => uint256) public lockedMargin;
     
     // Events
     event Deposit(address indexed user, uint256 amount);
@@ -93,8 +95,12 @@ contract ArcPerpVault {
         uint256 entryPrice,
         uint256 leverage
     ) external {
-        // Ensure user has some collateral backing
-        require(userCollateral[msg.sender] > 0, "ArcPerpVault: no collateral deposited");
+        uint256 marginRequired = size / leverage;
+        require(userCollateral[msg.sender] >= marginRequired, "ArcPerpVault: insufficient collateral for margin");
+        
+        userCollateral[msg.sender] -= marginRequired;
+        lockedMargin[msg.sender] += marginRequired;
+
         emit PositionOpened(msg.sender, symbol, isLong, size, entryPrice, leverage);
     }
 
@@ -102,6 +108,23 @@ contract ArcPerpVault {
      * @dev Emits an event when a position is closed.
      */
     function closePosition(string calldata symbol, int256 realizedPnl) external {
+        // In a real protocol, we would look up the specific position's locked margin.
+        // For hackathon simplicity, we unlock the entire margin for the user.
+        uint256 unlockedMargin = lockedMargin[msg.sender];
+        lockedMargin[msg.sender] = 0;
+
+        // Apply PnL
+        if (realizedPnl >= 0) {
+            userCollateral[msg.sender] += unlockedMargin + uint256(realizedPnl);
+        } else {
+            uint256 loss = uint256(-realizedPnl);
+            if (loss >= unlockedMargin) {
+                userCollateral[msg.sender] += 0; // liquidated
+            } else {
+                userCollateral[msg.sender] += unlockedMargin - loss;
+            }
+        }
+
         emit PositionClosed(msg.sender, symbol, realizedPnl);
     }
 
