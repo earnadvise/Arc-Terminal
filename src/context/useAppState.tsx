@@ -27,7 +27,7 @@ const getPrecision = (symbol: string): number => {
 };
 
 const encodeOpenPosition = (symbol: string, isLong: boolean, size: number, entryPrice: number, leverage: number) => {
-  const selector = 'd2719d3f';
+  const selector = '67491bd2'; // openPosition(string,bool,uint256,uint256,uint256)
   const offsetHex = 'a0'.padStart(64, '0');
   const isLongHex = (isLong ? 1 : 0).toString(16).padStart(64, '0');
   const sizeWei = BigInt(Math.floor(size * 1000000)) * BigInt(10 ** 12);
@@ -45,7 +45,7 @@ const encodeOpenPosition = (symbol: string, isLong: boolean, size: number, entry
 };
 
 const encodeClosePosition = (symbol: string, realizedPnl: number) => {
-  const selector = '024c0846';
+  const selector = '7606c9f2'; // closePosition(string,int256)
   const offsetHex = '40'.padStart(64, '0');
   const pnlWei = BigInt(Math.round(realizedPnl * 1000000)) * BigInt(10 ** 12);
   const pnlHex = (pnlWei < BigInt(0) ? (BigInt(1) << BigInt(256)) + pnlWei : pnlWei).toString(16).padStart(64, '0');
