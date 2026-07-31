@@ -66,6 +66,11 @@ Arc Terminal heavily relies on Circle's stablecoin infrastructure for routing, s
 - **EURC:** Supported for FX swaps against USDC and has its own dedicated Yield Vault.
 
 
+---
+
+## 📜 Smart Contracts (Arc Testnet)
+
+- **ArcPerpVault:** `0xf33c82fB2c63DD0af7eF746c14b56c12D93458be`
 
 ---
 
