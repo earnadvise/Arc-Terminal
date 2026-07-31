@@ -615,8 +615,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               txHash = await spend({ 
                 amount: requiredMargin, 
                 to: VAULT_ADDRESS, 
-                callData: calldata,
-                token: 'USDC' 
+                chain: "ARC_TESTNET"
               });
             } else {
               addNotification('error', 'Execution Failed', `Insufficient margin. You need at least $${requiredMargin.toFixed(2)} USDC in the Vault to open this position.`);
