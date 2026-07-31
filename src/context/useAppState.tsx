@@ -244,7 +244,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     try {
       const [nativeHex, vaultBalRes, walletBalRes] = await Promise.all([
         eth.request({ method: 'eth_getBalance', params: [address, 'latest'] }).catch(() => null),
-        eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0x273d2a71' + padAddress(address) }, 'latest'] }).catch(() => null),
+        eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0x5dcf7429' + padAddress(address) }, 'latest'] }).catch(() => null),
         eth.request({ method: 'eth_call', params: [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest'] }).catch(() => null)
       ]);
 
