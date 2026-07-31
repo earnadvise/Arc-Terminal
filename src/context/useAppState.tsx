@@ -237,20 +237,29 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const refreshOnChainBalances = async (address: string) => {
-    // Use the standard provider, or specifically Rabby if requested
-    const eth = (window as any).ethereum;
-    if (!eth) return;
+    if (!address) return;
 
     try {
-      // Execute sequentially instead of Promise.all to prevent RPC rate-limit bursts (Arc Testnet is strict)
-      const nativeHex = await eth.request({ method: 'eth_getBalance', params: [address, 'latest'] }).catch(() => null);
-      const vaultBalRes = await eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0xf69f1e4a' + padAddress(address) }, 'latest'] }).catch(() => null);
-      const walletBalRes = await eth.request({ method: 'eth_call', params: [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest'] }).catch(() => null);
+      // Direct RPC fetch to bypass MetaMask queue and avoid network mismatch
+      const rpcUrl = 'https://rpc.testnet.arc.network';
+      const req = (method: string, params: any[]) => fetch(rpcUrl, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
+      }).then(r => r.json()).catch(() => null);
+
+      // Execute sequentially to prevent burst rate limits
+      const nativeRes = await req('eth_getBalance', [address, 'latest']);
+      const vaultRes = await req('eth_call', [{ to: VAULT_ADDRESS, data: '0xf69f1e4a' + padAddress(address) }, 'latest']);
+      const walletRes = await req('eth_call', [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest']);
+
+      const nativeHex = nativeRes?.result;
+      const vaultBalRes = vaultRes?.result;
+      const walletBalRes = walletRes?.result;
 
       setBalances(prev => {
-        const nextNativeBal = nativeHex !== null && nativeHex !== '0x' ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
-        const nextVaultUSDC = vaultBalRes !== null && vaultBalRes !== '0x' ? Number(BigInt(vaultBalRes)) / 1e6 : prev.vaultUSDC;
-        const nextWalletUSDC = walletBalRes !== null && walletBalRes !== '0x' ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
+        const nextNativeBal = nativeHex && nativeHex !== '0x' && !nativeHex.error ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
+        const nextVaultUSDC = vaultBalRes && vaultBalRes !== '0x' && !vaultBalRes.error ? Number(BigInt(vaultBalRes)) / 1e6 : prev.vaultUSDC;
+        const nextWalletUSDC = walletBalRes && walletBalRes !== '0x' && !walletBalRes.error ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
         
         const localUSDC = nextVaultUSDC + nextWalletUSDC;
         const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
@@ -274,13 +283,23 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   // Poll balances when wallet changes
   useEffect(() => {
+    let active = true;
+    
+    const poll = async () => {
+      if (!active || !walletConnected || !walletAddressRef.current) return;
+      
+      await refreshOnChainBalances(walletAddressRef.current);
+      
+      if (active) {
+        setTimeout(poll, 2500); // Wait 2.5s AFTER the previous request finishes to prevent overlapping rate limits
+      }
+    };
+
     if (walletConnected && walletAddress) {
-      refreshOnChainBalances(walletAddress);
-      const interval = setInterval(() => {
-        refreshOnChainBalances(walletAddressRef.current);
-      }, 2000);
-      return () => clearInterval(interval);
+      poll();
     }
+    
+    return () => { active = false; };
   }, [walletConnected, walletAddress]);
 
   useEffect(() => {
