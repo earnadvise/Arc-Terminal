@@ -655,6 +655,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
         setPositions(prev => [newPosition, ...prev]);
         
+        // Deduct margin from balances for UI responsiveness
+        setBalances(prev => ({
+          ...prev,
+          USDC: Math.max(0, prev.USDC - requiredMargin),
+          walletUSDC: Math.max(0, prev.walletUSDC - requiredMargin)
+        }));
+        
         // Add to history
         const historyItem: HistoryItem = {
           id: `tx-${Math.random().toString(36).substring(7)}`,
@@ -729,6 +736,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         'Position Closed',
         `Closed ${pos.side} position on ${pos.symbol} at mark price $${pos.markPrice.toFixed(getPrecision(pos.symbol))}. PnL: $${pos.unrealizedPnl.toFixed(2)}`
       );
+
+      // Immediately return margin and add PnL to balance for UI responsiveness
+      setBalances(prev => ({
+        ...prev,
+        USDC: prev.USDC + pos.margin + pos.unrealizedPnl,
+        walletUSDC: prev.walletUSDC + pos.margin + pos.unrealizedPnl
+      }));
 
       // Record close in history
       const historyItem: HistoryItem = {

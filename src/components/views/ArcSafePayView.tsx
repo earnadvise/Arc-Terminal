@@ -29,7 +29,7 @@ export default function ArcSafePayView() {
   const [payments, setPayments] = useState<Payment[]>([]);
 
   const handleMax = () => {
-    setAmount(balances.walletUSDC ? balances.walletUSDC.toString() : '0');
+    setAmount(balances.USDC ? balances.USDC.toString() : '0');
   };
 
   const handleCreatePayment = async () => {
@@ -178,7 +178,7 @@ export default function ArcSafePayView() {
             <div className="w-full md:w-64">
               <div className="flex justify-between items-center mb-1.5 ml-1 mr-1">
                 <label className="block text-xs font-medium text-slate-400">Amount (USDC)</label>
-                <span className="text-xs text-slate-500">Bal: {balances.walletUSDC ? balances.walletUSDC.toFixed(2) : '0.00'}</span>
+                <span className="text-xs text-slate-500">Bal: {balances.USDC ? balances.USDC.toFixed(2) : '0.00'}</span>
               </div>
               <div className="relative">
                 <input
