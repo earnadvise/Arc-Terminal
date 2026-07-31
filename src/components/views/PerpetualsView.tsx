@@ -428,7 +428,7 @@ export default function PerpetualsView() {
             />
             <button
               onClick={() => {
-                const available = balances.USDC;
+                const available = balances.vaultUSDC;
                 const maxPositionUSD = available * leverage * 0.99;
                 const maxSize = maxPositionUSD / parsedPrice;
                 setInputAmount(maxSize > 0 ? maxSize.toFixed(4) : '0');

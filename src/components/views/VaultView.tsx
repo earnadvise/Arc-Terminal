@@ -358,7 +358,6 @@ export default function VaultView() {
       setTimeout(() => fetchVaultData(), 2500);
       setTimeout(() => fetchVaultData(), 5000);
     } catch (e: any) {
-    } catch (e: any) {
       console.error(e);
       if (e.message?.includes('User rejected') || e.message?.includes('User denied') || e.message?.includes('rejected')) {
         addNotification('error', 'Withdrawal Failed', 'Transaction rejected by user.');
