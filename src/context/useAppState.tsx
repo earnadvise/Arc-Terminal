@@ -236,20 +236,22 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const refreshOnChainBalances = async (userAddressStr?: string) => {
-    const address = userAddressStr || walletAddressRef.current;
-    if (!address) return;
-
+  const refreshOnChainBalances = async (address: string) => {
+    // Use the standard provider, or specifically Rabby if requested
     const eth = (window as any).ethereum;
     if (!eth) return;
 
     try {
-      // Execute all RPC read calls concurrently for maximum speed
       const [nativeHex, vaultBalRes, walletBalRes] = await Promise.all([
         eth.request({ method: 'eth_getBalance', params: [address, 'latest'] }).catch(() => null),
-        eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0x5dcf7429' + padAddress(address) }, 'latest'] }).catch(() => null),
+        eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0x273d2a71' + padAddress(address) }, 'latest'] }).catch(() => null),
         eth.request({ method: 'eth_call', params: [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest'] }).catch(() => null)
       ]);
+
+      // If any of the core RPC requests fail (e.g. rate limit), abort to prevent zeroing out the balances
+      if (nativeHex === null || vaultBalRes === null || walletBalRes === null) {
+        return;
+      }
 
       let nativeBal = 0;
       if (nativeHex && nativeHex !== '0x') {
@@ -521,8 +523,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const connectWallet = async (type: string) => {
-    // Detect Rabby or standard EVM provider
-    const eth = (window as any).rabby || (window as any).ethereum;
+    // Respect the user's explicit wallet choice
+    let eth;
+    if (type.toLowerCase() === 'rabby' && (window as any).rabby) {
+      eth = (window as any).rabby;
+    } else {
+      eth = (window as any).ethereum;
+    }
+    
     if (eth) {
       try {
         const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' });

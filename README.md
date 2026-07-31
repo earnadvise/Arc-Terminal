@@ -70,7 +70,10 @@ Arc Terminal heavily relies on Circle's stablecoin infrastructure for routing, s
 
 ## 📜 Smart Contracts (Arc Testnet)
 
-- **ArcPerpVault:** `0xf33c82fB2c63DD0af7eF746c14b56c12D93458be`
+- **ArcPerpVault (Perpetual Trading):** `0xf33c82fB2c63DD0af7eF746c14b56c12D93458be`
+- **ArcReversiblePayment (ArcSafePay Escrow):** `0x95D00C1B48218e44Be6fF1e90D2f473A646191f0`
+- **USDC Yield Vault (ERC-4626):** `0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9`
+- **EURC Yield Vault (ERC-4626):** `0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E`
 
 ---
 
