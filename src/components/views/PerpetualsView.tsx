@@ -24,7 +24,9 @@ export default function PerpetualsView() {
     placeOrder,
     closePosition,
     cancelOrder,
-    connectWallet
+    connectWallet,
+    depositFunds,
+    withdrawFunds
   } = useAppState();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -488,9 +490,21 @@ export default function PerpetualsView() {
         </div>
 
         {/* Available */}
-        <div className="flex justify-between items-center text-[10px] bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg mb-3">
-          <span className="text-slate-400">Available Margin:</span>
-          <span className="number-mono font-bold text-slate-900">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+        <div className="flex flex-col gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg mb-3">
+          <div className="flex justify-between items-center text-[10px]">
+            <span className="text-slate-400">Available Margin:</span>
+            <span className="number-mono font-bold text-slate-900">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+          </div>
+          <div className="flex gap-2">
+            <button onClick={() => {
+              const amt = window.prompt('Enter USDC amount to deposit for trading:');
+              if (amt && !isNaN(parseFloat(amt))) depositFunds(parseFloat(amt));
+            }} className="flex-1 py-1.5 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] rounded text-[10px] font-bold border border-[#10b981]/20 transition-colors">Deposit</button>
+            <button onClick={() => {
+              const amt = window.prompt('Enter USDC amount to withdraw from trading:');
+              if (amt && !isNaN(parseFloat(amt))) withdrawFunds(parseFloat(amt));
+            }} className="flex-1 py-1.5 bg-[#ef4444]/10 hover:bg-[#ef4444]/20 text-[#ef4444] rounded text-[10px] font-bold border border-[#ef4444]/20 transition-colors">Withdraw</button>
+          </div>
         </div>
 
         {/* Action */}
