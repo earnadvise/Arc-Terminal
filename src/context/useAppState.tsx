@@ -244,44 +244,29 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     try {
       const [nativeHex, vaultBalRes, walletBalRes] = await Promise.all([
         eth.request({ method: 'eth_getBalance', params: [address, 'latest'] }).catch(() => null),
-        eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0x5dcf7429' + padAddress(address) }, 'latest'] }).catch(() => null),
+        eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0xf69f1e4a' + padAddress(address) }, 'latest'] }).catch(() => null),
         eth.request({ method: 'eth_call', params: [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest'] }).catch(() => null)
       ]);
 
-      // If any of the core RPC requests fail (e.g. rate limit), abort to prevent zeroing out the balances
-      if (nativeHex === null || vaultBalRes === null || walletBalRes === null) {
-        return;
-      }
+      setBalances(prev => {
+        const nextNativeBal = nativeHex !== null && nativeHex !== '0x' ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
+        const nextVaultUSDC = vaultBalRes !== null && vaultBalRes !== '0x' ? Number(BigInt(vaultBalRes)) / 1e6 : prev.vaultUSDC;
+        const nextWalletUSDC = walletBalRes !== null && walletBalRes !== '0x' ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
+        
+        const localUSDC = nextVaultUSDC + nextWalletUSDC;
+        const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
 
-      let nativeBal = 0;
-      if (nativeHex && nativeHex !== '0x') {
-        nativeBal = Number(BigInt(nativeHex)) / 1e18;
-      }
-
-      let vaultUSDC = 0;
-      if (vaultBalRes && vaultBalRes !== '0x') {
-        vaultUSDC = Number(BigInt(vaultBalRes)) / 1e6;
-      }
-
-      let walletUSDC = 0;
-      if (walletBalRes && walletBalRes !== '0x') {
-        walletUSDC = Number(BigInt(walletBalRes)) / 1e6;
-      }
-
-      // Strictly use true on-chain balances without mock fallbacks
-      const localUSDC = vaultUSDC + walletUSDC;
-      const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
-
-      setBalances({
-        USDC: localUSDC + unifiedBalances.USDC, // Total Combined Balance
-        walletUSDC,                             // Just MetaMask Wallet USDC
-        vaultUSDC,                              // Just Vault Collateral USDC
-        BTC: nativeBal,
-        ETH: 0,
-        SOL: 0,
-        ARC: nativeBal,
-        EURC: activeUSDC > 0 ? activeUSDC * 0.92 : 0,
-        USDT: activeUSDC
+        return {
+          USDC: localUSDC + (unifiedBalances?.USDC || 0),
+          walletUSDC: nextWalletUSDC,
+          vaultUSDC: nextVaultUSDC,
+          BTC: nextNativeBal,
+          ETH: 0,
+          SOL: 0,
+          ARC: nextNativeBal,
+          EURC: activeUSDC > 0 ? activeUSDC * 0.92 : 0,
+          USDT: activeUSDC
+        };
       });
     } catch (e) {
       console.error('Error refreshing on-chain balances:', e);
