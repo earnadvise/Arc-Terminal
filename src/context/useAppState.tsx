@@ -242,11 +242,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     if (!eth) return;
 
     try {
-      const [nativeHex, vaultBalRes, walletBalRes] = await Promise.all([
-        eth.request({ method: 'eth_getBalance', params: [address, 'latest'] }).catch(() => null),
-        eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0xf69f1e4a' + padAddress(address) }, 'latest'] }).catch(() => null),
-        eth.request({ method: 'eth_call', params: [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest'] }).catch(() => null)
-      ]);
+      // Execute sequentially instead of Promise.all to prevent RPC rate-limit bursts (Arc Testnet is strict)
+      const nativeHex = await eth.request({ method: 'eth_getBalance', params: [address, 'latest'] }).catch(() => null);
+      const vaultBalRes = await eth.request({ method: 'eth_call', params: [{ to: VAULT_ADDRESS, data: '0xf69f1e4a' + padAddress(address) }, 'latest'] }).catch(() => null);
+      const walletBalRes = await eth.request({ method: 'eth_call', params: [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest'] }).catch(() => null);
 
       setBalances(prev => {
         const nextNativeBal = nativeHex !== null && nativeHex !== '0x' ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
