@@ -30,9 +30,9 @@ const encodeOpenPosition = (symbol: string, isLong: boolean, size: number, entry
   const selector = '67491bd2'; // openPosition(string,bool,uint256,uint256,uint256)
   const offsetHex = 'a0'.padStart(64, '0');
   const isLongHex = (isLong ? 1 : 0).toString(16).padStart(64, '0');
-  const sizeWei = BigInt(Math.floor(size * 1000000)) * BigInt(10 ** 12);
+  const sizeWei = BigInt(Math.floor(size * 1e6));
   const sizeHex = sizeWei.toString(16).padStart(64, '0');
-  const priceWei = BigInt(Math.floor(entryPrice * 1000000)) * BigInt(10 ** 12);
+  const priceWei = BigInt(Math.floor(entryPrice * 1e6));
   const priceHex = priceWei.toString(16).padStart(64, '0');
   const leverageHex = leverage.toString(16).padStart(64, '0');
   const stringLenHex = symbol.length.toString(16).padStart(64, '0');
@@ -47,7 +47,7 @@ const encodeOpenPosition = (symbol: string, isLong: boolean, size: number, entry
 const encodeClosePosition = (symbol: string, realizedPnl: number) => {
   const selector = '7606c9f2'; // closePosition(string,int256)
   const offsetHex = '40'.padStart(64, '0');
-  const pnlWei = BigInt(Math.round(realizedPnl * 1000000)) * BigInt(10 ** 12);
+  const pnlWei = BigInt(Math.round(realizedPnl * 1e6));
   const pnlHex = (pnlWei < BigInt(0) ? (BigInt(1) << BigInt(256)) + pnlWei : pnlWei).toString(16).padStart(64, '0');
   const stringLenHex = symbol.length.toString(16).padStart(64, '0');
   let stringBytes = '';
@@ -230,7 +230,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           params: [{ to: VAULT_ADDRESS, data: '0x5dcf7429' + padAddress(address) }, 'latest']
         });
         if (vaultBalRes && vaultBalRes !== '0x') {
-          vaultUSDC = Number(BigInt(vaultBalRes)) / 1e18;
+          vaultUSDC = Number(BigInt(vaultBalRes)) / 1e6;
         }
       } catch (e) {
         // Vault check fallback
@@ -251,7 +251,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             params: [{ to: tokenAddress, data: '0x70a08231' + padAddress(address) }, 'latest']
           }).catch(() => null);
           if (walletBalRes && walletBalRes !== '0x') {
-            walletUSDC = Number(BigInt(walletBalRes)) / 1e18;
+            walletUSDC = Number(BigInt(walletBalRes)) / 1e6;
           }
         }
       } catch (e) {
@@ -771,7 +771,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         params: [{ to: tokenAddress, data: allowanceData }, 'latest']
       });
       
-      const rawAmount = BigInt(Math.floor(amount * 1e6)) * BigInt(10 ** 12); // 18 decimals
+      const rawAmount = BigInt(Math.floor(amount * 1e6)); // 6 decimals
       const currentAllowance = allowanceRes ? BigInt(allowanceRes) : BigInt(0);
 
       if (currentAllowance < rawAmount) {
@@ -790,7 +790,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }
 
       addNotification('info', 'Deposit Collateral', 'Please confirm the deposit transaction in MetaMask.');
-      const amountHex = BigInt(Math.floor(amount * 1e18)).toString(16).padStart(64, '0');
+      const amountHex = BigInt(Math.floor(amount * 1e6)).toString(16).padStart(64, '0');
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
         params: [{
@@ -825,7 +825,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     addNotification('info', 'Withdraw Collateral', 'Please confirm the withdraw transaction in MetaMask.');
     try {
-      const amountHex = BigInt(Math.floor(amount * 1e18)).toString(16).padStart(64, '0');
+      const amountHex = BigInt(Math.floor(amount * 1e6)).toString(16).padStart(64, '0');
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
         params: [{
