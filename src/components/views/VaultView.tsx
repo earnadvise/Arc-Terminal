@@ -290,28 +290,12 @@ export default function VaultView() {
       console.error(e);
       if (e.message?.includes('User rejected') || e.message?.includes('User denied') || e.message?.includes('rejected')) {
         addNotification('error', 'Deposit Failed', 'Transaction rejected by user.');
-        setIsProcessing(false);
-        setProcessStep('');
-        return;
+      } else {
+        addNotification('error', 'Deposit Failed', e.message || 'Transaction reverted on-chain.');
       }
-
-      // Revert / failure fallback: Process locally
-      addNotification('warning', 'Local Settlement', `On-chain contract reverted. Settling ${vault.symbol} deposit locally...`);
-      
-      const newShares = userShares[selectedVaultKey] + parsed;
-      const newTvl = vaultTVL[selectedVaultKey] + parsed;
-      const newSupply = totalSupply[selectedVaultKey] + parsed;
-
-      setUserShares(prev => ({ ...prev, [selectedVaultKey]: newShares }));
-      setVaultTVL(prev => ({ ...prev, [selectedVaultKey]: newTvl }));
-      setTotalSupply(prev => ({ ...prev, [selectedVaultKey]: newSupply }));
-      setUserValue(prev => ({ ...prev, [selectedVaultKey]: newShares }));
-
-      localStorage.setItem('arc_vault_shares_' + selectedVaultKey + '_' + walletAddress, newShares.toString());
-      localStorage.setItem('arc_vault_tvl_' + selectedVaultKey, newTvl.toString());
-
-      addNotification('success', 'Deposit Successful (Local) ✓', `Deposited ${parsed} ${vault.symbol} → received ${vault.shareSymbol} shares.`);
-      setAmount('');
+      setIsProcessing(false);
+      setProcessStep('');
+      return;
     } finally {
       setIsProcessing(false);
       setProcessStep('');
@@ -374,31 +358,14 @@ export default function VaultView() {
       setTimeout(() => fetchVaultData(), 2500);
       setTimeout(() => fetchVaultData(), 5000);
     } catch (e: any) {
+    } catch (e: any) {
       console.error(e);
       if (e.message?.includes('User rejected') || e.message?.includes('User denied') || e.message?.includes('rejected')) {
         addNotification('error', 'Withdrawal Failed', 'Transaction rejected by user.');
-        setIsProcessing(false);
-        setProcessStep('');
-        return;
+      } else {
+        addNotification('error', 'Withdrawal Failed', e.message || 'Transaction reverted on-chain.');
       }
-
-      // Revert / failure fallback: Process locally
-      addNotification('warning', 'Local Settlement', `On-chain contract reverted. Settling ${vault.shareSymbol} redemption locally...`);
-
-      const newShares = Math.max(0, currentShares - parsed);
-      const newTvl = Math.max(0, vaultTVL[selectedVaultKey] - parsed);
-      const newSupply = Math.max(0, totalSupply[selectedVaultKey] - parsed);
-
-      setUserShares(prev => ({ ...prev, [selectedVaultKey]: newShares }));
-      setVaultTVL(prev => ({ ...prev, [selectedVaultKey]: newTvl }));
-      setTotalSupply(prev => ({ ...prev, [selectedVaultKey]: newSupply }));
-      setUserValue(prev => ({ ...prev, [selectedVaultKey]: newShares }));
-
-      localStorage.setItem('arc_vault_shares_' + selectedVaultKey + '_' + walletAddress, newShares.toString());
-      localStorage.setItem('arc_vault_tvl_' + selectedVaultKey, newTvl.toString());
-
-      addNotification('success', 'Withdrawal Successful (Local) ✓', `Redeemed ${parsed} ${vault.shareSymbol} → received ${vault.symbol}.`);
-      setAmount('');
+      return;
     } finally {
       setIsProcessing(false);
       setProcessStep('');
