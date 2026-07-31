@@ -258,17 +258,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         // Token balance fallback
       }
 
-      // Use native gas balance as USDC balance on Arc Testnet if vault is un-deposited
-      const localUSDC = vaultUSDC > 0 ? vaultUSDC : (walletUSDC > 0 ? walletUSDC : nativeBal);
+      // Strictly use true on-chain balances without mock fallbacks
+      const localUSDC = vaultUSDC + walletUSDC;
       const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
 
       setBalances(prev => ({
         ...prev,
-        USDC: activeUSDC > 0 ? activeUSDC : (prev.USDC > 0 ? prev.USDC : 0),
-        walletUSDC: walletUSDC > 0 ? walletUSDC : localUSDC,
-        ARC: nativeBal > 0 ? nativeBal : prev.ARC,
-        EURC: prev.EURC > 0 ? prev.EURC : (activeUSDC > 0 ? activeUSDC * 0.92 : 0),
-        USDT: prev.USDT > 0 ? prev.USDT : activeUSDC
+        USDC: activeUSDC,
+        walletUSDC: walletUSDC,
+        ARC: nativeBal,
+        EURC: activeUSDC > 0 ? activeUSDC * 0.92 : 0,
+        USDT: activeUSDC
       }));
     } catch (e) {
       console.error('Error refreshing on-chain balances:', e);
