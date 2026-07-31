@@ -601,29 +601,37 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       let txHash = '';
 
       if (eth && walletAddress) {
-        addNotification('info', 'Executing Market Order', 'Please confirm the transaction in MetaMask/Rabby...');
         try {
-          // Encode vault contract call
-          const calldata = encodeOpenPosition(
-            activePair.symbol,
-            side === 'LONG',
-            amount,
-            activePair.lastPrice,
-            leverage
-          );
-
-          // Unified Balance Kit Integration
-          // If the user does not have enough local balance but has enough aggregated cross-chain balance,
-          // use the Kit's spend() method to auto-allocate margin.
-          if (balances.walletUSDC < requiredMargin && unifiedBalances.USDC >= requiredMargin) {
-            addNotification('info', 'Unified Balance Kit', 'Auto-allocating cross-chain USDC margin...');
-            txHash = await spend({ 
-              amount: requiredMargin, 
-              to: VAULT_ADDRESS, 
-              chain: "ARC_TESTNET" 
-            });
+          if (balances.vaultUSDC < requiredMargin) {
+            if (unifiedBalances?.USDC >= requiredMargin) {
+              addNotification('info', 'Unified Balance Kit', 'Auto-allocating cross-chain USDC margin...');
+              const calldata = encodeOpenPosition(
+                activePair.symbol,
+                side === 'LONG',
+                amount,
+                activePair.lastPrice,
+                leverage
+              );
+              txHash = await spend({ 
+                amount: requiredMargin, 
+                to: VAULT_ADDRESS, 
+                callData: calldata,
+                token: 'USDC' 
+              });
+            } else {
+              addNotification('error', 'Execution Failed', `Insufficient margin. You need at least $${requiredMargin.toFixed(2)} USDC in the Vault to open this position.`);
+              return;
+            }
           } else {
-            // Standard fallback execution
+            addNotification('info', 'Executing Market Order', 'Please confirm the transaction in MetaMask/Rabby...');
+            const calldata = encodeOpenPosition(
+              activePair.symbol,
+              side === 'LONG',
+              amount,
+              activePair.lastPrice,
+              leverage
+            );
+            
             txHash = await eth.request({
               method: 'eth_sendTransaction',
               params: [{
@@ -795,7 +803,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       });
       
       const rawAmount = BigInt(Math.floor(amount * 1e6)); // 6 decimals
-      const currentAllowance = allowanceRes ? BigInt(allowanceRes) : BigInt(0);
+      const currentAllowance = (allowanceRes && allowanceRes !== '0x') ? BigInt(allowanceRes) : BigInt(0);
 
       if (currentAllowance < rawAmount) {
         addNotification('info', 'Approve USDC', 'Please approve the vault to spend your USDC in MetaMask.');
