@@ -39,10 +39,7 @@ const padAddress = (addr: string) =>
 const padUint = (val: bigint) => val.toString(16).padStart(64, '0');
 
 export default function VaultView() {
-  const {
-    walletConnected, walletAddress,
-    balances, addNotification, addHistoryItem
-  } = useAppState();
+  const { balances, walletConnected, walletAddress, getProvider, addNotification, claimFaucet, addHistoryItem } = useAppState();
 
   const [selectedVaultKey, setSelectedVaultKey] = useState<'USDC' | 'EURC'>('USDC');
   const vault = VAULTS[selectedVaultKey];
@@ -221,7 +218,7 @@ export default function VaultView() {
     setIsProcessing(true);
     let txHash = '';
     try {
-      const eth = (window as any).ethereum;
+      const eth = getProvider();
       if (!eth) throw new Error('No Web3 provider detected.');
 
       const amountWei = BigInt(Math.floor(parsed * 1e6));
@@ -341,7 +338,7 @@ export default function VaultView() {
     setIsProcessing(true);
     let txHash = '';
     try {
-      const eth = (window as any).ethereum;
+      const eth = getProvider();
       if (!eth) throw new Error('No Web3 provider detected.');
 
       setProcessStep('Confirm withdrawal in your wallet…');

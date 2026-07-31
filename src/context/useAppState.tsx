@@ -97,6 +97,7 @@ interface AppContextType {
   // Actions
   connectWallet: (type: string) => Promise<void>;
   disconnectWallet: () => void;
+  getProvider: () => any;
   claimFaucet: () => void;
   addNotification: (type: 'info' | 'success' | 'warning' | 'error', title: string, message: string, txHash?: string) => void;
   dismissNotification: (id: string) => void;
@@ -556,6 +557,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     addNotification('error', 'No Wallet Found', `No ${type} detected. Please install ${type} to connect.`);
   };
 
+  const getProvider = () => {
+    if (walletType === 'rabby' && (window as any).rabby) {
+      return (window as any).rabby;
+    }
+    return (window as any).ethereum;
+  };
+
   const disconnectWallet = () => {
     addNotification('info', 'Wallet Disconnected', `Disconnected wallet.`);
     setWalletConnected(false);
@@ -597,7 +605,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     // Process order
     if (type === 'MARKET') {
-      const eth = (window as any).ethereum;
+      const eth = getProvider();
       let txHash = '';
 
       if (eth && walletAddress) {
@@ -720,7 +728,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const pos = positions.find(p => p.id === id);
     if (!pos) return;
 
-    const eth = (window as any).ethereum;
+    const eth = getProvider();
     if (!eth || !walletConnected || !walletAddress) {
       addNotification('error', 'Execution Failed', 'Wallet not connected.');
       return;
@@ -779,7 +787,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const depositFunds = async (amount: number) => {
-    const eth = (window as any).ethereum;
+    const eth = getProvider();
     if (!eth || !walletConnected || !walletAddress) {
       addNotification('error', 'Deposit Failed', 'Wallet not connected.');
       return;
@@ -842,7 +850,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   };
 
   const withdrawFunds = async (amount: number) => {
-    const eth = (window as any).ethereum;
+    const eth = getProvider();
     if (!eth || !walletConnected || !walletAddress) {
       addNotification('error', 'Withdrawal Failed', 'Wallet not connected.');
       return;
@@ -907,6 +915,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
         connectWallet,
         disconnectWallet,
+        getProvider,
         claimFaucet,
         addNotification,
         dismissNotification,

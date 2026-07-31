@@ -93,7 +93,7 @@ function TokenSelector({
 }
 
 export default function SwapView() {
-  const { walletConnected, walletAddress, balances, setBalances, addNotification, addHistoryItem, claimFaucet, markets } = useAppState();
+  const { walletConnected, walletAddress, balances, setBalances, addNotification, addHistoryItem, claimFaucet, markets, getProvider } = useAppState();
 
   const [fromToken, setFromToken] = useState('USDC');
   const [toToken, setToToken]     = useState('EURC');
@@ -139,7 +139,7 @@ export default function SwapView() {
     addNotification('info', 'Processing Swap', `Swapping ${parsed} ${fromToken} → ${received} ${toToken}...`);
 
     let realTxHash: string | null = null;
-    const eth = (window as any).ethereum;
+    const eth = getProvider();
 
     if (eth && walletAddress) {
       try {

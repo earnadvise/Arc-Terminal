@@ -18,7 +18,7 @@ interface Payment {
 }
 
 export default function ArcSafePayView() {
-  const { walletConnected, addNotification, balances } = useAppState();
+  const { walletConnected, addNotification, balances, getProvider } = useAppState();
 
   const [receiver, setReceiver] = useState('');
   const [amount, setAmount] = useState('');
@@ -33,7 +33,7 @@ export default function ArcSafePayView() {
   };
 
   const handleCreatePayment = async () => {
-    if (!walletConnected || !(window as any).ethereum) {
+    if (!walletConnected || !getProvider()) {
       addNotification('error', 'Wallet not connected', 'Please connect your wallet first.');
       return;
     }
@@ -50,7 +50,7 @@ export default function ArcSafePayView() {
 
     setIsProcessing(true);
     try {
-      const provider = new ethers.BrowserProvider((window as any).ethereum);
+      const provider = new ethers.BrowserProvider(getProvider());
       const signer = await provider.getSigner();
       const amountWei = ethers.parseUnits(amount, 6);
 
