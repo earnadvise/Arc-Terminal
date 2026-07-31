@@ -241,7 +241,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       try {
         const tokenRes = await eth.request({
           method: 'eth_call',
-          params: [{ to: VAULT_ADDRESS, data: '0xdc862d66' }, 'latest']
+          params: [{ to: VAULT_ADDRESS, data: '0xb2016bd4' }, 'latest']
         }).catch(() => null);
 
         if (tokenRes && tokenRes !== '0x' && tokenRes.length >= 42) {
@@ -760,7 +760,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // Get collateral token address
       const tokenRes = await eth.request({
         method: 'eth_call',
-        params: [{ to: VAULT_ADDRESS, data: '0xdc862d66' }, 'latest']
+        params: [{ to: VAULT_ADDRESS, data: '0xb2016bd4' }, 'latest']
       });
       const tokenAddress = '0x' + tokenRes.slice(-40);
 
@@ -790,12 +790,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }
 
       addNotification('info', 'Deposit Collateral', 'Please confirm the deposit transaction in MetaMask.');
+      const amountHex = BigInt(Math.floor(amount * 1e18)).toString(16).padStart(64, '0');
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
         params: [{
           from: walletAddress,
           to: VAULT_ADDRESS,
-          value: '0x0'
+          data: '0xbad4a01f' + amountHex
         }]
       });
 
@@ -824,12 +825,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     addNotification('info', 'Withdraw Collateral', 'Please confirm the withdraw transaction in MetaMask.');
     try {
+      const amountHex = BigInt(Math.floor(amount * 1e18)).toString(16).padStart(64, '0');
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
         params: [{
           from: walletAddress,
           to: VAULT_ADDRESS,
-          value: '0x0'
+          data: '0x6112fe2e' + amountHex
         }]
       });
 
