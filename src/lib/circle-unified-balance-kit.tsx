@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
@@ -15,7 +15,7 @@ export const UnifiedBalanceProvider = ({ apiKey, children }: { apiKey: string; c
   useEffect(() => {
     // Simulate aggregating cross-chain balances via the Kit
     if (apiKey) {
-      setTimeout(() => setUnifiedUSDC(5000), 1500); // Mock 5000 USDC aggregated from other chains
+      setTimeout(() => setUnifiedUSDC(0), 1500); // Changed to 0 to prevent mock balances
     }
   }, [apiKey]);
 
