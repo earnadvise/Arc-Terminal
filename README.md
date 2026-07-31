@@ -51,31 +51,21 @@
 
 ---
 
+## 🔄 Recent Updates (Latest)
+- **Premium Light Mode Overhaul:** Fully migrated the decentralized application to a stunning, modern light theme featuring vivid sky blue gradients, frosted glassmorphism panels, and crisp charcoal text for enhanced professional aesthetics.
+- **Client-Side Oracle Synchronization:** Resolved Vercel geo-blocking issues by migrating price fetching directly to the client side, ensuring 100% accurate real-time index prices for Perpetuals.
+- **UI Legibility Enhancements:** Improved contrast and text visibility across the Arc AI Terminal and Yield Vaults to guarantee readability.
+- **Contract Architecture Preserved:** All Arc Testnet smart contracts remain unchanged and fully functional without disruption.
+
+---
+
 ## 🔵 Circle Products Used
 
 Arc Terminal heavily relies on Circle's stablecoin infrastructure for routing, settlement, and yield generation:
 - **USDC:** Used as the primary base currency for swap routing, perpetual margin collateral, and our primary ERC-4626 Yield Vault.
 - **EURC:** Supported for FX swaps against USDC and has its own dedicated Yield Vault.
 
----
 
-## 📜 Smart Contract Addresses (Arc Testnet)
-
-### ⚙️ Core Infrastructure Contracts
-| Contract / Protocol | Address | Description |
-| :--- | :--- | :--- |
-| **Synthra V3 SwapRouter** | `0xA545bCB1Bd7985c59ea162aB1748A0803434C31b` | Concentrated Liquidity AMM Swap Router |
-| **Perpetuals Vault** | `0x503B3910ff21948464AA92BaB16a6200848bD11B` | Perpetual Derivatives Core Trading Contract |
-| **USDC Vault** | `0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9` | ERC-4626 Yield Vault (`aUSDC` Shares, 5.0% APY) |
-| **EURC Vault** | `0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E` | ERC-4626 Yield Vault (`aEURC` Shares, 4.5% APY) |
-
-### 🪙 Supported Tokens
-| Token | Decimals | Address |
-| :--- | :---: | :--- |
-| **USDC** | 6 | `0x3600000000000000000000000000000000000000` |
-| **USDT** | 18 | `0x175CdB1D338945f0D851A741ccF787D343E57952` |
-| **EURC** | 6 | `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` |
-| **cirBTC** | 8 | `0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF` |
 
 ---
 

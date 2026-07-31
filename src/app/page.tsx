@@ -51,7 +51,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#030304]">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-100 to-sky-300">
       <Navbar />
 
       <div className="flex-1 flex flex-col">
@@ -80,18 +80,17 @@ export default function Home() {
               initial={{ opacity: 0, x: 50, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 50, scale: 0.95 }}
-              layout
-              className={`p-4 rounded-xl border flex gap-3 shadow-2xl backdrop-blur-md pointer-events-auto ${borderFor(n.type)}`}
+              className={`p-4 rounded-xl border flex gap-3 shadow-2xl backdrop-blur-md pointer-events-auto bg-white/90 border-sky-100`}
             >
               <div className="shrink-0 mt-0.5">{iconFor(n.type)}</div>
               <div className="flex-1">
                 <div className="flex justify-between items-start">
-                  <h4 className="text-xs font-bold text-white">{n.title}</h4>
-                  <button onClick={() => dismissNotification(n.id)} className="text-[#6e6e7f] hover:text-white transition-colors">
+                  <h4 className="text-xs font-bold text-slate-900">{n.title}</h4>
+                  <button onClick={() => dismissNotification(n.id)} className="text-slate-400 hover:text-slate-600 transition-colors">
                     <X size={14} />
                   </button>
                 </div>
-                <p className="text-[10px] text-[#8e8e9f] mt-1 leading-normal">{n.message}</p>
+                <p className="text-[10px] text-slate-500 mt-1 leading-normal">{n.message}</p>
                 {n.txHash && (
                   <a
                     href={`https://testnet.arcscan.app/tx/${n.txHash}`}
@@ -102,7 +101,7 @@ export default function Home() {
                     View on Arc Explorer ↗
                   </a>
                 )}
-                <span className="text-[8px] text-[#6e6e7f] number-mono mt-1.5 block">{n.time}</span>
+                <span className="text-[8px] text-slate-400 number-mono mt-1.5 block">{n.time}</span>
               </div>
             </motion.div>
           ))}

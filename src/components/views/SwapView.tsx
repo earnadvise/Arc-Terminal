@@ -47,16 +47,16 @@ function TokenSelector({
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#13131a] hover:bg-[#1c1c28] border border-[#232330] hover:border-[#8b5cf6]/40 transition-all cursor-pointer"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#1c1c28] border border-[#232330] hover:border-[#8b5cf6]/40 transition-all cursor-pointer"
       >
         <span
-          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white shadow-sm"
+          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 shadow-sm"
           style={{ backgroundColor: token.color }}
         >
           {token.symbol[0]}
         </span>
-        <span className="text-sm font-bold text-white">{token.symbol}</span>
-        <ChevronDown size={14} className="text-[#8e8e9f]" />
+        <span className="text-sm font-bold text-slate-900">{token.symbol}</span>
+        <ChevronDown size={14} className="text-slate-500" />
       </button>
 
       <AnimatePresence>
@@ -65,23 +65,23 @@ function TokenSelector({
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
-            className="absolute top-full mt-2 left-0 w-52 bg-[#09090c] border border-[#13131a] rounded-xl p-1.5 shadow-2xl z-30"
+            className="absolute top-full mt-2 left-0 w-52 bg-white border border-slate-200 rounded-xl p-1.5 shadow-2xl z-30"
           >
             {TOKENS.filter(t => t.symbol !== exclude).map(t => (
               <button
                 key={t.symbol}
                 onClick={() => { onChange(t.symbol); setOpen(false); }}
-                className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-[#13131a] transition-all text-left cursor-pointer"
+                className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-100 transition-all text-left cursor-pointer"
               >
                 <span
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-900 shrink-0"
                   style={{ backgroundColor: t.color }}
                 >
                   {t.symbol[0]}
                 </span>
                 <div>
-                  <div className="text-xs font-bold text-white">{t.symbol}</div>
-                  <div className="text-[10px] text-[#8e8e9f]">{t.name}</div>
+                  <div className="text-xs font-bold text-slate-900">{t.symbol}</div>
+                  <div className="text-[10px] text-slate-500">{t.name}</div>
                 </div>
               </button>
             ))}
@@ -258,12 +258,12 @@ export default function SwapView() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-extrabold text-white tracking-wide">Swap</h1>
-            <p className="text-xs text-[#8e8e9f] mt-0.5">Instant token swaps on Arc Testnet</p>
+            <h1 className="text-xl font-extrabold text-slate-900 tracking-wide">Swap</h1>
+            <p className="text-xs text-slate-500 mt-0.5">Instant token swaps on Arc Testnet</p>
           </div>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-xl border transition-all ${showSettings ? 'bg-[#8b5cf6]/15 border-[#8b5cf6]/40 text-[#8b5cf6]' : 'bg-[#09090c] border-[#13131a] text-[#8e8e9f] hover:text-white'}`}
+            className={`p-2 rounded-xl border transition-all ${showSettings ? 'bg-[#8b5cf6]/15 border-[#8b5cf6]/40 text-[#8b5cf6]' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900'}`}
           >
             <Settings size={16} />
           </button>
@@ -278,17 +278,17 @@ export default function SwapView() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="bg-[#09090c] border border-[#13131a] rounded-2xl p-4 space-y-3">
-                <div className="text-xs font-bold text-white uppercase tracking-wide">Swap Settings</div>
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
+                <div className="text-xs font-bold text-slate-900 uppercase tracking-wide">Swap Settings</div>
                 <div>
-                  <div className="text-[10px] text-[#8e8e9f] mb-2">Max Slippage</div>
+                  <div className="text-[10px] text-slate-500 mb-2">Max Slippage</div>
                   <div className="flex gap-2">
                     {['0.1', '0.5', '1.0'].map(s => (
                       <button
                         key={s}
                         onClick={() => setSlippage(s)}
                         className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-                          slippage === s ? 'bg-[#8b5cf6]/20 border-[#8b5cf6]/50 text-[#8b5cf6]' : 'bg-[#0d0d12] border-[#13131a] text-[#8e8e9f]'
+                          slippage === s ? 'bg-[#8b5cf6]/20 border-[#8b5cf6]/50 text-[#8b5cf6]' : 'bg-slate-50 border-slate-200 text-slate-500'
                         }`}
                       >
                         {s}%
@@ -298,9 +298,9 @@ export default function SwapView() {
                       <input
                         value={slippage}
                         onChange={e => setSlippage(e.target.value)}
-                        className="w-full bg-[#0d0d12] border border-[#13131a] focus:border-[#8b5cf6]/40 rounded-lg px-3 py-1.5 text-xs text-white number-mono outline-none text-right pr-6"
+                        className="w-full bg-slate-50 border border-slate-200 focus:border-[#8b5cf6]/40 rounded-lg px-3 py-1.5 text-xs text-slate-900 number-mono outline-none text-right pr-6"
                       />
-                      <span className="absolute right-2.5 top-1.5 text-xs text-[#8e8e9f]">%</span>
+                      <span className="absolute right-2.5 top-1.5 text-xs text-slate-500">%</span>
                     </div>
                   </div>
                 </div>
@@ -310,18 +310,18 @@ export default function SwapView() {
         </AnimatePresence>
 
         {/* Swap Box Container */}
-        <div className="bg-[#09090c] border border-[#13131a] rounded-2xl p-5 shadow-2xl space-y-3 relative overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-3 relative overflow-hidden">
 
           {/* Top subtle glow */}
           <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#8b5cf6]/10 rounded-full blur-2xl pointer-events-none" />
 
           {/* YOU PAY PANEL */}
-          <div className="bg-[#0d0d12] border border-[#13131a] rounded-xl p-4 space-y-2 focus-within:border-[#8b5cf6]/40 transition-all">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 focus-within:border-[#8b5cf6]/40 transition-all">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[#8e8e9f] font-semibold">You Pay</span>
+              <span className="text-slate-500 font-semibold">You Pay</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-[#8e8e9f]">Balance:</span>
-                <span className="text-white font-bold number-mono">
+                <span className="text-slate-500">Balance:</span>
+                <span className="text-slate-900 font-bold number-mono">
                   {fromBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })} {fromToken}
                 </span>
                 {fromBalance > 0 && (
@@ -341,7 +341,7 @@ export default function SwapView() {
                 placeholder="0.0"
                 value={fromAmount}
                 onChange={e => setFromAmount(e.target.value)}
-                className="w-full bg-transparent text-2xl font-black text-white number-mono outline-none placeholder-[#3a3a4a]"
+                className="w-full bg-transparent text-2xl font-black text-slate-900 number-mono outline-none placeholder-[#3a3a4a]"
               />
               <TokenSelector
                 value={fromToken}
@@ -351,7 +351,7 @@ export default function SwapView() {
             </div>
 
             {parsed > 0 && (
-              <div className="text-[11px] text-[#8e8e9f] number-mono">
+              <div className="text-[11px] text-slate-500 number-mono">
                 ≈ ${(parsed * fromPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
               </div>
             )}
@@ -366,26 +366,26 @@ export default function SwapView() {
                 setToToken(prev);
                 setFromAmount('');
               }}
-              className="p-2.5 rounded-xl bg-[#13131a] hover:bg-[#1c1c28] border border-[#232330] hover:border-[#8b5cf6]/40 text-[#8b5cf6] hover:text-white transition-all cursor-pointer shadow-lg hover:rotate-180 duration-300"
+              className="p-2.5 rounded-xl bg-slate-100 hover:bg-[#1c1c28] border border-[#232330] hover:border-[#8b5cf6]/40 text-[#8b5cf6] hover:text-slate-900 transition-all cursor-pointer shadow-lg hover:rotate-180 duration-300"
             >
               <ArrowUpDown size={16} />
             </button>
           </div>
 
           {/* YOU RECEIVE PANEL */}
-          <div className="bg-[#0d0d12] border border-[#13131a] rounded-xl p-4 space-y-2">
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-[#8e8e9f] font-semibold">You Receive (Est.)</span>
+              <span className="text-slate-500 font-semibold">You Receive (Est.)</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-[#8e8e9f]">Balance:</span>
-                <span className="text-white font-bold number-mono">
+                <span className="text-slate-500">Balance:</span>
+                <span className="text-slate-900 font-bold number-mono">
                   {((balances as any)[toToken] ?? 0).toLocaleString(undefined, { maximumFractionDigits: 4 })} {toToken}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <div className="text-2xl font-black text-white number-mono opacity-90">
+              <div className="text-2xl font-black text-slate-900 number-mono opacity-90">
                 {received > 0 ? received.toLocaleString(undefined, { maximumFractionDigits: 4 }) : '0.0'}
               </div>
               <TokenSelector
@@ -396,7 +396,7 @@ export default function SwapView() {
             </div>
 
             {received > 0 && (
-              <div className="text-[11px] text-[#8e8e9f] number-mono">
+              <div className="text-[11px] text-slate-500 number-mono">
                 ≈ ${(received * toPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
               </div>
             )}
@@ -407,25 +407,25 @@ export default function SwapView() {
             <motion.div
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-3 bg-[#0d0d12]/50 border border-[#13131a] rounded-xl text-xs space-y-1.5"
+              className="p-3 bg-slate-50/50 border border-slate-200 rounded-xl text-xs space-y-1.5"
             >
-              <div className="flex justify-between text-[#8e8e9f]">
+              <div className="flex justify-between text-slate-500">
                 <span>Exchange Rate</span>
-                <span className="text-white number-mono font-semibold">
+                <span className="text-slate-900 number-mono font-semibold">
                   1 {fromToken} = {(fromPrice / toPrice).toFixed(4)} {toToken}
                 </span>
               </div>
-              <div className="flex justify-between text-[#8e8e9f]">
+              <div className="flex justify-between text-slate-500">
                 <span>Price Impact</span>
                 <span className="text-[#10b981] font-semibold">&lt; 0.01%</span>
               </div>
-              <div className="flex justify-between text-[#8e8e9f]">
+              <div className="flex justify-between text-slate-500">
                 <span>Max Slippage</span>
-                <span className="text-white font-semibold">{slippage}%</span>
+                <span className="text-slate-900 font-semibold">{slippage}%</span>
               </div>
-              <div className="flex justify-between text-[#8e8e9f]">
+              <div className="flex justify-between text-slate-500">
                 <span>Network Fee</span>
-                <span className="text-white font-semibold">~0.001 ARC</span>
+                <span className="text-slate-900 font-semibold">~0.001 ARC</span>
               </div>
             </motion.div>
           )}
@@ -437,12 +437,12 @@ export default function SwapView() {
               disabled={isSwapping || parsed <= 0 || parsed > fromBalance}
               className={`w-full py-4 rounded-xl font-bold text-sm transition-all shadow-xl cursor-pointer ${
                 isSwapping
-                  ? 'bg-[#181822] text-[#8e8e9f] border border-[#13131a] cursor-not-allowed'
+                  ? 'bg-sky-100 text-slate-500 border border-slate-200 cursor-not-allowed'
                   : parsed > fromBalance
                   ? 'bg-red-500/10 border border-red-500/30 text-[#ef4444] cursor-not-allowed'
                   : parsed <= 0
-                  ? 'bg-[#13131a] border border-[#232330] text-[#6e6e7f] cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-white shadow-[0_0_25px_rgba(139,92,246,0.35)]'
+                  ? 'bg-slate-100 border border-[#232330] text-slate-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 shadow-[0_0_25px_rgba(139,92,246,0.35)]'
               }`}
             >
               {isSwapping ? (
@@ -469,7 +469,7 @@ export default function SwapView() {
         </div>
 
         {/* Powered by */}
-        <div className="flex items-center justify-center gap-1.5 text-[10px] text-[#6e6e7f]">
+        <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400">
           <Zap size={11} className="text-[#8b5cf6]" />
           Powered by Arc Testnet AMM
         </div>
@@ -490,11 +490,11 @@ export default function SwapView() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-md rounded-2xl bg-[#09090c] border border-[#8b5cf6]/40 p-6 shadow-[0_0_50px_rgba(139,92,246,0.25)] z-10 text-center space-y-4"
+              className="relative w-full max-w-md rounded-2xl bg-white border border-[#8b5cf6]/40 p-6 shadow-[0_0_50px_rgba(139,92,246,0.25)] z-10 text-center space-y-4"
             >
               <button
                 onClick={() => setTxModalData(null)}
-                className="absolute top-4 right-4 text-[#8e8e9f] hover:text-white transition-colors"
+                className="absolute top-4 right-4 text-slate-500 hover:text-slate-900 transition-colors"
               >
                 <X size={18} />
               </button>
@@ -504,14 +504,14 @@ export default function SwapView() {
               </div>
 
               <div>
-                <h3 className="text-lg font-extrabold text-white tracking-wide">Swap Successful</h3>
-                <p className="text-xs text-[#8e8e9f] mt-1">
-                  Swapped <span className="text-white font-bold">{txModalData.fromAmt} {txModalData.from}</span> → <span className="text-[#10b981] font-bold">{txModalData.toAmt} {txModalData.to}</span>
+                <h3 className="text-lg font-extrabold text-slate-900 tracking-wide">Swap Successful</h3>
+                <p className="text-xs text-slate-500 mt-1">
+                  Swapped <span className="text-slate-900 font-bold">{txModalData.fromAmt} {txModalData.from}</span> → <span className="text-[#10b981] font-bold">{txModalData.toAmt} {txModalData.to}</span>
                 </p>
               </div>
 
-              <div className="bg-[#0d0d12] border border-[#13131a] p-3 rounded-xl text-left space-y-1">
-                <div className="text-[10px] text-[#6e6e7f] uppercase font-bold">Transaction Hash</div>
+              <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl text-left space-y-1">
+                <div className="text-[10px] text-slate-400 uppercase font-bold">Transaction Hash</div>
                 <div className="number-mono text-xs text-[#8b5cf6] break-all select-all font-semibold">
                   {txModalData.hash}
                 </div>
@@ -522,13 +522,13 @@ export default function SwapView() {
                   href={`https://testnet.arcscan.app/tx/${txModalData.hash}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-white text-xs font-bold transition-all shadow-[0_0_15px_rgba(139,92,246,0.4)]"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 text-xs font-bold transition-all shadow-[0_0_15px_rgba(139,92,246,0.4)]"
                 >
                   View on Arc Explorer <ExternalLink size={14} />
                 </a>
                 <button
                   onClick={() => setTxModalData(null)}
-                  className="px-4 py-3 rounded-xl bg-[#13131a] hover:bg-[#1c1c28] text-xs font-semibold text-[#8e8e9f] hover:text-white transition-colors"
+                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-[#1c1c28] text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
                 >
                   Close
                 </button>

@@ -11,6 +11,7 @@ import {
   generateCandlesticks,
   initialHistory
 } from '../utils/mockData';
+import { useUnifiedBalance } from "@/lib/circle-unified-balance-kit";
 
 export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Agents' | 'SafePay' | 'History';
 
@@ -112,6 +113,9 @@ interface AppContextType {
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
+  // Unified Balance Kit
+  const { balances: unifiedBalances, spend } = useUnifiedBalance();
+
   // Navigation & Markets
   const [activeTab, setActiveTab] = useState<AppTab>('Home');
   const [markets, setMarkets] = useState<Market[]>(initialMarkets);
@@ -255,12 +259,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Use native gas balance as USDC balance on Arc Testnet if vault is un-deposited
-      const activeUSDC = vaultUSDC > 0 ? vaultUSDC : (walletUSDC > 0 ? walletUSDC : nativeBal);
+      const localUSDC = vaultUSDC > 0 ? vaultUSDC : (walletUSDC > 0 ? walletUSDC : nativeBal);
+      const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
 
       setBalances(prev => ({
         ...prev,
         USDC: activeUSDC > 0 ? activeUSDC : (prev.USDC > 0 ? prev.USDC : 0),
-        walletUSDC: walletUSDC > 0 ? walletUSDC : activeUSDC,
+        walletUSDC: walletUSDC > 0 ? walletUSDC : localUSDC,
         ARC: nativeBal > 0 ? nativeBal : prev.ARC,
         EURC: prev.EURC > 0 ? prev.EURC : (activeUSDC > 0 ? activeUSDC * 0.92 : 0),
         USDT: prev.USDT > 0 ? prev.USDT : activeUSDC
@@ -284,23 +289,51 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchPrices = async () => {
       try {
-        const res = await fetch('/api/prices');
-        if (!res.ok) throw new Error('API request failed');
-        const data = await res.json();
+        // Fetch directly from Binance client-side to bypass Vercel US server blocks
+        const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22SUIUSDT%22,%22APTUSDT%22,%22PAXGUSDT%22%5D').catch(() => null);
         
+        let apiData: Record<string, any> = {};
+        if (binanceRes && binanceRes.ok) {
+          const data = await binanceRes.json();
+          data.forEach((item: any) => {
+            const symbolMap: Record<string, string> = {
+              BTCUSDT: 'BTC-PERP', ETHUSDT: 'ETH-PERP', SOLUSDT: 'SOL-PERP',
+              SUIUSDT: 'SUI-PERP', APTUSDT: 'APT-PERP', PAXGUSDT: 'xau-PERP'
+            };
+            const sym = symbolMap[item.symbol];
+            if (sym) {
+              apiData[sym] = {
+                lastPrice: parseFloat(item.lastPrice),
+                change24h: parseFloat(item.priceChangePercent),
+                high24h: parseFloat(item.highPrice),
+                low24h: parseFloat(item.lowPrice),
+                volume24h: Math.round(parseFloat(item.quoteVolume)),
+              };
+            }
+          });
+          if (apiData['BTC-PERP']) {
+            apiData['ARC-PERP'] = { ...apiData['BTC-PERP'] };
+          }
+        } else {
+          // Fallback to our Next.js API if Binance client-fetch fails
+          const res = await fetch('/api/prices');
+          if (!res.ok) throw new Error('API request failed');
+          apiData = await res.json();
+        }
+
         // 1. Update Markets and Positions
         setMarkets(prevMarkets => {
           const updated = prevMarkets.map(m => {
-            const apiData = data[m.symbol];
-            if (!apiData) return m;
+            const marketData = apiData[m.symbol];
+            if (!marketData) return m;
 
             return {
               ...m,
-              lastPrice: apiData.lastPrice,
-              change24h: apiData.change24h,
-              high24h: apiData.high24h,
-              low24h: apiData.low24h,
-              volume24h: apiData.volume24h,
+              lastPrice: marketData.lastPrice,
+              change24h: marketData.change24h,
+              high24h: marketData.high24h,
+              low24h: marketData.low24h,
+              volume24h: marketData.volume24h,
             };
           });
 
@@ -565,14 +598,27 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             strLen +    // string length
             strHex;     // string data
 
-          txHash = await eth.request({
-            method: 'eth_sendTransaction',
-            params: [{
-              from: walletAddress,
-              to: VAULT_ADDRESS,
-              data: calldata
-            }]
-          });
+          // Unified Balance Kit Integration
+          // If the user does not have enough local balance but has enough aggregated cross-chain balance,
+          // use the Kit's spend() method to auto-allocate margin.
+          if (balances.walletUSDC < requiredMargin && unifiedBalances.USDC >= requiredMargin) {
+            addNotification('info', 'Unified Balance Kit', 'Auto-allocating cross-chain USDC margin...');
+            txHash = await spend({ 
+              amount: requiredMargin, 
+              to: VAULT_ADDRESS, 
+              chain: "ARC_TESTNET" 
+            });
+          } else {
+            // Standard fallback execution
+            txHash = await eth.request({
+              method: 'eth_sendTransaction',
+              params: [{
+                from: walletAddress,
+                to: VAULT_ADDRESS,
+                data: calldata
+              }]
+            });
+          }
 
           addNotification('success', 'Transaction Submitted', `Open Position sent: ${txHash.slice(0, 10)}...`, txHash);
         } catch (err: any) {

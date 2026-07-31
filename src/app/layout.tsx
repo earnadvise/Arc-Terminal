@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AppStateProvider } from "@/context/useAppState";
+import { UnifiedBalanceProvider } from "@/lib/circle-unified-balance-kit";
 
 export const metadata: Metadata = {
   title: "Arc Terminal | Modern Perpetual DEX",
@@ -8,6 +9,8 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const apiKey = process.env.NEXT_PUBLIC_CIRCLE_KIT_KEY || "8284e102d788202cba2c812efa5e2198:cc4ca0a633b7228fba17659ab27795a0";
+
   return (
     <html lang="en" className="h-full dark bg-[#030304]">
       <head>
@@ -19,7 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-full flex flex-col antialiased bg-[#030304] text-[#f4f4f7] selection:bg-[#8b5cf6]/30">
-        <AppStateProvider>{children}</AppStateProvider>
+        <UnifiedBalanceProvider apiKey={apiKey}>
+          <AppStateProvider>{children}</AppStateProvider>
+        </UnifiedBalanceProvider>
       </body>
     </html>
   );
