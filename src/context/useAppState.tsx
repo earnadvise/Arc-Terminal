@@ -184,7 +184,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const tickCounter = useRef<number>(0);
 
-  const VAULT_ADDRESS = '0x503B3910ff21948464AA92BaB16a6200848bD11B';
+  const VAULT_ADDRESS = '0xf33c82fB2c63DD0af7eF746c14b56c12D93458be';
   const DECIMALS = 18;
 
   const padAddress = (addr: string) => addr.toLowerCase().replace('0x', '').padStart(64, '0');
