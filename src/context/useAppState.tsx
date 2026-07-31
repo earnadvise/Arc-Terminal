@@ -150,8 +150,26 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, [walletAddress]);
 
   // State Lists
-  const [positions, setPositions] = useState<Position[]>([]);
-  const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
+  const [positions, setPositions] = useState<Position[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('arc_terminal_positions');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [];
+  });
+  
+  const [openOrders, setOpenOrders] = useState<OpenOrder[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('arc_terminal_orders');
+        if (saved) return JSON.parse(saved);
+      } catch {}
+    }
+    return [];
+  });
+  
   const [history, setHistory] = useState<HistoryItem[]>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -161,6 +179,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
     return [];
   });
+
+  useEffect(() => {
+    localStorage.setItem('arc_terminal_positions', JSON.stringify(positions));
+  }, [positions]);
+
+  useEffect(() => {
+    localStorage.setItem('arc_terminal_orders', JSON.stringify(openOrders));
+  }, [openOrders]);
+
+  useEffect(() => {
+    localStorage.setItem('arc_terminal_user_history', JSON.stringify(history));
+  }, [history]);
+
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   // Candle Chart Data cache per market-timeframe
