@@ -204,7 +204,8 @@ export default function AgentsView() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch from agent backend');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP Error ${response.status}`);
       }
 
       const data = await response.json();
@@ -223,7 +224,7 @@ export default function AgentsView() {
       setMessages(prev => [...prev, {
         id: `msg-${Date.now()}`,
         role: 'assistant',
-        content: `Error: ${err.message}. Ensure your CIRCLE_API_KEY is in .env.local`,
+        content: `Error: ${err.message}`,
         timestamp: new Date()
       }]);
     } finally {
