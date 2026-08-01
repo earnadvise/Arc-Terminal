@@ -196,40 +196,117 @@ export default function AgentsView() {
     setInputValue('');
     setIsTyping(true);
 
-    try {
-      const response = await fetch('/api/agent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: [...messages, userMessage] })
-      });
+    // Simulate AI response delay
+    setTimeout(() => {
+      const query = text.toLowerCase();
+      let responseContent = '';
+      let action: 'swap_tokens' | undefined;
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP Error ${response.status}`);
-      }
+      const isSwapQuery = query.startsWith('/swap') || 
+                          query === 'swap' || 
+                          query.includes('swap tokens') || 
+                          query.includes('exchange') ||
+                          ((query.includes('usdc') || query.includes('eurc') || query.includes('usdt') || query.includes('cirbtc')) && query.includes('to'));
 
-      const data = await response.json();
-      
-      if (data.error) {
-        throw new Error(data.error);
+      if (isSwapQuery) {
+        let parsedAmount = '10';
+        let parsedFrom = 'USDC';
+        let parsedTo = 'EURC';
+
+        // Extract amount: find any number (integer or decimal)
+        const amountMatch = query.match(/(\d+(\.\d+)?)/);
+        if (amountMatch) {
+          parsedAmount = amountMatch[1];
+        }
+
+        // Extract tokens
+        const tokensFound = ['usdc', 'usdt', 'eurc', 'cirbtc'].filter(t => query.includes(t));
+        if (tokensFound.length >= 2) {
+          const toIndex = query.indexOf('to');
+          if (toIndex !== -1) {
+            const beforeTo = query.substring(0, toIndex);
+            const afterTo = query.substring(toIndex + 2);
+            
+            const fromTokenMatch = tokensFound.find(t => beforeTo.includes(t));
+            const toTokenMatch = tokensFound.find(t => afterTo.includes(t));
+            
+            if (fromTokenMatch) parsedFrom = fromTokenMatch.toUpperCase();
+            if (toTokenMatch) parsedTo = toTokenMatch.toUpperCase();
+          } else {
+            parsedFrom = tokensFound[0].toUpperCase();
+            parsedTo = tokensFound[1].toUpperCase();
+          }
+        } else if (tokensFound.length === 1) {
+          parsedFrom = tokensFound[0].toUpperCase();
+          parsedTo = parsedFrom === 'USDC' ? 'EURC' : 'USDC';
+        }
+
+        setChatSwapFromToken(parsedFrom);
+        setChatSwapToToken(parsedTo);
+        setChatSwapAmount(parsedAmount);
+
+        responseContent = `I can help you swap assets on SynthraV3 Router. I parsed your swap request as: **${parsedAmount} ${parsedFrom}** → **${parsedTo}**.\n\nYou can customize the swap parameters in the card below and execute it directly from the chat:`;
+        action = 'swap_tokens';
+      } else if (query.includes('balance') || query.includes('portfolio') || query.includes('wallet') || query.includes('assets')) {
+        if (!walletConnected) {
+          responseContent = 'It looks like your wallet is not connected. Please connect your wallet in the navigation bar to view your balances.';
+        } else {
+          const balanceList = Object.entries(balances)
+            .map(([token, val]) => `• **${token}**: ${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}`)
+            .join('\n');
+          
+          responseContent = `Here are your current wallet balances:\n\n${balanceList}\n\nLet me know if you would like me to analyze your portfolio or suggest market opportunities.`;
+        }
+      } else if (query.includes('position') || query.includes('trade') || query.includes('leverage') || query.includes('open')) {
+        if (!walletConnected) {
+          responseContent = 'Please connect your wallet to query your active trading positions.';
+        } else if (positions.length === 0) {
+          responseContent = 'You currently have no open perpetual positions on Arc Terminal. Go to the Perpetuals tab to open your first leverage trade!';
+        } else {
+          const positionList = positions.map(pos => {
+            const sideColor = pos.side === 'LONG' ? '🟢 LONG' : '🔴 SHORT';
+            const pnlColor = pos.unrealizedPnl >= 0 ? `+$${pos.unrealizedPnl.toFixed(2)}` : `-$${Math.abs(pos.unrealizedPnl).toFixed(2)}`;
+            return `• **${pos.symbol}** (${sideColor} x${pos.leverage})\n  Size: ${pos.size} | Entry: $${pos.entryPrice} | Mark: $${pos.markPrice}\n  Unrealized PnL: **${pnlColor}** | Margin: $${pos.margin} (${pos.marginMode})`;
+          }).join('\n\n');
+          responseContent = `You have **${positions.length}** active position(s):\n\n${positionList}`;
+        }
+      } else if (query.includes('market') || query.includes('price') || query.includes('ticker') || query.includes('rates')) {
+        const marketList = markets.map(m => {
+          const changeStr = m.change24h >= 0 ? `+${m.change24h.toFixed(2)}%` : `${m.change24h.toFixed(2)}%`;
+          return `• **${m.symbol}**: $${m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })} (${changeStr})`;
+        }).join('\n');
+        responseContent = `Here are the current market prices on Arc Terminal:\n\n${marketList}`;
+
+      } else if (query.includes('clear') || query.includes('reset')) {
+        setMessages([
+          {
+            id: 'welcome',
+            role: 'assistant',
+            content: 'Hello! I am Arc AI, your trading assistant. How can I help you today?',
+            timestamp: new Date()
+          }
+        ]);
+        setIsTyping(false);
+        return;
+
+      } else {
+        responseContent = `I can assist you with several trading tasks on Arc Terminal:\n\n` +
+          `• **Swap Assets**: Ask "/swap 10 USDC to EURC"\n` +
+          `• **Check Wallet Balances**: Ask "What are my balances?"\n` +
+          `• **Monitor Active Trades**: Ask "Show my open positions"\n` +
+          `• **List Market Prices**: Ask "Get current market rates"\n\n` +
+          `What would you like me to do?`;
       }
 
       setMessages(prev => [...prev, {
         id: `msg-${Date.now()}`,
         role: 'assistant',
-        content: data.content || 'No response from Agent.',
-        timestamp: new Date()
+        content: responseContent,
+        timestamp: new Date(),
+        customAction: action
       }]);
-    } catch (err: any) {
-      setMessages(prev => [...prev, {
-        id: `msg-${Date.now()}`,
-        role: 'assistant',
-        content: `Error: ${err.message}`,
-        timestamp: new Date()
-      }]);
-    } finally {
       setIsTyping(false);
-    }
+    }, 800);
   };
 
   const formatText = (text: string) => {
