@@ -1,0 +1,1 @@
+const fs = require('fs'); let c = fs.readFileSync('src/components/views/VaultView.tsx', 'utf8'); c = c.replace(/    } catch \(e: any\) \{[\s\S]*?    } finally \{/g, () = return     } catch (e: any) {\n      console.error(e);\n      if (e.message?.includes('User rejected') 
