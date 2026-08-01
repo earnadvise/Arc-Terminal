@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { rpcCall, rpcGetReceipt } from '../../lib/rpcClient';
 import { useAppState } from '@/context/useAppState';
 import {
   TrendingUp, Coins,

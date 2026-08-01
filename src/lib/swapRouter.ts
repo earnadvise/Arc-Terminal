@@ -1,3 +1,4 @@
+import { rpcCall, rpcGetReceipt } from './rpcClient';
 /**
  * Arc Testnet Swap Router Utilities
  *
@@ -7,41 +8,6 @@
  * This is the same router infrastructure used by Tower Exchange.
  * Discovered from Tower tx 0x225198... decoded_input.
  */
-
-// ─── RPC Endpoint ─────────────────────────────────────────────────
-const ARC_RPC_URL = 'https://rpc.testnet.arc.network';
-
-/** Direct RPC call — bypasses wallet provider for reliable read-only queries. */
-async function rpcCall(to: string, data: string): Promise<string | null> {
-  try {
-    const res = await fetch(ARC_RPC_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method: 'eth_call', params: [{ to, data }, 'latest'] })
-    });
-    const json = await res.json();
-    if (json.result && json.result !== '0x') return json.result;
-  } catch (e) {
-    console.warn('Direct RPC call failed:', e);
-  }
-  return null;
-}
-
-/** Direct RPC helper for getTransactionReceipt. */
-async function rpcGetReceipt(txHash: string): Promise<any | null> {
-  try {
-    const res = await fetch(ARC_RPC_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ jsonrpc: '2.0', id: Date.now(), method: 'eth_getTransactionReceipt', params: [txHash] })
-    });
-    const json = await res.json();
-    return json.result || null;
-  } catch (e) {
-    console.warn('Direct RPC getReceipt failed:', e);
-  }
-  return null;
-}
 
 // ─── Token Registry ───────────────────────────────────────────────
 export const ARC_TOKENS: Record<string, { address: string; decimals: number; name: string }> = {
