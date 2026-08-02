@@ -36,6 +36,9 @@ export default function PerpetualsView() {
   const [inputPrice, setInputPrice] = useState<string>(activePair.lastPrice.toString());
   const [inputAmount, setInputAmount] = useState<string>('1.0');
   const [activeBottomTab, setActiveBottomTab] = useState<'Positions' | 'OpenOrders' | 'TradeHistory' | 'FundingHistory'>('Positions');
+  const [tpPrice, setTpPrice] = useState<string>('');
+  const [slPrice, setSlPrice] = useState<string>('');
+  const [sharePosition, setSharePosition] = useState<any>(null);
 
   React.useEffect(() => {
     setInputPrice(activePair.lastPrice.toString());
@@ -248,7 +251,10 @@ export default function PerpetualsView() {
                         <td className={`number-mono font-bold ${isGain ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                           {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
                         </td>
-                        <td className="text-right">
+                        <td className="text-right flex items-center justify-end gap-1">
+                          <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                          </button>
                           <button onClick={() => closePosition(pos.id)} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
                         </td>
                       </tr>
@@ -349,7 +355,7 @@ export default function PerpetualsView() {
       <section className="xl:col-span-1 bg-white border border-slate-200 rounded-xl p-4 flex flex-col shadow-xl" style={{ maxHeight: 820 }}>
         {/* Order Type */}
         <div className="flex bg-slate-50 border border-slate-200 p-0.5 rounded-lg mb-4">
-          {(['Market', 'Limit', 'Stop'] as const).map(t => (
+          {(['Market', 'Limit'] as const).map(t => (
             <button
               key={t}
               onClick={() => setOrderType(t)}
@@ -437,6 +443,34 @@ export default function PerpetualsView() {
             >
               MAX
             </button>
+          </div>
+        </div>
+
+        {/* TP / SL */}
+        <div className="grid grid-cols-2 gap-2 mb-3">
+          <div>
+            <div className="flex justify-between mb-1">
+              <span className="text-[10px] text-slate-500 font-semibold">Take Profit</span>
+            </div>
+            <input
+              type="text"
+              placeholder="0.00"
+              value={tpPrice}
+              onChange={e => setTpPrice(e.target.value)}
+              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 outline-none transition-colors"
+            />
+          </div>
+          <div>
+            <div className="flex justify-between mb-1">
+              <span className="text-[10px] text-slate-500 font-semibold">Stop Loss</span>
+            </div>
+            <input
+              type="text"
+              placeholder="0.00"
+              value={slPrice}
+              onChange={e => setSlPrice(e.target.value)}
+              className="w-full px-2 py-1.5 bg-slate-50 border border-slate-200 focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 outline-none transition-colors"
+            />
           </div>
         </div>
 
@@ -531,6 +565,55 @@ export default function PerpetualsView() {
           </button>
         )}
       </section>
+
+      {/* PnL Share Modal */}
+      {sharePosition && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-[#111116] border border-[#2d2f3d] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <button onClick={() => setSharePosition(null)} className="absolute top-3 right-3 text-slate-400 hover:text-white z-10">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+            </button>
+            <div className="p-6 text-center relative overflow-hidden">
+              {/* Background Glow */}
+              <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b ${sharePosition.unrealizedPnl >= 0 ? 'from-[#10b981]/20' : 'from-[#ef4444]/20'} to-transparent opacity-50 pointer-events-none`} />
+              
+              <div className="relative z-10">
+                <div className="text-[10px] font-bold text-slate-400 tracking-widest uppercase mb-1">Arc Terminal</div>
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${sharePosition.side === 'LONG' ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>{sharePosition.side}</span>
+                  <span className="text-xl font-black text-white">{sharePosition.symbol}</span>
+                  <span className="text-xs font-bold text-slate-400">{sharePosition.leverage}x</span>
+                </div>
+                
+                <div className={`text-5xl font-black number-mono mb-2 ${sharePosition.unrealizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'} drop-shadow-lg`}>
+                  {sharePosition.unrealizedPnl >= 0 ? '+' : ''}{sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%
+                </div>
+                <div className={`text-lg font-bold number-mono mb-6 ${sharePosition.unrealizedPnl >= 0 ? 'text-[#10b981]/80' : 'text-[#ef4444]/80'}`}>
+                  {sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.unrealizedPnl.toFixed(2)}
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 text-left bg-black/40 rounded-xl p-3 border border-white/5">
+                  <div>
+                    <div className="text-[9px] text-slate-500 uppercase">Entry Price</div>
+                    <div className="text-xs font-bold text-white number-mono">${sharePosition.entryPrice.toLocaleString()}</div>
+                  </div>
+                  <div>
+                    <div className="text-[9px] text-slate-500 uppercase">Mark Price</div>
+                    <div className="text-xs font-bold text-white number-mono">${sharePosition.markPrice.toLocaleString()}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-black/40 border-t border-[#2d2f3d] flex gap-2">
+              <button onClick={() => setSharePosition(null)} className="flex-1 py-2 rounded-lg text-xs font-bold text-white bg-white/5 hover:bg-white/10 transition-colors">Done</button>
+              <button onClick={() => {
+                navigator.clipboard.writeText(`I'm ${sharePosition.side} ${sharePosition.symbol} with ${sharePosition.leverage}x leverage on Arc Terminal! PnL: ${sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%`);
+                alert('Copied to clipboard!');
+              }} className="flex-1 py-2 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:opacity-90 transition-opacity">Copy Text</button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

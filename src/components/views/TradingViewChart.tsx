@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo, useState } from 'react';
 
 // Maps our internal pair symbols to TradingView symbols
 const TV_SYMBOL_MAP: Record<string, string> = {
@@ -24,6 +24,7 @@ interface Props {
 
 function TradingViewChart({ symbol, timeframe = '60' }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Map timeframe string to TradingView interval
   const tvInterval = (() => {
@@ -56,11 +57,11 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
       symbol:            tvSymbol,
       interval:          tvInterval,
       timezone:          'Etc/UTC',
-      theme:             'light',
+      theme:             'dark',
       style:             '1',
       locale:            'en',
-      backgroundColor:   '#ffffff',
-      gridColor:         'rgba(0,0,0,0.04)',
+      backgroundColor:   '#111116',
+      gridColor:         '#1f1f2e',
       hide_top_toolbar:  false,
       hide_legend:       false,
       hide_side_toolbar: false,
@@ -79,11 +80,24 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
   }, [tvSymbol, tvInterval]);
 
   return (
-    <div
-      className="tradingview-widget-container w-full h-full rounded-xl overflow-hidden"
-      ref={containerRef}
-      style={{ minHeight: 460 }}
-    />
+    <div className={isFullscreen ? "fixed inset-0 z-[100] bg-[#111116] p-4 flex flex-col" : "w-full h-full relative"}>
+      <button 
+        onClick={() => setIsFullscreen(!isFullscreen)}
+        className="absolute top-2 right-2 z-10 bg-[#1f1f2e] hover:bg-[#2d2f3d] text-white p-2 rounded-lg shadow-lg border border-[#3b3d4f] transition-colors"
+        title={isFullscreen ? "Exit Fullscreen" : "Maximize Chart"}
+      >
+        {isFullscreen ? (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+        ) : (
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
+        )}
+      </button>
+      <div
+        className="tradingview-widget-container w-full h-full rounded-xl overflow-hidden"
+        ref={containerRef}
+        style={{ minHeight: isFullscreen ? '100%' : 460 }}
+      />
+    </div>
   );
 }
 
