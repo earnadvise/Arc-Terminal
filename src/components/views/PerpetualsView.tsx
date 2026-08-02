@@ -41,6 +41,7 @@ export default function PerpetualsView() {
   const [slPrice, setSlPrice] = useState<string>('');
   const [showTPSL, setShowTPSL] = useState(false);
   const [sharePosition, setSharePosition] = useState<any>(null);
+  const [tpSlPosition, setTpSlPosition] = useState<any>(null);
   const shareCardRef = useRef<HTMLDivElement>(null);
 
   const handleDownloadImage = async () => {
@@ -269,6 +270,9 @@ export default function PerpetualsView() {
                           {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
                         </td>
                         <td className="text-right flex items-center justify-end gap-1">
+                          <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded transition-all" title="Set TP/SL">
+                            TP/SL
+                          </button>
                           <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                           </button>
@@ -463,48 +467,7 @@ export default function PerpetualsView() {
           </div>
         </div>
 
-        {/* TP / SL Toggle */}
-        <div className="mb-3">
-          <label className="flex items-center gap-2 cursor-pointer select-none">
-            <input 
-              type="checkbox" 
-              checked={showTPSL} 
-              onChange={() => setShowTPSL(!showTPSL)}
-              className="w-3.5 h-3.5 rounded border-slate-300 text-[#8b5cf6] focus:ring-[#8b5cf6]"
-            />
-            <span className="text-xs font-bold text-slate-700">Add TP / SL</span>
-          </label>
-        </div>
 
-        {/* TP / SL Inputs */}
-        {showTPSL && (
-          <div className="grid grid-cols-2 gap-3 mb-4 p-3 bg-slate-50 border border-slate-200 rounded-lg shadow-inner">
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Take Profit</span>
-              </div>
-              <input
-                type="text"
-                placeholder="0.00"
-                value={tpPrice}
-                onChange={e => setTpPrice(e.target.value)}
-                className="w-full px-2.5 py-2 bg-white border border-slate-200 focus:border-[#10b981]/50 focus:ring-1 focus:ring-[#10b981]/20 rounded-md text-xs font-bold number-mono text-slate-900 outline-none transition-colors"
-              />
-            </div>
-            <div>
-              <div className="flex justify-between mb-1">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Stop Loss</span>
-              </div>
-              <input
-                type="text"
-                placeholder="0.00"
-                value={slPrice}
-                onChange={e => setSlPrice(e.target.value)}
-                className="w-full px-2.5 py-2 bg-white border border-slate-200 focus:border-[#ef4444]/50 focus:ring-1 focus:ring-[#ef4444]/20 rounded-md text-xs font-bold number-mono text-slate-900 outline-none transition-colors"
-              />
-            </div>
-          </div>
-        )}
 
         {/* Leverage Slider (Capped at 20x Max) */}
         <div className="mb-5">
@@ -657,6 +620,55 @@ export default function PerpetualsView() {
               <button onClick={handleDownloadImage} className="flex-[2] py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(139,92,246,0.3)] border border-white/10">Download Image</button>
             </div>
             
+          </div>
+        </div>
+      )}
+      {/* TP / SL Modal */}
+      {tpSlPosition && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="font-bold text-slate-800">Set TP / SL</h3>
+              <button onClick={() => setTpSlPosition(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${tpSlPosition.side === 'LONG' ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>{tpSlPosition.side}</span>
+                <span className="font-black text-slate-800">{tpSlPosition.symbol}</span>
+                <span className="text-xs font-bold text-slate-500">{tpSlPosition.leverage}x</span>
+              </div>
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Take Profit Price</label>
+                  <input
+                    type="text"
+                    placeholder="0.00"
+                    value={tpPrice}
+                    onChange={e => setTpPrice(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 rounded-lg text-sm font-bold number-mono text-slate-900 outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Stop Loss Price</label>
+                  <input
+                    type="text"
+                    placeholder="0.00"
+                    value={slPrice}
+                    onChange={e => setSlPrice(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-[#ef4444]/50 focus:ring-2 focus:ring-[#ef4444]/20 rounded-lg text-sm font-bold number-mono text-slate-900 outline-none transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+              <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">Cancel</button>
+              <button onClick={() => {
+                alert('TP/SL set successfully!');
+                setTpSlPosition(null);
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors shadow-lg shadow-[#8b5cf6]/30">Confirm</button>
+            </div>
           </div>
         </div>
       )}
