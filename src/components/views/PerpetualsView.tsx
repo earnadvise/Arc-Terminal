@@ -665,7 +665,15 @@ export default function PerpetualsView() {
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
               <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">Cancel</button>
               <button onClick={() => {
-                alert('TP/SL set successfully!');
+                const oppositeSide = tpSlPosition.side === 'LONG' ? 'SHORT' : 'LONG';
+                if (tpPrice) {
+                  placeOrder(oppositeSide, 'LIMIT', parseFloat(tpPrice), tpSlPosition.size, tpSlPosition.symbol);
+                }
+                if (slPrice) {
+                  placeOrder(oppositeSide, 'STOP', parseFloat(slPrice), tpSlPosition.size, tpSlPosition.symbol);
+                }
+                setTpPrice('');
+                setSlPrice('');
                 setTpSlPosition(null);
               }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors shadow-lg shadow-[#8b5cf6]/30">Confirm</button>
             </div>

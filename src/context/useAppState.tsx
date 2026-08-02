@@ -105,7 +105,8 @@ interface AppContextType {
     side: 'LONG' | 'SHORT',
     type: 'MARKET' | 'LIMIT' | 'STOP',
     price: number,
-    amount: number
+    amount: number,
+    symbolOverride?: string
   ) => Promise<void>;
   closePosition: (id: string) => Promise<void>;
   cancelOrder: (id: string) => void;
@@ -593,8 +594,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     side: 'LONG' | 'SHORT',
     type: 'MARKET' | 'LIMIT' | 'STOP',
     price: number,
-    amount: number
+    amount: number,
+    symbolOverride?: string
   ) => {
+    const orderSymbol = symbolOverride || activePair.symbol;
     if (!walletConnected || !walletAddress) {
       addNotification('error', 'Execution Failed', 'Please connect your wallet to trade on Arc Testnet.');
       return;
@@ -704,7 +707,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // Limit or Stop orders go to Open Orders
       const newOrder: OpenOrder = {
         id: `ord-${Math.random().toString(36).substring(7)}`,
-        symbol: activePair.symbol,
+        symbol: orderSymbol,
         side: side === 'LONG' ? 'BUY' : 'SELL',
         type,
         price,
@@ -719,7 +722,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       addNotification(
         'info',
         'Order Placed',
-        `${type} order to ${side === 'LONG' ? 'BUY' : 'SELL'} ${amount} ${activePair.symbol} placed at $${price.toFixed(getPrecision(activePair.symbol))}.`
+        `${type} order to ${side === 'LONG' ? 'BUY' : 'SELL'} ${amount} ${orderSymbol} placed at $${price.toFixed(getPrecision(orderSymbol))}.`
       );
     }
   };
