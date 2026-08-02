@@ -578,10 +578,10 @@ export default function PerpetualsView() {
               
               <div className="p-8 text-center relative z-10">
                 <div className="flex items-center justify-center gap-2 mb-6 opacity-80">
-                  <div className="w-6 h-6 rounded bg-gradient-to-tr from-[#3b82f6] to-[#8b5cf6] flex items-center justify-center shadow-lg">
+                  <div className="w-6 h-6 rounded bg-gradient-to-tr from-[#34d399] to-[#059669] flex items-center justify-center shadow-lg shadow-[#10b981]/30">
                     <span className="text-white text-[10px] font-black">A</span>
                   </div>
-                  <div className="text-[11px] font-black text-white tracking-[0.2em] uppercase">Arc Terminal</div>
+                  <div className="text-[11px] font-black text-white tracking-[0.2em] uppercase">Arc Terminal AI</div>
                 </div>
                 
                 <div className="flex items-center justify-center gap-2 mb-4">
@@ -614,7 +614,7 @@ export default function PerpetualsView() {
             <div className="w-full flex gap-3">
               <button onClick={() => setSharePosition(null)} className="flex-1 py-3 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md">Close</button>
               <button onClick={() => {
-                navigator.clipboard.writeText(`I'm ${sharePosition.side} ${sharePosition.symbol} with ${sharePosition.leverage}x leverage on Arc Terminal! PnL: ${sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%`);
+                navigator.clipboard.writeText(`I'm ${sharePosition.side} ${sharePosition.symbol} with ${sharePosition.leverage}x leverage on Arc Terminal AI! PnL: ${sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%`);
                 alert('Copied to clipboard!');
               }} className="flex-1 py-3 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md border border-white/5">Copy Text</button>
               <button onClick={handleDownloadImage} className="flex-[2] py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(139,92,246,0.3)] border border-white/10">Download Image</button>
