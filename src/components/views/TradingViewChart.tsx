@@ -57,11 +57,11 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
       symbol:            tvSymbol,
       interval:          tvInterval,
       timezone:          'Etc/UTC',
-      theme:             'dark',
+      theme:             'light',
       style:             '1',
       locale:            'en',
-      backgroundColor:   '#111116',
-      gridColor:         '#1f1f2e',
+      backgroundColor:   '#ffffff',
+      gridColor:         'rgba(0,0,0,0.04)',
       hide_top_toolbar:  false,
       hide_legend:       false,
       hide_side_toolbar: false,
@@ -80,10 +80,10 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
   }, [tvSymbol, tvInterval]);
 
   return (
-    <div className={isFullscreen ? "fixed inset-0 z-[100] bg-[#111116] p-4 flex flex-col" : "w-full h-full relative"}>
+    <div className={isFullscreen ? "fixed inset-0 z-[100] bg-[#ffffff] p-4 flex flex-col" : "w-full h-full relative"}>
       <button 
         onClick={() => setIsFullscreen(!isFullscreen)}
-        className="absolute top-2 right-2 z-10 bg-[#1f1f2e] hover:bg-[#2d2f3d] text-white p-2 rounded-lg shadow-lg border border-[#3b3d4f] transition-colors"
+        className="absolute top-2 right-2 z-10 bg-white hover:bg-slate-100 text-slate-700 p-2 rounded-lg shadow-lg border border-slate-200 transition-colors"
         title={isFullscreen ? "Exit Fullscreen" : "Maximize Chart"}
       >
         {isFullscreen ? (
