@@ -593,7 +593,7 @@ export default function PerpetualsView() {
                 <div className={`text-6xl font-black number-mono mb-2 ${sharePosition.unrealizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'} drop-shadow-lg tracking-tighter`}>
                   {sharePosition.unrealizedPnl >= 0 ? '+' : ''}{sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%
                 </div>
-                <div className={`text-lg font-bold number-mono mb-8 ${sharePosition.unrealizedPnl >= 0 ? 'text-[#10b981]/70' : 'text-[#ef4444]/70'}`}>
+                <div className={`text-3xl font-black number-mono mb-8 ${sharePosition.unrealizedPnl >= 0 ? 'text-[#10b981]/90' : 'text-[#ef4444]/90'} drop-shadow-sm`}>
                   {sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.unrealizedPnl.toFixed(2)}
                 </div>
 
