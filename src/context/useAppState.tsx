@@ -48,7 +48,7 @@ const encodeOpenPosition = (symbol: string, isLong: boolean, amount: number, ent
   return '0x' + selector + offsetHex + isLongHex + sizeHex + priceHex + leverageHex + stringLenHex + stringContentHex;
 };
 
-const encodePlaceLimitOrder = (symbol: string, isLong: boolean, size: number, entryPrice: number, targetPrice: number, leverage: number) => {
+const encodePlaceLimitOrder = (symbol: string, isLong: boolean, size: number, targetPrice: number, leverage: number) => {
   const selector = '28d8681f'; // placeLimitOrder(string,bool,uint256,uint256,uint256)
   const offsetHex = 'a0'.padStart(64, '0');
   const isLongHex = (isLong ? 1 : 0).toString(16).padStart(64, '0');
