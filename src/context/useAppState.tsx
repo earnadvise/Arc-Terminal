@@ -465,12 +465,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                   } else {
                     const currentMarket = updated.find(m => m.symbol === order.symbol);
                     const markPrice = currentMarket ? currentMarket.lastPrice : order.price;
+                    const buffer = order.marginMode === 'ISOLATED' ? 0.95 : 0.98;
+                    const liqPrice = order.side === 'BUY'
+                      ? order.price * (1 - (1 / order.leverage) * buffer)
+                      : order.price * (1 + (1 / order.leverage) * buffer);
+                    const margin = (order.amount * order.price) / order.leverage;
+                    
                     newPos.unshift({
+                      id: `pos-${Math.random().toString(36).substring(7)}`,
                       symbol: order.symbol,
                       side: order.side === 'BUY' ? 'LONG' : 'SHORT',
                       size: order.amount,
                       entryPrice: order.price, 
                       markPrice: markPrice,
+                      liqPrice: Number(liqPrice.toFixed(getPrecision(order.symbol))),
+                      margin: Number(margin.toFixed(2)),
                       leverage: order.leverage,
                       marginMode: order.marginMode,
                       marginRatio: (1 / order.leverage) * 100,
