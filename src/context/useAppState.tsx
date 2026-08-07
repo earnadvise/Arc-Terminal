@@ -769,8 +769,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const requiredMargin = orderValue / leverage;
 
     // Process order
+    const eth = getProvider();
     if (type === 'MARKET') {
-      const eth = getProvider();
       let txHash = '';
 
       if (eth && walletAddress) {
