@@ -11,6 +11,7 @@
   "dependencies": {
     "@ai-sdk/google": "^4.0.31",
     "@ai-sdk/openai": "^4.0.27",
+    "@moonpay/moonpay-react": "^1.10.8",
     "ai": "^7.0.47",
     "ethers": "^6.17.0",
     "framer-motion": "^12.40.0",
