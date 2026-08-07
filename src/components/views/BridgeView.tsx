@@ -31,6 +31,23 @@ export default function BridgeView() {
   const toNet = isDirectionReversed ? sourceChain : 'Arc Testnet';
   const currentBalance = isDirectionReversed ? balances.USDC : externalBalance;
 
+  const switchNetwork = async (networkName: string) => {
+    const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
+    if (!eth) return;
+    let chainId = '0x4cef52'; // Arc Testnet default
+    switch(networkName) {
+      case 'Arbitrum Sepolia': chainId = '0x66eee'; break;
+      case 'Base Sepolia': chainId = '0x14a34'; break;
+      case 'Ethereum Sepolia': chainId = '0xaa36a7'; break;
+      case 'Optimism Sepolia': chainId = '0xaa37dc'; break;
+    }
+    try {
+      await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] });
+    } catch (e) {
+      console.log('Failed to switch network', e);
+    }
+  };
+
   // Auto-switch network whenever fromNet changes
   useEffect(() => {
     if (walletConnected) {
@@ -60,23 +77,6 @@ export default function BridgeView() {
   const padAmount = (amt: number) => {
     const amountWei = BigInt(Math.floor(amt * 1e6));
     return amountWei.toString(16).padStart(64, '0');
-  };
-
-  const switchNetwork = async (networkName: string) => {
-    const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
-    if (!eth) return;
-    let chainId = '0x4cef52'; // Arc Testnet default
-    switch(networkName) {
-      case 'Arbitrum Sepolia': chainId = '0x66eee'; break;
-      case 'Base Sepolia': chainId = '0x14a34'; break;
-      case 'Ethereum Sepolia': chainId = '0xaa36a7'; break;
-      case 'Optimism Sepolia': chainId = '0xaa37dc'; break;
-    }
-    try {
-      await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] });
-    } catch (e) {
-      console.log('Failed to switch network', e);
-    }
   };
   
   const executeBridge = async () => {
