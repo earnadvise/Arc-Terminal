@@ -212,7 +212,7 @@ export default function BuyView() {
           
           <div className="mt-5 flex justify-center items-center gap-1.5 text-xs text-slate-400">
             <ShieldCheck size={14} className="text-green-500" />
-            <span>Secure checkout powered by MockPay</span>
+            <span>Secure checkout powered by Stripe</span>
           </div>
         </motion.div>
       </div>
