@@ -16,7 +16,7 @@ import { useAppState } from '../../context/useAppState';
 export default function BridgeView() {
   const { walletConnected, addNotification, balances, setBalances, getProvider, walletAddress } = useAppState();
 
-  const [sourceChain, setSourceChain] = useState<'Arbitrum Sepolia' | 'Base Sepolia' | 'Ethereum Sepolia' | 'Optimism Sepolia' | 'Avalanche Fuji' | 'Polygon Amoy' | 'Solana Devnet'>('Arbitrum Sepolia');
+  const [sourceChain, setSourceChain] = useState<'Arbitrum Sepolia' | 'Base Sepolia' | 'Ethereum Sepolia' | 'Optimism Sepolia' | 'Avalanche Fuji' | 'Polygon Amoy'>('Arbitrum Sepolia');
   const [isDirectionReversed, setIsDirectionReversed] = useState(false);
   const [amount, setAmount] = useState<string>('');
   const [isBridging, setIsBridging] = useState(false);
@@ -46,6 +46,14 @@ export default function BridgeView() {
       case 'Optimism Sepolia':
         rpc = 'https://sepolia.optimism.io';
         usdc = '0x5fd84259d66Cd46123540766Be93DFE6D43130D7';
+        break;
+      case 'Avalanche Fuji':
+        rpc = 'https://api.avax-test.network/ext/bc/C/rpc';
+        usdc = '0x5425890298aed601595a70AB815c96711a31Bc65';
+        break;
+      case 'Polygon Amoy':
+        rpc = 'https://rpc-amoy.polygon.technology';
+        usdc = '0x41E94Eb019C0762f9Bfcf9Cb1EE62ce516f1F428';
         break;
       default:
         setExternalBalance(0);
@@ -95,6 +103,8 @@ export default function BridgeView() {
       case 'Base Sepolia': chainId = '0x14a34'; break;
       case 'Ethereum Sepolia': chainId = '0xaa36a7'; break;
       case 'Optimism Sepolia': chainId = '0xaa37dc'; break;
+      case 'Avalanche Fuji': chainId = '0xa869'; break;
+      case 'Polygon Amoy': chainId = '0x13882'; break;
     }
     try {
       await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] });
@@ -126,7 +136,19 @@ export default function BridgeView() {
     }, 3000);
   };
 
-  const USDC_ADDRESS = "0x3600000000000000000000000000000000000000";
+  const getUSDCAddress = (chain: string) => {
+    switch(chain) {
+      case 'Arbitrum Sepolia': return '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
+      case 'Base Sepolia': return '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+      case 'Ethereum Sepolia': return '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+      case 'Optimism Sepolia': return '0x5fd84259d66Cd46123540766Be93DFE6D43130D7';
+      case 'Avalanche Fuji': return '0x5425890298aed601595a70AB815c96711a31Bc65';
+      case 'Polygon Amoy': return '0x41E94Eb019C0762f9Bfcf9Cb1EE62ce516f1F428';
+      case 'Arc Testnet': return '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'; // Mock address for testnet
+      default: return '0x3600000000000000000000000000000000000000';
+    }
+  };
+
   const BRIDGE_CONTRACT_ADDRESS = "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275";
   const padAddress = (addr: string) => addr.toLowerCase().replace('0x', '').padStart(64, '0');
   const padAmount = (amt: number) => {
@@ -194,7 +216,7 @@ export default function BridgeView() {
             
             const txHash = await eth.request({
               method: 'eth_sendTransaction',
-              params: [{ from: walletAddress, to: USDC_ADDRESS, value: '0x0', data: depositData }]
+              params: [{ from: walletAddress, to: getUSDCAddress(fromNet), value: '0x0', data: depositData }]
             }) as string;
             bridgeTxHash = txHash;
 
@@ -294,7 +316,6 @@ export default function BridgeView() {
                     <option value="Optimism Sepolia">Optimism Sepolia</option>
                     <option value="Avalanche Fuji">Avalanche Fuji</option>
                     <option value="Polygon Amoy">Polygon Amoy</option>
-                    <option value="Solana Devnet">Solana Devnet</option>
                   </select>
                   <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center pointer-events-none z-0">
                     <Network size={16} className="text-indigo-600" />
