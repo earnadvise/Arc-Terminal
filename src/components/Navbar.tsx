@@ -23,7 +23,8 @@ export default function Navbar() {
     { id: 'Home',       label: 'Home',       icon: <HomeIcon size={15} /> },
     { id: 'Perpetuals', label: 'Perpetuals', icon: <Activity size={15} /> },
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
-    { id: 'Vault',      label: 'Vault',   icon: <VaultIcon size={15} /> },
+    { id: 'Vault',      label: 'Vault',      icon: <VaultIcon size={15} /> },
+    { id: 'Bridge',     label: 'Bridge',     icon: <Network size={15} /> },
     { id: 'SafePay',    label: 'SafePay', icon: <Bot size={15} /> },
     { id: 'Agents',     label: 'Arc AI',  icon: <Bot size={15} /> },
     { id: 'History',    label: 'History',    icon: <HistIcon size={15} /> },
@@ -80,7 +81,10 @@ export default function Navbar() {
           {/* Testnet badge */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-[#8b5cf6]">
             <Network size={14} className="animate-pulse" />
-            <span className="hidden sm:inline">Arc Testnet</span>
+          <div className="flex items-center gap-3">
+            <span className="hidden sm:inline font-black">Arc Premium</span>
+            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-500/20 text-amber-500 rounded border border-amber-500/30 uppercase tracking-widest hidden sm:inline">PRO</span>
+          </div>
           </div>
 
           {/* Faucet */}

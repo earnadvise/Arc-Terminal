@@ -701,6 +701,24 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       try {
         const accounts: string[] = await eth.request({ method: 'eth_requestAccounts' });
         if (accounts && accounts.length > 0) {
+          try {
+            await eth.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: '0x66eee',
+                chainName: 'Arc Testnet',
+                rpcUrls: ['https://sepolia-rollup.arbitrum.io/rpc'],
+                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                blockExplorerUrls: ['https://sepolia.arbiscan.io']
+              }]
+            });
+            await eth.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: '0x66eee' }]
+            });
+          } catch (e) {
+            console.warn("Could not add or switch to Arc Testnet:", e);
+          }
           const fullAddr = accounts[0];
           const truncated = `${fullAddr.slice(0, 6)}...${fullAddr.slice(-4)}`;
           setWalletConnected(true);

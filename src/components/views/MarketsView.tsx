@@ -33,7 +33,7 @@ export default function MarketsView() {
   const [tradeSide, setTradeSide] = useState<'LONG' | 'SHORT'>('LONG');
   const [inputPrice, setInputPrice] = useState<string>(activePair.lastPrice.toString());
   const [inputAmount, setInputAmount] = useState<string>('1.0');
-  const [activeBottomTab, setActiveBottomTab] = useState<'Positions' | 'OpenOrders' | 'TradeHistory' | 'FundingHistory'>('Positions');
+  const [activeBottomTab, setActiveBottomTab] = useState<'Positions' | 'OpenOrders' | 'TradeHistory'>('Positions');
 
   React.useEffect(() => {
     setInputPrice(activePair.lastPrice.toString());
