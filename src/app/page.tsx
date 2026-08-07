@@ -10,6 +10,7 @@ import PerpetualsView from '@/components/views/PerpetualsView';
 import HistoryView    from '@/components/views/HistoryView';
 import SwapView       from '@/components/views/SwapView';
 import VaultView      from '@/components/views/VaultView';
+import BridgeView     from '@/components/views/BridgeView';
 import ArcSafePayView from '@/components/views/ArcSafePayView';
 import AgentsView     from '@/components/views/AgentsView';
 
@@ -25,6 +26,7 @@ export default function Home() {
       case 'Perpetuals': return <PerpetualsView />;
       case 'Swap':       return <SwapView />;
       case 'Vault':      return <VaultView />;
+      case 'Bridge':     return <BridgeView />;
       case 'SafePay':    return <ArcSafePayView />;
       case 'Agents':     return <AgentsView />;
       case 'History':    return <HistoryView />;
@@ -93,12 +95,12 @@ export default function Home() {
                 <p className="text-[10px] text-slate-500 mt-1 leading-normal">{n.message}</p>
                 {n.txHash && (
                   <a
-                    href={`https://testnet.arcscan.app/tx/${n.txHash}`}
+                    href={n.explorerUrl ? `${n.explorerUrl}/tx/${n.txHash}` : `https://testnet.arcscan.app/tx/${n.txHash}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold text-[#8b5cf6] hover:text-[#a78bfa] transition-colors"
                   >
-                    View on Arc Explorer ↗
+                    View on Explorer ↗
                   </a>
                 )}
                 <span className="text-[8px] text-slate-400 number-mono mt-1.5 block">{n.time}</span>

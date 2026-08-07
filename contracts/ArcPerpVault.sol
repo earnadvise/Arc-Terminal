@@ -36,6 +36,13 @@ contract ArcPerpVault {
         uint256 leverage
     );
     event PositionClosed(address indexed user, string symbol, int256 realizedPnl);
+    
+    event LimitOrderPlaced(address indexed user, string symbol, bool isLong, uint256 size, uint256 targetPrice, uint256 leverage);
+    event LimitOrderCancelled(address indexed user, string symbol);
+    event LimitOrderExecuted(address indexed user, string symbol, uint256 executionPrice);
+    
+    event TPSLSet(address indexed user, string symbol, uint256 takeProfit, uint256 stopLoss);
+
     event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
 
     modifier onlyOwner() {
@@ -105,13 +112,17 @@ contract ArcPerpVault {
     }
 
     /**
-     * @dev Emits an event when a position is closed.
+     * @dev Emits an event when a position is closed, unlocking only the specific position's margin.
      */
-    function closePosition(string calldata symbol, int256 realizedPnl) external {
-        // In a real protocol, we would look up the specific position's locked margin.
-        // For hackathon simplicity, we unlock the entire margin for the user.
-        uint256 unlockedMargin = lockedMargin[msg.sender];
-        lockedMargin[msg.sender] = 0;
+    function closePosition(string calldata symbol, uint256 size, uint256 leverage, int256 realizedPnl) external {
+        uint256 unlockedMargin = size / leverage;
+        
+        if (lockedMargin[msg.sender] >= unlockedMargin) {
+            lockedMargin[msg.sender] -= unlockedMargin;
+        } else {
+            unlockedMargin = lockedMargin[msg.sender];
+            lockedMargin[msg.sender] = 0;
+        }
 
         // Apply PnL
         if (realizedPnl >= 0) {
@@ -127,6 +138,41 @@ contract ArcPerpVault {
 
         emit PositionClosed(msg.sender, symbol, realizedPnl);
     }
+
+    /**
+     * @dev Places a limit order on-chain
+     */
+    function placeLimitOrder(string calldata symbol, bool isLong, uint256 size, uint256 targetPrice, uint256 leverage) external {
+        uint256 marginRequired = size / leverage;
+        require(userCollateral[msg.sender] >= marginRequired, "ArcPerpVault: insufficient collateral for limit order");
+        
+        userCollateral[msg.sender] -= marginRequired;
+        lockedMargin[msg.sender] += marginRequired;
+
+        emit LimitOrderPlaced(msg.sender, symbol, isLong, size, targetPrice, leverage);
+    }
+
+    /**
+     * @dev Cancels a limit order and unlocks margin
+     */
+    function cancelLimitOrder(string calldata symbol, uint256 size, uint256 leverage) external {
+        uint256 marginRequired = size / leverage;
+        
+        if (lockedMargin[msg.sender] >= marginRequired) {
+            lockedMargin[msg.sender] -= marginRequired;
+            userCollateral[msg.sender] += marginRequired;
+        }
+        
+        emit LimitOrderCancelled(msg.sender, symbol);
+    }
+
+    /**
+     * @dev Sets Take Profit and Stop Loss for a position
+     */
+    function setTPSL(string calldata symbol, uint256 takeProfit, uint256 stopLoss) external {
+        emit TPSLSet(msg.sender, symbol, takeProfit, stopLoss);
+    }
+
 
     /**
      * @dev Emergency withdraw of all collateral tokens back to the owner.

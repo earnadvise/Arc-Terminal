@@ -40,8 +40,10 @@ export interface OpenOrder {
   id: string;
   symbol: string;
   side: 'BUY' | 'SELL';
-  type: 'MARKET' | 'LIMIT' | 'STOP';
+  type: 'MARKET' | 'LIMIT' | 'STOP' | 'TPSL';
   price: number;
+  tpPrice?: number;
+  slPrice?: number;
   amount: number;
   leverage: number;
   marginMode: 'CROSS' | 'ISOLATED';
@@ -63,6 +65,7 @@ export interface HistoryItem {
   category?: 'Swap' | 'Vault' | 'Perpetuals';
   txHash?: string;
   details?: string;
+  realizedPnl?: number;
 }
 
 export interface LeaderboardTrader {

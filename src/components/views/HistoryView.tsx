@@ -112,6 +112,7 @@ export default function HistoryView() {
                 <th className="py-3 px-4">Type</th>
                 <th className="px-4">Details</th>
                 <th className="px-4">Status</th>
+                <th className="px-4">PnL</th>
                 <th className="px-4">Time</th>
                 <th className="px-4 text-right">Action</th>
               </tr>
@@ -157,6 +158,17 @@ export default function HistoryView() {
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                         Success
                       </span>
+                    </td>
+
+                    {/* PnL */}
+                    <td className="px-4 font-bold number-mono text-xs">
+                      {item.realizedPnl !== undefined ? (
+                        <span className={item.realizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}>
+                          {item.realizedPnl >= 0 ? '+' : ''}${item.realizedPnl.toFixed(2)}
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">-</span>
+                      )}
                     </td>
 
                     {/* Relative Time */}

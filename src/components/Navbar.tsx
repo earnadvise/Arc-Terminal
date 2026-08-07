@@ -56,7 +56,13 @@ export default function Navbar() {
               return (
                 <button
                   key={item.id}
-                  onClick={() => { setActiveTab(item.id); setIsDropdownOpen(false); }}
+                  type="button"
+                  onClick={(e) => { 
+                    e.preventDefault(); 
+                    e.stopPropagation(); 
+                    setActiveTab(item.id); 
+                    setIsDropdownOpen(false); 
+                  }}
                   className={`relative px-4 py-1.5 rounded-md text-sm font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 ${
                     isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
                   }`}
@@ -122,7 +128,13 @@ export default function Navbar() {
                     </div>
                     <div className="h-[1px] bg-slate-100 mb-2" />
                     <button
-                      onClick={() => { disconnectWallet(); setIsDropdownOpen(false); }}
+                      type="button"
+                      onClick={(e) => { 
+                        e.preventDefault(); 
+                        e.stopPropagation(); 
+                        disconnectWallet(); 
+                        setIsDropdownOpen(false); 
+                      }}
                       className="w-full flex items-center gap-2 px-2.5 py-2 text-sm text-[#ef4444] hover:bg-[#ef4444]/10 rounded-lg transition-colors"
                     >
                       <LogOut size={16} /> Disconnect
