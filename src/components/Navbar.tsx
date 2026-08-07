@@ -81,10 +81,7 @@ export default function Navbar() {
           {/* Testnet badge */}
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-[#8b5cf6]">
             <Network size={14} className="animate-pulse" />
-          <div className="flex items-center gap-3">
-            <span className="hidden sm:inline font-black">Arc Premium</span>
-            <span className="px-1.5 py-0.5 text-[9px] font-bold bg-amber-500/20 text-amber-500 rounded border border-amber-500/30 uppercase tracking-widest hidden sm:inline">PRO</span>
-          </div>
+            <span className="hidden sm:inline">Arc Testnet</span>
           </div>
 
           {/* Faucet */}
