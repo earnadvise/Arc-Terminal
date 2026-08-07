@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAppState } from '@/context/useAppState';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CreditCard, DollarSign, Wallet, ShieldCheck, ArrowRight, Smartphone, Zap } from 'lucide-react';
+import { CreditCard, DollarSign, Wallet, ShieldCheck, ArrowRight, Smartphone, Zap, QrCode } from 'lucide-react';
 
 export default function BuyView() {
   const { walletConnected, addNotification, balances, setBalances, walletAddress } = useAppState();
@@ -243,6 +243,17 @@ export default function BuyView() {
                   <div className="text-sm text-slate-500 mb-1">Total to Pay</div>
                   <div className="text-4xl font-black text-slate-900">{amount} {currency}</div>
                 </div>
+
+                {(paymentMethod === 'applepay' || paymentMethod === 'googlepay') && (
+                  <div className="flex flex-col items-center justify-center mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                    <div className="bg-white p-3 rounded-lg shadow-sm border border-slate-200 mb-3">
+                      <QrCode size={100} className="text-slate-800" strokeWidth={1.5} />
+                    </div>
+                    <span className="text-sm font-semibold text-slate-600 text-center">
+                      Scan with your phone to complete payment securely.
+                    </span>
+                  </div>
+                )}
 
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-6">
                   <div className="flex justify-between text-sm mb-2">
