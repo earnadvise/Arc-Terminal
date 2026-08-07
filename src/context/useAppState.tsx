@@ -13,7 +13,7 @@ import {
 } from '../utils/mockData';
 import { useUnifiedBalance } from "@/lib/circle-unified-balance-kit";
 
-export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Agents' | 'SafePay' | 'History';
+export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Bridge' | 'SafePay' | 'Agents' | 'History';
 
 const getPrecision = (symbol: string): number => {
   const s = symbol.toLowerCase();
@@ -48,18 +48,78 @@ const encodeOpenPosition = (symbol: string, isLong: boolean, amount: number, ent
   return '0x' + selector + offsetHex + isLongHex + sizeHex + priceHex + leverageHex + stringLenHex + stringContentHex;
 };
 
-const encodeClosePosition = (symbol: string, realizedPnl: number) => {
-  const selector = '7606c9f2'; // closePosition(string,int256)
-  const offsetHex = '40'.padStart(64, '0');
-  const pnlWei = BigInt(Math.round(realizedPnl * 1e6));
-  const pnlHex = (pnlWei < BigInt(0) ? (BigInt(1) << BigInt(256)) + pnlWei : pnlWei).toString(16).padStart(64, '0');
+const encodePlaceLimitOrder = (symbol: string, isLong: boolean, size: number, entryPrice: number, targetPrice: number, leverage: number) => {
+  const selector = '28d8681f'; // placeLimitOrder(string,bool,uint256,uint256,uint256)
+  const offsetHex = 'a0'.padStart(64, '0');
+  const isLongHex = (isLong ? 1 : 0).toString(16).padStart(64, '0');
+  // Use targetPrice to compute sizeWei so it matches the UI's margin requirements!
+  const positionSize = size * targetPrice;
+  const sizeWei = BigInt(Math.floor(positionSize * 1e6));
+  const sizeHex = sizeWei.toString(16).padStart(64, '0');
+  const priceWei = BigInt(Math.floor(targetPrice * 1e6));
+  const priceHex = priceWei.toString(16).padStart(64, '0');
+  const leverageHex = leverage.toString(16).padStart(64, '0');
   const stringLenHex = symbol.length.toString(16).padStart(64, '0');
   let stringBytes = '';
   for (let i = 0; i < symbol.length; i++) {
     stringBytes += symbol.charCodeAt(i).toString(16);
   }
   const stringContentHex = stringBytes.padEnd(64, '0');
-  return '0x' + selector + offsetHex + pnlHex + stringLenHex + stringContentHex;
+  return '0x' + selector + offsetHex + isLongHex + sizeHex + priceHex + leverageHex + stringLenHex + stringContentHex;
+};
+
+const encodeSetTPSL = (symbol: string, takeProfit: number, stopLoss: number) => {
+  const selector = '2a71bbc3'; // setTPSL(string,uint256,uint256)
+  const offsetHex = '60'.padStart(64, '0');
+  const tpWei = BigInt(Math.floor(takeProfit * 1e6));
+  const tpHex = tpWei.toString(16).padStart(64, '0');
+  const slWei = BigInt(Math.floor(stopLoss * 1e6));
+  const slHex = slWei.toString(16).padStart(64, '0');
+  const stringLenHex = symbol.length.toString(16).padStart(64, '0');
+  let stringBytes = '';
+  for (let i = 0; i < symbol.length; i++) {
+    stringBytes += symbol.charCodeAt(i).toString(16);
+  }
+  const stringContentHex = stringBytes.padEnd(64, '0');
+  return '0x' + selector + offsetHex + tpHex + slHex + stringLenHex + stringContentHex;
+};
+
+const encodeCancelLimitOrder = (symbol: string, size: number, entryPrice: number, leverage: number) => {
+  const selector = '66be0122'; // cancelLimitOrder(string,uint256,uint256)
+  const offsetHex = '60'.padStart(64, '0');
+  const positionSize = size * entryPrice;
+  const sizeWei = BigInt(Math.floor(positionSize * 1e6));
+  const sizeHex = sizeWei.toString(16).padStart(64, '0');
+  const leverageHex = leverage.toString(16).padStart(64, '0');
+  const stringLenHex = symbol.length.toString(16).padStart(64, '0');
+  let stringBytes = '';
+  for (let i = 0; i < symbol.length; i++) {
+    stringBytes += symbol.charCodeAt(i).toString(16);
+  }
+  const stringContentHex = stringBytes.padEnd(64, '0');
+  return '0x' + selector + offsetHex + sizeHex + leverageHex + stringLenHex + stringContentHex;
+};
+
+const encodeClosePosition = (symbol: string, size: number, entryPrice: number, leverage: number, realizedPnl: number) => {
+  const selector = '3943dbfb'; // closePosition(string,uint256,uint256,int256)
+  const offsetHex = '80'.padStart(64, '0');
+  
+  const positionSize = size * entryPrice;
+  const sizeWei = BigInt(Math.floor(positionSize * 1e6));
+  const sizeHex = sizeWei.toString(16).padStart(64, '0');
+  
+  const leverageHex = leverage.toString(16).padStart(64, '0');
+  
+  const pnlWei = BigInt(Math.round(realizedPnl * 1e6));
+  const pnlHex = (pnlWei < BigInt(0) ? (BigInt(1) << BigInt(256)) + pnlWei : pnlWei).toString(16).padStart(64, '0');
+  
+  const stringLenHex = symbol.length.toString(16).padStart(64, '0');
+  let stringBytes = '';
+  for (let i = 0; i < symbol.length; i++) {
+    stringBytes += symbol.charCodeAt(i).toString(16);
+  }
+  const stringContentHex = stringBytes.padEnd(64, '0');
+  return '0x' + selector + offsetHex + sizeHex + leverageHex + pnlHex + stringLenHex + stringContentHex;
 };
 
 export interface AppNotification {
@@ -69,6 +129,7 @@ export interface AppNotification {
   message: string;
   time: string;
   txHash?: string;
+  explorerUrl?: string;
 }
 
 interface AppContextType {
@@ -106,10 +167,12 @@ interface AppContextType {
     type: 'MARKET' | 'LIMIT' | 'STOP',
     price: number,
     amount: number,
-    symbolOverride?: string
+    symbolOverride?: string,
+    isTpSl?: boolean
   ) => Promise<void>;
   closePosition: (id: string) => Promise<void>;
   cancelOrder: (id: string) => void;
+  setTPSL: (symbol: string, tpPrice: number, slPrice: number) => Promise<void>;
   depositFunds: (amount: number) => Promise<void>;
   withdrawFunds: (amount: number) => Promise<void>;
   addHistoryItem: (item: Omit<HistoryItem, 'id' | 'time'>) => void;
@@ -222,7 +285,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const tickCounter = useRef<number>(0);
 
-  const VAULT_ADDRESS = '0xf33c82fB2c63DD0af7eF746c14b56c12D93458be';
+  const VAULT_ADDRESS = '0x1b31f6abFA626378096a73727830329BEECE5262';
   const DECIMALS = 18;
 
   const padAddress = (addr: string) => addr.toLowerCase().replace('0x', '').padStart(64, '0');
@@ -474,7 +537,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     type: 'info' | 'success' | 'warning' | 'error',
     title: string,
     message: string,
-    txHash?: string
+    txHash?: string,
+    explorerUrl?: string
   ) => {
     // Suppress annoying connection warning popups
     if (type === 'error' && (message.toLowerCase().includes('connect') || title.toLowerCase().includes('wallet'))) {
@@ -488,7 +552,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       title,
       message,
       time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-      txHash
+      txHash,
+      explorerUrl
     };
     setNotifications(prev => [newNotif, ...prev].slice(0, 5));
 
@@ -595,7 +660,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     type: 'MARKET' | 'LIMIT' | 'STOP',
     price: number,
     amount: number,
-    symbolOverride?: string
+    symbolOverride?: string,
+    isTpSl?: boolean
   ) => {
     const orderSymbol = symbolOverride || activePair.symbol;
     if (!walletConnected || !walletAddress) {
@@ -690,7 +756,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         // Add to history
         const historyItem: HistoryItem = {
           id: `tx-${Math.random().toString(36).substring(7)}`,
-          time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+          time: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`; })(),
           pair: activePair.symbol,
           side: side === 'LONG' ? 'LONG' : 'SHORT',
           type: 'Market',
@@ -705,6 +771,41 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
     } else {
       // Limit or Stop orders go to Open Orders
+      let txHash = '';
+      if (eth && walletConnected && walletAddress) {
+        addNotification('info', 'Executing Limit Order', 'Please confirm the transaction in MetaMask/Rabby...');
+        try {
+          const requiredMargin = (amount * price) / leverage;
+          if (balances.vaultUSDC < requiredMargin) {
+            await spend({ 
+              amount: requiredMargin, 
+              to: VAULT_ADDRESS, 
+              chain: "ARC_TESTNET"
+            });
+            addNotification('warning', 'Margin Depositing', 'Margin deposit initiated. Please wait 10 seconds for it to confirm, then click Place Order again.');
+            return;
+          }
+          const calldata = encodePlaceLimitOrder(
+              activePair.symbol,
+              side === 'LONG',
+              amount,
+              activePair.lastPrice, // entryPrice
+              price, // targetPrice
+              leverage
+            );
+            txHash = await eth.request({
+              method: 'eth_sendTransaction',
+              params: [{ from: walletAddress, to: VAULT_ADDRESS, data: calldata }]
+            });
+          
+          addNotification('success', 'Limit Order Placed', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
+        } catch (err: any) {
+          console.error(err);
+          addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
+          return;
+        }
+      }
+
       const newOrder: OpenOrder = {
         id: `ord-${Math.random().toString(36).substring(7)}`,
         symbol: orderSymbol,
@@ -724,6 +825,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         'Order Placed',
         `${type} order to ${side === 'LONG' ? 'BUY' : 'SELL'} ${amount} ${orderSymbol} placed at $${price.toFixed(getPrecision(orderSymbol))}.`
       );
+      
+      if (eth && walletConnected && walletAddress) {
+        setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+      }
     }
   };
 
@@ -739,8 +844,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     addNotification('info', 'Closing Position', 'Please confirm the close position transaction in MetaMask/Rabby...');
     try {
-      // Generate dynamic ABI data for closePosition(string,int256)
-      const txData = encodeClosePosition(pos.symbol, pos.unrealizedPnl);
+      // Generate dynamic ABI data for closePosition(string,uint256,uint256,int256)
+      const txData = encodeClosePosition(pos.symbol, pos.size, pos.entryPrice, pos.leverage, pos.unrealizedPnl);
 
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
@@ -765,14 +870,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // Record close in history
       const historyItem: HistoryItem = {
         id: `tx-${Math.random().toString(36).substring(7)}`,
-        time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+        time: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`; })(),
         pair: pos.symbol,
         side: pos.side === 'LONG' ? 'SELL' : 'BUY',
         type: 'Market (Close)',
         size: `${pos.size} ${pos.symbol.split('-')[0]}`,
         price: `$${pos.markPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
         fee: `$${((pos.size * pos.markPrice) * 0.0006).toFixed(2)} USDC`,
-        status: 'FILLED'
+        status: 'FILLED',
+        realizedPnl: pos.unrealizedPnl
       };
       setHistory(prev => [historyItem, ...prev]);
 
@@ -784,9 +890,75 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const cancelOrder = (id: string) => {
+  const cancelOrder = async (id: string) => {
+    const order = openOrders.find(o => o.id === id);
+    if (!order) return;
+
+    const eth = getProvider();
+    if (eth && walletConnected && walletAddress && order.type !== 'TPSL') {
+      addNotification('info', 'Cancelling Order', 'Please confirm the cancel transaction...');
+      try {
+        const calldata = encodeCancelLimitOrder(order.symbol, order.amount, order.price, order.leverage);
+        const txHash = await eth.request({
+          method: 'eth_sendTransaction',
+          params: [{
+            from: walletAddress,
+            to: VAULT_ADDRESS,
+            data: calldata
+          }]
+        });
+        addNotification('success', 'Transaction Submitted', `Cancel Order sent: ${txHash.slice(0, 10)}...`);
+        setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+      } catch (err: any) {
+        console.error(err);
+        addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
+        return;
+      }
+    }
+
     setOpenOrders(prev => prev.filter(o => o.id !== id));
     addNotification('info', 'Order Cancelled', 'Limit order successfully cancelled.');
+  };
+
+  const setTPSL = async (symbol: string, tpPrice: number, slPrice: number) => {
+    const eth = getProvider();
+    if (eth && walletConnected && walletAddress) {
+      addNotification('info', 'Setting TP/SL', 'Please confirm the transaction in MetaMask/Rabby...');
+      try {
+        const calldata = encodeSetTPSL(symbol, tpPrice, slPrice);
+        const txHash = await eth.request({
+          method: 'eth_sendTransaction',
+          params: [{ from: walletAddress, to: VAULT_ADDRESS, data: calldata }]
+        });
+        addNotification('success', 'TP/SL Set', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
+        
+        const pos = positions.find(p => p.symbol === symbol);
+        if (pos) {
+          // If editing, remove the old one first
+          setOpenOrders(prev => {
+            const filtered = prev.filter(o => !(o.type === 'TPSL' && o.symbol === symbol));
+            const newOrder: OpenOrder = {
+              id: `ord-${Math.random().toString(36).substring(7)}`,
+              symbol,
+              side: pos.side === 'LONG' ? 'SELL' : 'BUY',
+              type: 'TPSL',
+              price: 0,
+              tpPrice: tpPrice > 0 ? tpPrice : undefined,
+              slPrice: slPrice > 0 ? slPrice : undefined,
+              amount: pos.size,
+              leverage: pos.leverage,
+              marginMode: pos.marginMode,
+              status: 'OPEN',
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+            return [newOrder, ...filtered];
+          });
+        }
+      } catch (err: any) {
+        console.error(err);
+        addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
+      }
+    }
   };
 
   const depositFunds = async (amount: number) => {
@@ -942,6 +1114,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         placeOrder,
         closePosition,
         cancelOrder,
+        setTPSL,
         depositFunds,
         withdrawFunds
       }}

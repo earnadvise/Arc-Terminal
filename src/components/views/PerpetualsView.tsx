@@ -27,7 +27,8 @@ export default function PerpetualsView() {
     cancelOrder,
     connectWallet,
     depositFunds,
-    withdrawFunds
+    withdrawFunds,
+    setTPSL
   } = useAppState();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -225,7 +226,6 @@ export default function PerpetualsView() {
               { id: 'Positions',     label: 'Positions',     count: positions.length },
               { id: 'OpenOrders',    label: 'Open Orders',   count: openOrders.length },
               { id: 'TradeHistory',  label: 'Trade History', count: null },
-              { id: 'FundingHistory',label: 'Funding',       count: null },
             ].map(tab => (
               <button
                 key={tab.id}
@@ -302,11 +302,32 @@ export default function PerpetualsView() {
                     <tr key={order.id} className="hover:bg-slate-100/30 transition-colors">
                       <td className="py-2.5 font-bold text-slate-900">{order.symbol}</td>
                       <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${order.side === 'BUY' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{order.side === 'BUY' ? 'LONG' : 'SHORT'}</span></td>
-                      <td className="text-slate-700">{order.type}</td>
-                      <td className="number-mono text-slate-700">${order.price.toLocaleString()}</td>
+                      <td className="text-slate-700">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
+                      <td className="number-mono text-slate-700">
+                        {order.type === 'TPSL' ? (
+                          <div className="flex flex-col text-[9px] leading-tight gap-0.5">
+                            {order.tpPrice ? <span>TP: ${order.tpPrice.toLocaleString()}</span> : null}
+                            {order.slPrice ? <span>SL: ${order.slPrice.toLocaleString()}</span> : null}
+                          </div>
+                        ) : (
+                          <span>${order.price.toLocaleString()}</span>
+                        )}
+                      </td>
                       <td className="number-mono text-slate-900">{order.amount}</td>
                       <td className="number-mono text-slate-700">{order.leverage}x</td>
-                      <td className="text-right">
+                      <td className="text-right flex items-center justify-end gap-1.5 py-1.5 pr-2">
+                        {order.type === 'TPSL' && (
+                          <button onClick={() => {
+                            const pos = positions.find(p => p.symbol === order.symbol);
+                            if (pos) {
+                              setTpPrice(order.tpPrice ? order.tpPrice.toString() : '');
+                              setSlPrice(order.slPrice ? order.slPrice.toString() : '');
+                              setTpSlPosition(pos);
+                            }
+                          }} className="px-2 py-1 text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-all">
+                            Edit
+                          </button>
+                        )}
                         <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-slate-500 hover:text-slate-900 bg-slate-100 border border-[#1e1e2c] rounded transition-all">Cancel</button>
                       </td>
                     </tr>
@@ -323,7 +344,7 @@ export default function PerpetualsView() {
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
                     <th className="py-2">Time</th><th>Pair</th><th>Side</th>
-                    <th>Type</th><th>Size</th><th>Price</th><th>Fee</th><th>Status</th>
+                    <th>Type</th><th>Size</th><th>Price</th><th>Fee</th><th>PnL</th><th>Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#13131a]">
@@ -336,35 +357,12 @@ export default function PerpetualsView() {
                       <td className="number-mono text-slate-700">{h.size}</td>
                       <td className="number-mono text-slate-700">{h.price}</td>
                       <td className="number-mono text-slate-400">{h.fee}</td>
+                      <td className={`number-mono font-bold ${!h.realizedPnl ? 'text-slate-500' : h.realizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                        {h.realizedPnl !== undefined ? (h.realizedPnl >= 0 ? '+' : '') + '$' + h.realizedPnl.toFixed(2) : '-'}
+                      </td>
                       <td><span className="text-emerald-500 font-semibold text-[10px]">{h.status}</span></td>
                     </tr>
                   ))}
-                </tbody>
-              </table>
-            )}
-
-            {activeBottomTab === 'FundingHistory' && (
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
-                    <th className="py-2">Time</th><th>Market</th><th>Rate</th><th>Settlement</th><th>Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#13131a]">
-                  <tr className="hover:bg-slate-100/30">
-                    <td className="py-2.5 number-mono text-slate-400 text-[10px]">2026-07-24 08:00</td>
-                    <td className="font-bold text-slate-900">BTC-PERP</td>
-                    <td className="number-mono text-[#10b981]">0.0100%</td>
-                    <td className="number-mono text-[#ef4444]">-$0.25 USDC</td>
-                    <td className="text-emerald-500 font-semibold text-[10px]">SETTLED</td>
-                  </tr>
-                  <tr className="hover:bg-slate-100/30">
-                    <td className="py-2.5 number-mono text-slate-400 text-[10px]">2026-07-24 04:00</td>
-                    <td className="font-bold text-slate-900">ETH-PERP</td>
-                    <td className="number-mono text-[#ef4444]">-0.0050%</td>
-                    <td className="number-mono text-[#10b981]">+$0.08 USDC</td>
-                    <td className="text-emerald-500 font-semibold text-[10px]">SETTLED</td>
-                  </tr>
                 </tbody>
               </table>
             )}
@@ -665,12 +663,10 @@ export default function PerpetualsView() {
             <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
               <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">Cancel</button>
               <button onClick={() => {
-                const oppositeSide = tpSlPosition.side === 'LONG' ? 'SHORT' : 'LONG';
-                if (tpPrice) {
-                  placeOrder(oppositeSide, 'LIMIT', parseFloat(tpPrice), tpSlPosition.size, tpSlPosition.symbol);
-                }
-                if (slPrice) {
-                  placeOrder(oppositeSide, 'STOP', parseFloat(slPrice), tpSlPosition.size, tpSlPosition.symbol);
+                if (tpPrice || slPrice) {
+                  const tp = tpPrice ? parseFloat(tpPrice) : 0;
+                  const sl = slPrice ? parseFloat(slPrice) : 0;
+                  setTPSL(tpSlPosition.symbol, tp, sl);
                 }
                 setTpPrice('');
                 setSlPrice('');
