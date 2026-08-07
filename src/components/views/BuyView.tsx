@@ -9,13 +9,8 @@ export default function BuyView() {
   const { walletAddress, walletConnected } = useAppState();
 
   return (
-    <MoonPayProvider
-      apiKey={process.env.NEXT_PUBLIC_MOONPAY_API_KEY || 'pk_test_Zq2LjJ7xtslzKhGonKwxAqRt7tbvcTs'}
-      environment="sandbox"
-      debug={true}
-    >
-      <div className="flex-1 flex flex-col items-center py-12 px-4 overflow-auto bg-slate-50">
-        <div className="text-center mb-10 max-w-2xl">
+    <div className="flex-1 flex flex-col items-center py-12 px-4 overflow-auto bg-slate-50">
+      <div className="text-center mb-10 max-w-2xl">
         <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-4 flex justify-center items-center gap-3">
           BUY CRYPTO <Zap className="text-yellow-400 fill-yellow-400" size={32} />
         </h1>
@@ -48,6 +43,5 @@ export default function BuyView() {
         )}
       </div>
     </div>
-    </MoonPayProvider>
   );
 }
