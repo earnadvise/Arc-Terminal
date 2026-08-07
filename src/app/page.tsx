@@ -17,7 +17,6 @@ import AgentsView     from '@/components/views/AgentsView';
 
 import { Info, CheckCircle2, AlertTriangle, XCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MoonPayProvider } from '@moonpay/moonpay-react';
 
 export default function Home() {
   const { activeTab, notifications, dismissNotification } = useAppState();
@@ -56,12 +55,7 @@ export default function Home() {
   };
 
   return (
-    <MoonPayProvider
-      apiKey={process.env.NEXT_PUBLIC_MOONPAY_API_KEY || 'pk_test_Zq2LjJ7xtslzKhGonKwxAqRt7tbvcTs'}
-      environment="sandbox"
-      debug={true}
-    >
-      <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-100 to-sky-300">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-100 to-sky-300">
       <Navbar />
 
       <div className="flex-1 flex flex-col">
@@ -118,6 +112,5 @@ export default function Home() {
         </AnimatePresence>
       </div>
     </div>
-    </MoonPayProvider>
   );
 }
