@@ -419,6 +419,93 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           });
 
           // Trigger updates in positions PnL based on these new prices
+          // ALSO Mock Execute Limit Orders and TP/SL
+          setOpenOrders(prevOrders => {
+            const executedOrders: any[] = [];
+            const remainingOrders: typeof prevOrders = [];
+            
+            prevOrders.forEach(order => {
+              const currentMarket = updated.find(m => m.symbol === order.symbol);
+              if (!currentMarket) {
+                remainingOrders.push(order);
+                return;
+              }
+              const markPrice = currentMarket.lastPrice;
+              let shouldExecute = false;
+              let isTpSlTrigger = false;
+              let tpSlPnl = 0;
+
+              if (order.type === 'LIMIT') {
+                if (order.side === 'BUY' && markPrice <= order.price) shouldExecute = true;
+                if (order.side === 'SELL' && markPrice >= order.price) shouldExecute = true;
+              } else if (order.type === 'STOP') {
+                if (order.side === 'BUY' && markPrice >= order.price) shouldExecute = true;
+                if (order.side === 'SELL' && markPrice <= order.price) shouldExecute = true;
+              } else if (order.type === 'TPSL') {
+                // If it's TP/SL, check if price crossed TP or SL
+                if (order.tpPrice && order.side === 'BUY' && markPrice >= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
+                if (order.slPrice && order.side === 'BUY' && markPrice <= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
+                if (order.tpPrice && order.side === 'SELL' && markPrice <= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
+                if (order.slPrice && order.side === 'SELL' && markPrice >= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
+              }
+
+              if (shouldExecute) {
+                executedOrders.push({ ...order, isTpSlTrigger, tpSlPnl });
+              } else {
+                remainingOrders.push(order);
+              }
+            });
+
+            if (executedOrders.length > 0) {
+              setPositions(prevPos => {
+                let newPos = [...prevPos];
+                executedOrders.forEach(order => {
+                  if (order.isTpSlTrigger) {
+                    newPos = newPos.filter(p => p.symbol !== order.symbol);
+                  } else {
+                    const currentMarket = updated.find(m => m.symbol === order.symbol);
+                    const markPrice = currentMarket ? currentMarket.lastPrice : order.price;
+                    newPos.unshift({
+                      symbol: order.symbol,
+                      side: order.side === 'BUY' ? 'LONG' : 'SHORT',
+                      size: order.amount,
+                      entryPrice: order.price, 
+                      markPrice: markPrice,
+                      leverage: order.leverage,
+                      marginMode: order.marginMode,
+                      marginRatio: (1 / order.leverage) * 100,
+                      unrealizedPnl: 0,
+                      tpPrice: order.tpPrice,
+                      slPrice: order.slPrice,
+                    });
+                  }
+                });
+                return newPos;
+              });
+
+              setHistory(prevHist => {
+                let newHist = [...prevHist];
+                executedOrders.forEach(order => {
+                  newHist.unshift({
+                    id: `tx-${Math.random().toString(36).substring(7)}`,
+                    time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+                    pair: order.symbol,
+                    side: order.side === 'BUY' ? (order.isTpSlTrigger ? 'SELL' : 'BUY') : (order.isTpSlTrigger ? 'BUY' : 'SELL'),
+                    type: order.isTpSlTrigger ? 'TP/SL Triggered' : `${order.type} Filled`,
+                    size: `${order.amount} ${order.symbol.split('-')[0]}`,
+                    price: `$${(order.isTpSlTrigger ? (updated.find(m => m.symbol === order.symbol)?.lastPrice || 0) : order.price).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                    fee: `$${((order.amount * (order.price || 1)) * 0.0006).toFixed(2)} USDC`,
+                    status: 'FILLED',
+                    realizedPnl: order.isTpSlTrigger ? order.tpSlPnl : undefined
+                  });
+                });
+                return newHist;
+              });
+            }
+
+            return remainingOrders;
+          });
+
           setPositions(prevPos =>
             prevPos.map(pos => {
               const currentMarket = updated.find(m => m.symbol === pos.symbol);
