@@ -266,6 +266,28 @@ export default function BuyView() {
                   </div>
                 </div>
 
+                {paymentMethod === 'card' && (
+                  <div className="mb-6 space-y-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-500 tracking-wider mb-1 block">CARD NUMBER</label>
+                      <div className="relative">
+                        <CreditCard size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input type="text" placeholder="0000 0000 0000 0000" className="w-full bg-slate-50 border border-slate-200 text-slate-900 py-3 pl-10 pr-4 rounded-xl outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all font-mono placeholder:text-slate-300" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 tracking-wider mb-1 block">EXPIRY</label>
+                        <input type="text" placeholder="MM/YY" className="w-full bg-slate-50 border border-slate-200 text-slate-900 py-3 px-4 rounded-xl outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all font-mono placeholder:text-slate-300" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-bold text-slate-500 tracking-wider mb-1 block">CVC</label>
+                        <input type="text" placeholder="123" className="w-full bg-slate-50 border border-slate-200 text-slate-900 py-3 px-4 rounded-xl outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500 transition-all font-mono placeholder:text-slate-300" />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <button
                   onClick={confirmPurchase}
                   className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-md transition-all ${
