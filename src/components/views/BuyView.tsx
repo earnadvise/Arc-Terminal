@@ -5,6 +5,20 @@ import { useAppState } from '@/context/useAppState';
 import { MoonPayProvider, MoonPayBuyWidget } from '@moonpay/moonpay-react';
 import { Zap, ShieldCheck } from 'lucide-react';
 
+const MemoizedMoonPayWidget = React.memo(({ walletAddress }: { walletAddress?: string }) => {
+  return (
+    <MoonPayBuyWidget
+      variant="embedded"
+      baseCurrencyCode="usd"
+      baseCurrencyAmount="100"
+      defaultCurrencyCode="usdc"
+      walletAddress={walletAddress}
+      colorCode="#1e293b"
+      visible={true}
+    />
+  );
+}, (prevProps, nextProps) => prevProps.walletAddress === nextProps.walletAddress);
+
 export default function BuyView() {
   const { walletAddress, walletConnected } = useAppState();
 
@@ -30,15 +44,7 @@ export default function BuyView() {
            </div>
         ) : (
           <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200 min-h-[600px] relative">
-            <MoonPayBuyWidget
-              variant="embedded"
-                baseCurrencyCode="usd"
-                baseCurrencyAmount="100"
-                defaultCurrencyCode="usdc"
-                walletAddress={walletAddress || undefined}
-                colorCode="#1e293b"
-                visible={true}
-            />
+            <MemoizedMoonPayWidget walletAddress={walletAddress || undefined} />
           </div>
         )}
       </div>
