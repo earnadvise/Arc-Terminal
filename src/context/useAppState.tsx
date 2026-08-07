@@ -13,7 +13,7 @@ import {
 } from '../utils/mockData';
 import { useUnifiedBalance } from "@/lib/circle-unified-balance-kit";
 
-export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Bridge' | 'SafePay' | 'Agents' | 'History';
+export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Bridge' | 'Buy' | 'SafePay' | 'Agents' | 'History';
 
 const getPrecision = (symbol: string): number => {
   const s = symbol.toLowerCase();
