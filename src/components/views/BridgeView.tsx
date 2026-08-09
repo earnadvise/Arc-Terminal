@@ -148,7 +148,7 @@ export default function BridgeView() {
       setIsBridging(false);
       setBridgeStatus('IDLE');
       setCompletedTx(null);
-    }, 15000); // Increased to 15 seconds to give user time to click link
+    }, 15000); // 15 seconds to give user time to click link
   };
 
   const getUSDCAddress = (chain: string) => {
@@ -210,7 +210,6 @@ export default function BridgeView() {
         await switchNetwork(fromNet);
 
         console.log('[Bridge] Network switched. Initializing App Kit...');
-        addNotification('info', 'Initializing App Kit', 'Setting up Circle App Kit...');
         const adapter = await createEthersAdapterFromProvider({
             provider: eth
         });
@@ -271,6 +270,7 @@ export default function BridgeView() {
             }
 
             addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
+            setIsBridging(false); // Show the transaction link immediately
             
             if (isDirectionReversed) {
                setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
