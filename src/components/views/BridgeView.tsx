@@ -241,7 +241,11 @@ export default function BridgeView() {
         console.log('[Bridge] Calling kit.bridge()...');
         let result = await kit.bridge({
             from: { adapter, chain: getAppKitChainName(fromNet) as any },
-            to: { adapter, chain: getAppKitChainName(toNet) as any },
+            to: { 
+                adapter, 
+                chain: getAppKitChainName(toNet) as any,
+                useForwarder: true 
+            },
             amount: amount,
         });
         console.log('[Bridge] kit.bridge() returned:', result);
