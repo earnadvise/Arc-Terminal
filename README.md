@@ -52,6 +52,7 @@
 ---
 
 ## 🔄 Recent Updates (Latest)
+- **AppKit Cross-Chain Bridge:** Implemented a seamless cross-chain USDC bridge using Circle's AppKit and CCTP, enabling transfers between Arc Testnet and 6 major EVM testnets with real-time UI tracking.
 - **Premium Light Mode Overhaul:** Fully migrated the decentralized application to a stunning, modern light theme featuring vivid sky blue gradients, frosted glassmorphism panels, and crisp charcoal text for enhanced professional aesthetics.
 - **Client-Side Oracle Synchronization:** Resolved Vercel geo-blocking issues by migrating price fetching directly to the client side, ensuring 100% accurate real-time index prices for Perpetuals.
 - **UI Legibility Enhancements:** Improved contrast and text visibility across the Arc AI Terminal and Yield Vaults to guarantee readability.
@@ -62,15 +63,15 @@
 ## 🔵 Circle Products Used
 
 Arc Terminal heavily relies on Circle's stablecoin infrastructure for routing, settlement, and yield generation:
+- **Circle AppKit & CCTP:** Powers the native cross-chain bridging infrastructure between Arc Testnet and EVM testnets.
 - **USDC:** Used as the primary base currency for swap routing, perpetual margin collateral, and our primary ERC-4626 Yield Vault.
 - **EURC:** Supported for FX swaps against USDC and has its own dedicated Yield Vault.
-
 
 ---
 
 ## 📜 Smart Contracts (Arc Testnet)
 
-- **ArcPerpVault (Perpetual Trading):** `0xf33c82fB2c63DD0af7eF746c14b56c12D93458be`
+- **ArcPerpVault (Perpetual Trading):** `0x1b31f6abFA626378096a73727830329BEECE5262`
 - **ArcReversiblePayment (ArcSafePay Escrow):** `0x95D00C1B48218e44Be6fF1e90D2f473A646191f0`
 - **USDC Yield Vault (ERC-4626):** `0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9`
 - **EURC Yield Vault (ERC-4626):** `0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E`
