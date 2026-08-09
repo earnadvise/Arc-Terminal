@@ -60,119 +60,60 @@ export default function BridgeView() {
     setCompletedSteps(null);
 
     try {
-        if (fromNet === 'Arc Testnet') {
-            try {
-                setBridgeStatus('APPROVING');
-                addNotification('info', 'Approving USDC', 'Please confirm the bridge transaction in your wallet...');
-                
-                const bridgingKitAddress = '0xc5567a5e3370d4dbfb0540025078e283e36a363d';
-                const arcUsdcAddress = '0x3600000000000000000000000000000000000000'; 
-                
-                const amountInWei = BigInt(Math.floor(parseFloat(amount) * 1e6));
-                
-                let destDomain = 0;
-                let destChainId = 0;
-                switch(toNet) {
-                    case 'Arbitrum Sepolia': destDomain = 3; destChainId = 421614; break;
-                    case 'Base Sepolia': destDomain = 6; destChainId = 84532; break;
-                    case 'Ethereum Sepolia': destDomain = 0; destChainId = 11155111; break;
-                    case 'Optimism Sepolia': destDomain = 2; destChainId = 11155420; break;
-                    case 'Avalanche Fuji': destDomain = 1; destChainId = 43113; break;
-                    case 'Polygon Amoy': destDomain = 7; destChainId = 80002; break;
-                    default: destDomain = 3; destChainId = 421614;
-                }
-                
-                let data = '0x513e1175';
-                data += amountInWei.toString(16).padStart(64, '0');
-                data += (72509).toString(16).padStart(64, '0');
-                data += walletAddress.replace('0x', '').padStart(64, '0');
-                data += arcUsdcAddress.replace('0x', '').padStart(64, '0');
-                data += bridgingKitAddress.replace('0x', '').padStart(64, '0');
-                data += destDomain.toString(16).padStart(64, '0');
-                data += (1000).toString(16).padStart(64, '0'); 
-                data += (320).toString(16).padStart(64, '0');  
-                data += (12).toString(16).padStart(64, '0');   
-                data += '636374702d666f72776172640000000000000000000000000000000000000000';
-                
-                const txHash = await eth.request({
-                    method: 'eth_sendTransaction',
-                    params: [{
-                        from: walletAddress,
-                        to: bridgingKitAddress,
-                        data: data
-                    }]
-                });
-
-                setBridgeStatus('SUCCESS');
-                
-                const val = parseFloat(amount);
-                setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-                
-                addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
-                setIsBridging(false);
-                refreshBalance();
-                resetState();
-            } catch (error: any) {
-                console.error(error);
-                addNotification('error', 'Transaction Failed', error.message || 'Transaction rejected by user.');
-                setIsBridging(false);
-                setBridgeStatus('IDLE');
-            }
-            return;
+        setBridgeStatus('APPROVING');
+        addNotification('info', 'Approving USDC', 'Please confirm the bridge transaction in your wallet...');
+        
+        const bridgingKitAddress = '0xc5567a5e3370d4dbfb0540025078e283e36a363d';
+        const arcUsdcAddress = '0x3600000000000000000000000000000000000000'; 
+        
+        const amountInWei = BigInt(Math.floor(parseFloat(amount) * 1e6));
+        
+        let destDomain = 0;
+        let destChainId = 0;
+        switch(toNet) {
+            case 'Arbitrum Sepolia': destDomain = 3; destChainId = 421614; break;
+            case 'Base Sepolia': destDomain = 6; destChainId = 84532; break;
+            case 'Ethereum Sepolia': destDomain = 0; destChainId = 11155111; break;
+            case 'Optimism Sepolia': destDomain = 2; destChainId = 11155420; break;
+            case 'Avalanche Fuji': destDomain = 1; destChainId = 43113; break;
+            case 'Polygon Amoy': destDomain = 7; destChainId = 80002; break;
+            case 'Arc Testnet': destDomain = 72509; destChainId = 72542; break;
+            default: destDomain = 3; destChainId = 421614;
         }
-
         
-        const adapter = await createEthersAdapterFromProvider({
-            provider: eth
-        });
+        let data = '0x513e1175';
+        data += amountInWei.toString(16).padStart(64, '0');
+        data += (72509).toString(16).padStart(64, '0');
+        data += walletAddress.replace('0x', '').padStart(64, '0');
+        data += arcUsdcAddress.replace('0x', '').padStart(64, '0');
+        data += bridgingKitAddress.replace('0x', '').padStart(64, '0');
+        data += destDomain.toString(16).padStart(64, '0');
+        data += (1000).toString(16).padStart(64, '0'); 
+        data += (320).toString(16).padStart(64, '0');  
+        data += (12).toString(16).padStart(64, '0');   
+        data += '636374702d666f72776172640000000000000000000000000000000000000000';
         
-        const kit = new AppKit();
-        
-        kit.on("*", (payload: any) => {
-            if (payload.method === 'approve' && payload.values?.state !== 'success') {
-                setBridgeStatus('APPROVING');
-            }
-            if (payload.method === 'burn') {
-                setBridgeStatus('BURNING');
-            }
+        const txHash = await eth.request({
+            method: 'eth_sendTransaction',
+            params: [{
+                from: walletAddress,
+                to: bridgingKitAddress,
+                data: data
+            }]
         });
 
-        const fromChain = getAppKitChainName(fromNet);
-        const toChain = getAppKitChainName(toNet);
-
-        let result = await kit.bridge({
-            from: { adapter, chain: fromChain as any },
-            to: { 
-                adapter, 
-                chain: toChain as any,
-                useForwarder: true 
-            },
-            amount: amount,
-        });
-
-        if (result.state === "error") {
-            result = await kit.retryBridge(result as any, {
-                from: adapter,
-                to: adapter,
-            });
-        }
-
-        if (result.state === "success") {
-            setBridgeStatus('SUCCESS');
-            addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
-            
-            const val = parseFloat(amount);
-            setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-            
-            setIsBridging(false);
-            refreshBalance();
-            resetState();
-        } else {
-            throw new Error("Bridge failed on source chain.");
-        }
-    } catch (err: any) {
-        console.error(err);
-        addNotification('error', 'Transaction Failed', err.message || 'Transaction rejected by user.');
+        setBridgeStatus('SUCCESS');
+        
+        const val = parseFloat(amount);
+        setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
+        
+        addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
+        setIsBridging(false);
+        refreshBalance();
+        resetState();
+    } catch (error: any) {
+        console.error(error);
+        addNotification('error', 'Transaction Failed', error.message || 'Transaction rejected by user.');
         setIsBridging(false);
         setBridgeStatus('IDLE');
     }
@@ -197,12 +138,7 @@ export default function BridgeView() {
           {/* Header */}
           <div className="flex justify-between items-center mb-4 px-2">
             <h2 className="text-[13px] font-semibold text-slate-400">Cross-chain transfers</h2>
-            <div className="flex items-center gap-2 text-[11px] font-medium text-slate-400">
-              <span>Last updated: {lastUpdated}</span>
-              <button onClick={refreshBalance} className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors">
-                <RefreshCw size={12} className="text-slate-400" />
-              </button>
-            </div>
+
           </div>
 
           {/* FROM CARD */}
