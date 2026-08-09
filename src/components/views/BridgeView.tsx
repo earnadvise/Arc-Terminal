@@ -26,7 +26,7 @@ export default function BridgeView() {
   const [amount, setAmount] = useState<string>('');
   const [isBridging, setIsBridging] = useState(false);
   const [bridgeStatus, setBridgeStatus] = useState<'IDLE' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'HOOK' | 'SUCCESS'>('IDLE');
-  const [completedTx, setCompletedTx] = useState<{hash: string, url: string} | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<any[] | null>(null);
   const [externalBalance, setExternalBalance] = useState<number>(0);
   const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
   const [fetchTrigger, setFetchTrigger] = useState(0);
@@ -147,7 +147,7 @@ export default function BridgeView() {
       setAmount('');
       setIsBridging(false);
       setBridgeStatus('IDLE');
-      setCompletedTx(null);
+      setCompletedSteps(null);
     }, 15000); // 15 seconds to give user time to click link
   };
 
@@ -264,27 +264,14 @@ export default function BridgeView() {
         if (result.state === "success") {
             setBridgeStatus('SUCCESS');
             
-            const burnStep = (result as any).steps?.find((s: any) => s.name.toLowerCase() === 'burn');
-            if (burnStep?.txHash) {
-                setCompletedTx({ hash: burnStep.txHash, url: burnStep.explorerUrl || `https://testnet.arcexplorer.xyz/tx/${burnStep.txHash}` });
+            if ((result as any).steps) {
+                setCompletedSteps((result as any).steps);
             }
 
             addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
-            setIsBridging(false); // Show the transaction link immediately
-            
-            if (isDirectionReversed) {
-               setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-               setExternalBalance(prev => prev + val);
-            } else {
-               setBalances(prev => ({ ...prev, USDC: prev.USDC + val }));
-               setExternalBalance(prev => Math.max(0, prev - val));
-            }
-
-            await switchNetwork(toNet);
+            setIsBridging(false); 
             refreshBalance();
-            setTimeout(() => {
-                resetState();
-            }, 3000);
+            resetState();
         } else {
             throw new Error("Bridge failed, please check logs.");
         }
@@ -347,9 +334,46 @@ export default function BridgeView() {
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: 0.3 }}
-        className="w-full max-w-[460px] bg-[#F8F9FA]/90 backdrop-blur-3xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-[2rem] p-6 relative z-10"
+        className="relative z-10 w-full max-w-[480px] bg-white rounded-[2rem] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col gap-6"
       >
-        {/* Header */}
+        
+        {/* Success Block */}
+        {bridgeStatus === 'SUCCESS' && completedSteps && (
+          <div className="bg-[#EBF3FF] rounded-2xl p-5 border border-[#0052FF]/20">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-[#0052FF] flex items-center justify-center text-white shrink-0">
+                <CheckCircle2 size={18} />
+              </div>
+              <div>
+                <h3 className="font-bold text-[#0052FF] text-lg leading-tight">Bridge Complete!</h3>
+                <p className="text-sm text-slate-600 mt-0.5">Your USDC has been delivered to {toNet}</p>
+              </div>
+            </div>
+            
+            <div className="flex flex-col gap-2.5 mt-4 pt-4 border-t border-[#0052FF]/10">
+              {completedSteps.map((step, idx) => (
+                <div key={idx} className="flex items-center justify-between text-sm">
+                  <span className="text-slate-600 font-medium capitalize">{step.name}</span>
+                  {step.txHash ? (
+                    <a 
+                      href={step.explorerUrl || `https://testnet.arcexplorer.xyz/tx/${step.txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[#0052FF] hover:underline flex items-center gap-1 font-medium"
+                    >
+                      View
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                    </a>
+                  ) : (
+                    <span className="text-slate-400 italic">No TX</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* From Section */}
         <div className="flex justify-between items-center mb-6 px-1">
           <h2 className="text-sm font-bold text-slate-500">Cross-chain transfers</h2>
           <div className="flex items-center gap-2 text-[11px] font-medium text-slate-400">
@@ -545,24 +569,17 @@ export default function BridgeView() {
         >
           {isBridging ? (
             <span className="flex items-center gap-3">
-              {bridgeStatus !== 'SUCCESS' && <span className="w-5 h-5 border-2 border-[#0052FF]/20 border-t-[#0052FF] rounded-full animate-spin" />}
+              <span className="w-5 h-5 border-2 border-[#0052FF]/20 border-t-[#0052FF] rounded-full animate-spin" />
               {bridgeStatus === 'APPROVING' && 'Approving USDC...'}
               {bridgeStatus === 'BURNING' && 'Executing CCTP Burn...'}
               {bridgeStatus === 'ATTESTING' && 'Awaiting Attestation...'}
               {bridgeStatus === 'MINTING' && 'Minting Destination...'}
-              {bridgeStatus === 'SUCCESS' && 'Bridge Successful!'}
             </span>
-          ) : completedTx ? (
-            <a 
-              href={completedTx.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-full h-full text-[#0052FF]"
-              onClick={(e) => e.stopPropagation()}
-            >
+          ) : bridgeStatus === 'SUCCESS' ? (
+            <span className="flex items-center justify-center w-full h-full text-[#0052FF]">
               <CheckCircle2 size={16} className="mr-2" />
-              View Transaction Details
-            </a>
+              Bridge Successful!
+            </span>
           ) : !walletConnected ? (
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
