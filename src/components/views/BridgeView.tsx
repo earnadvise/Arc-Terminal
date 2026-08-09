@@ -440,21 +440,17 @@ export default function BridgeView() {
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
                     {completedSteps && (
                       <div className="flex flex-col gap-2 pt-4 border-t border-slate-100">
-                        {completedSteps.map((s, idx) => (
+                        {completedSteps.filter(s => s.txHash).slice(-1).map((s, idx) => (
                           <div key={idx} className="flex justify-between items-center text-xs">
-                            <span className="text-slate-500 font-medium capitalize">{s.name}</span>
-                            {s.txHash ? (
-                              <a 
-                                href={s.explorerUrl || `https://testnet.arcscan.app/tx/${s.txHash}`} 
-                                target="_blank" 
-                                rel="noreferrer"
-                                className="text-blue-500 hover:underline flex items-center gap-1 font-semibold"
-                              >
-                                {s.txHash.substring(0, 6)}...{s.txHash.substring(s.txHash.length - 4)}
-                              </a>
-                            ) : (
-                              <span className="text-slate-400 italic">No Tx</span>
-                            )}
+                            <span className="text-slate-500 font-medium capitalize">Transaction Hash</span>
+                            <a 
+                              href={s.explorerUrl || `https://testnet.arcscan.app/tx/${s.txHash}`} 
+                              target="_blank" 
+                              rel="noreferrer"
+                              className="text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                            >
+                              {s.txHash.substring(0, 6)}...{s.txHash.substring(s.txHash.length - 4)}
+                            </a>
                           </div>
                         ))}
                       </div>
