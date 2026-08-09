@@ -26,6 +26,7 @@ export default function BridgeView() {
   const [bridgeStatus, setBridgeStatus] = useState<'IDLE' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'HOOK' | 'SUCCESS'>('IDLE');
   const [externalBalance, setExternalBalance] = useState<number>(0);
   const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
+  const [fetchTrigger, setFetchTrigger] = useState(0);
   
   useEffect(() => {
     if (!walletAddress) {
@@ -88,7 +89,7 @@ export default function BridgeView() {
     .catch(() => setExternalBalance(0));
 
     setLastUpdated(new Date().toLocaleTimeString());
-  }, [sourceChain, walletAddress]);
+  }, [sourceChain, walletAddress, fetchTrigger]);
   
   // Advanced options
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -131,7 +132,7 @@ export default function BridgeView() {
 
   const refreshBalance = () => {
     setLastUpdated(new Date().toLocaleTimeString());
-    // In a real app we'd re-trigger the balance fetch here
+    setFetchTrigger(prev => prev + 1);
   };
 
   const reverseDirection = () => {
@@ -159,8 +160,8 @@ export default function BridgeView() {
     }
   };
 
-  // Official Circle CCTP TokenMessenger Address (Testnet)
-  const BRIDGE_CONTRACT_ADDRESS = "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5";
+  // Custom BridgingKitContract Address provided by user
+  const BRIDGE_CONTRACT_ADDRESS = "0xC5567a5E3370d4DBfB0540025078e283e36A363d";
   
   const executeBridge = async () => {
     if (!walletConnected) {
@@ -195,18 +196,31 @@ export default function BridgeView() {
     ]);
     const approveData = erc20Iface.encodeFunctionData("approve", [BRIDGE_CONTRACT_ADDRESS, amountWei]);
 
-    // CCTP TokenMessenger ABI
+    // Custom BridgingKitContract ABI
     const cctpIface = new ethers.Interface([
-      "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) external returns (uint64)"
+      "function bridgeWithPreapproval(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient) external",
+      "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) external" // Fallback
     ]);
     const mintRecipient = ethers.zeroPadValue(walletAddress, 32);
     const destinationDomain = 0; // Mock domain for Arc Testnet / internal relay
-    const depositData = cctpIface.encodeFunctionData("depositForBurn", [
-      amountWei,
-      destinationDomain,
-      mintRecipient,
-      usdcAddr
-    ]);
+    
+    // We try to use bridgeWithPreapproval as requested
+    let depositData;
+    try {
+        depositData = cctpIface.encodeFunctionData("bridgeWithPreapproval", [
+          amountWei,
+          destinationDomain,
+          mintRecipient
+        ]);
+    } catch (e) {
+        // Fallback to standard CCTP if something goes wrong
+        depositData = cctpIface.encodeFunctionData("depositForBurn", [
+          amountWei,
+          destinationDomain,
+          mintRecipient,
+          usdcAddr
+        ]);
+    }
 
     const finalizeBridge = () => {
       setBridgeStatus('MINTING');
@@ -233,6 +247,7 @@ export default function BridgeView() {
         
         addNotification('success', 'Bridge Successful', `Successfully bridged ${val} USDC from ${fromNet} to ${toNet}!`, bridgeTxHash, explorerUrl);
         await switchNetwork(toNet);
+        refreshBalance();
         resetState();
       }, 2000);
     };
@@ -245,10 +260,14 @@ export default function BridgeView() {
             // 1. Approve Transaction
             setBridgeStatus('APPROVING');
             addNotification('info', 'Approving USDC', `Please confirm the transaction to allow CCTP to spend ${val} USDC...`);
-            await eth.request({
+            const approveTxHash = await eth.request({
               method: 'eth_sendTransaction',
               params: [{ from: walletAddress, to: usdcAddr, value: '0x0', data: approveData }]
             });
+
+            // Note: In a production app, we would wait for approveTxHash to be mined here using a provider
+            // For now, we simulate waiting a few seconds before prompting the deposit
+            await new Promise(r => setTimeout(r, 4000));
 
             // 2. Deposit For Burn Transaction
             setBridgeStatus('BURNING');
@@ -262,7 +281,8 @@ export default function BridgeView() {
             setBridgeStatus('ATTESTING');
             addNotification('info', 'Awaiting Circle Attestation', 'Waiting for Circle to attest the cross-chain message...');
             
-            setTimeout(finalizeBridge, 3000);
+            // Note: In production we wait for the tx to be mined. Simulating mine wait here.
+            setTimeout(finalizeBridge, 5000);
             
         } catch (err: any) {
             console.error(err);
@@ -510,11 +530,11 @@ export default function BridgeView() {
         {/* Action Button */}
         <button
           onClick={executeBridge}
-          disabled={isBridging || !walletConnected || !amount || parseFloat(amount) <= 0}
+          disabled={isBridging || !walletConnected || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0}
           className={`w-full py-3.5 rounded-[1.25rem] font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden ${
             isBridging 
               ? 'bg-[#E5E7EB] text-slate-400 cursor-not-allowed scale-[0.99]'
-              : (!amount || parseFloat(amount) <= 0)
+              : (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0)
               ? 'bg-[#F3F4F6] text-slate-400 cursor-not-allowed'
               : 'bg-[#EBF3FF] hover:bg-[#E1EDFF] text-[#0052FF] hover:scale-[1.01]'
           }`}
@@ -535,7 +555,7 @@ export default function BridgeView() {
               </div>
               Connect Wallet
             </div>
-          ) : (!amount || parseFloat(amount) <= 0) ? (
+          ) : (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) ? (
             <div className="flex items-center gap-2 text-slate-400">
                Enter an amount
             </div>
