@@ -38,7 +38,8 @@ export default function BridgeView() {
     }
     let rpc = '';
     let usdc = '';
-    switch(sourceChain) {
+    const nonArcChain = fromNet === 'Arc Testnet' ? toNet : fromNet;
+    switch(nonArcChain) {
       case 'Arbitrum Sepolia':
         rpc = 'https://sepolia-rollup.arbitrum.io/rpc';
         usdc = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
@@ -92,7 +93,7 @@ export default function BridgeView() {
     .catch(() => setExternalBalance(0));
 
     setLastUpdated(new Date().toLocaleTimeString());
-  }, [sourceChain, walletAddress, fetchTrigger]);
+  }, [fromNet, toNet, walletAddress, fetchTrigger]);
   
   // Advanced options
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -334,7 +335,7 @@ export default function BridgeView() {
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: 0.3 }}
-        className="relative z-10 w-full max-w-[480px] bg-white rounded-[2rem] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col gap-6"
+        className="relative z-10 w-full max-w-[480px] bg-white rounded-[2rem] p-5 shadow-[0_8px_32px_rgba(0,0,0,0.08)] border border-slate-100 flex flex-col gap-4"
       >
         
         {/* Success Block */}
@@ -385,7 +386,7 @@ export default function BridgeView() {
         </div>
 
         {/* From Network */}
-        <div className="bg-white border border-slate-200 rounded-[1.5rem] p-4 mb-2 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-[1.25rem] p-4 shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <span className="text-sm font-bold text-slate-400">From</span>
             <div className="flex items-center gap-2">
@@ -456,21 +457,32 @@ export default function BridgeView() {
         </div>
 
         {/* To Network */}
-        <div className="bg-white border border-slate-200 rounded-[1.5rem] p-4 mt-2 mb-6 shadow-sm">
+        <div className="bg-white border border-slate-200 rounded-[1.25rem] p-4 mt-2 mb-4 shadow-sm">
           <div className="flex justify-between items-center mb-4">
             <span className="text-sm font-bold text-slate-400">To</span>
           </div>
 
           <div className="mb-4">
-            {!isDirectionReversed ? (
-              <div className="flex items-center justify-between border border-slate-100 rounded-2xl px-4 py-3 bg-slate-50/50 cursor-not-allowed">
-                <span className="text-sm font-bold text-slate-900">Arc Testnet</span>
-              </div>
-            ) : (
-              <div className="flex items-center justify-between border border-slate-100 rounded-2xl px-4 py-3 bg-slate-50/50 cursor-not-allowed">
-                <span className="text-sm font-bold text-slate-900">{sourceChain}</span>
-              </div>
-            )}
+            <div className="relative border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors">
+              <select
+                value={toNet}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === fromNet) setFromNet(toNet);
+                  setToNet(val);
+                }}
+                className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none cursor-pointer appearance-none px-4 py-3 relative z-10"
+              >
+                <option value="Arc Testnet">Arc Testnet</option>
+                <option value="Arbitrum Sepolia">Arbitrum Sepolia</option>
+                <option value="Base Sepolia">Base Sepolia</option>
+                <option value="Ethereum Sepolia">Ethereum Sepolia</option>
+                <option value="Optimism Sepolia">Optimism Sepolia</option>
+                <option value="Avalanche Fuji">Avalanche Fuji</option>
+                <option value="Polygon Amoy">Polygon Amoy</option>
+              </select>
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
+            </div>
           </div>
 
           <div>
