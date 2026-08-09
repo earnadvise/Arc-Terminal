@@ -247,12 +247,13 @@ export default function BridgeView() {
         console.log('[Bridge] kit.bridge() returned:', result);
 
         if (result.state === "error") {
-            console.log('[Bridge] Error in result, retrying...');
+            console.log('[Bridge] Error in result:', (result as any).error, (result as any).steps);
             addNotification('info', 'Bridge Retry', 'First attempt errored, retrying bridge...');
             result = await kit.retryBridge(result as any, {
                 from: adapter,
                 to: adapter,
             });
+            console.log('[Bridge] retryBridge returned:', result);
         }
 
         if (result.state === "success") {
