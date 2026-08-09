@@ -292,26 +292,17 @@ export default function BridgeView() {
 
                 setBridgeStatus('BURNING');
                 
-                // Simulate cross-chain delay for attestation and minting
-                setTimeout(() => setBridgeStatus('ATTESTING'), 3000);
-                setTimeout(() => setBridgeStatus('MINTING'), 6000);
-                setTimeout(() => {
-                    setBridgeStatus('SUCCESS');
-                    setCompletedSteps([
-                        { name: 'approve', txHash: txHash },
-                        { name: 'burn', txHash: txHash },
-                        { name: 'attestation' },
-                        { name: 'mint', txHash: '0x' + Math.random().toString(16).slice(2, 64).padEnd(64, '0') }
-                    ]);
-                    
-                    const val = parseFloat(amount);
-                    setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-                    
-                    addNotification('success', 'Bridge Complete', 'USDC successfully bridged via on-chain BridgingKit!');
-                    setIsBridging(false);
-                    refreshBalance();
-                    resetState();
-                }, 9000);
+                
+                setBridgeStatus('SUCCESS');
+                
+                const val = parseFloat(amount);
+                setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
+                
+                addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
+                setIsBridging(false);
+                refreshBalance();
+                resetState();
+
             } catch (error: any) {
                 console.error(error);
                 addNotification('error', 'Transaction Failed', error.message || 'Transaction rejected by user.');
@@ -401,27 +392,7 @@ export default function BridgeView() {
               </div>
             </div>
             
-            <div className="flex flex-col gap-2.5 mt-4 pt-4 border-t border-[#0052FF]/10">
-              {completedSteps.map((step, idx) => (
-                <div key={idx} className="flex items-center justify-between text-sm">
-                  <span className="text-slate-600 font-medium capitalize">{step.name}</span>
-                  {step.txHash ? (
-                    <a 
-                      href={step.explorerUrl || `https://testnet.arcexplorer.xyz/tx/${step.txHash}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#0052FF] hover:underline flex items-center gap-1 font-medium"
-                    >
-                      View
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                    </a>
-                  ) : (
-                    <span className="text-slate-400 italic">No TX</span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+                      </div>
         )}
 
         {/* From Section */}
