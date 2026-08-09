@@ -1,23 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/context/useAppState';
-import { RefreshCw, ChevronDown, CheckCircle2, ArrowDownUp, Info } from 'lucide-react';
+import { RefreshCw, ChevronDown, ArrowDownUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppKit } from "@circle-fin/app-kit";
 import { createEthersAdapterFromProvider } from "@circle-fin/adapter-ethers-v6";
-
-// Mock getAppKitChainName since we removed circle kit dependency
-const getAppKitChainName = (net: string) => {
-  switch(net) {
-    case 'Arc Testnet': return 'Arc_Testnet';
-    case 'Arbitrum Sepolia': return 'Arbitrum_Sepolia';
-    case 'Base Sepolia': return 'Base_Sepolia';
-    case 'Ethereum Sepolia': return 'Ethereum_Sepolia';
-    case 'Optimism Sepolia': return 'Optimism_Sepolia';
-    case 'Avalanche Fuji': return 'Avalanche_Fuji';
-    case 'Polygon Amoy': return 'Polygon_Amoy';
-    default: return net;
-  }
-};
 
 export default function BridgeView() {
   const { walletConnected, walletAddress, setBalances, balances, addNotification, getProvider } = useAppState();
@@ -29,15 +15,8 @@ export default function BridgeView() {
   const [isBridging, setIsBridging] = useState(false);
   const [bridgeStatus, setBridgeStatus] = useState<'IDLE' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'SUCCESS'>('IDLE');
   const [completedSteps, setCompletedSteps] = useState<any[] | null>(null);
-  
-  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
 
   const currentBalance = balances.USDC || 0;
-
-  const refreshBalance = () => {
-    setLastUpdated(new Date().toLocaleTimeString());
-    addNotification('info', 'Balance Refreshed', 'USDC balance updated.');
-  };
 
   const handleMax = () => {
     setAmount((balances.USDC || 0).toString());
@@ -52,68 +31,177 @@ export default function BridgeView() {
     setAmount('');
   };
 
+  const switchNetwork = async (networkName: string) => {
+    const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
+    if (!eth) return;
+    let chainId = '0x11b5e'; // Arc Testnet (72542)
+    switch(networkName) {
+      case 'Arbitrum Sepolia': chainId = '0x66eee'; break; // 421614
+      case 'Base Sepolia': chainId = '0x14a34'; break; // 84532
+      case 'Ethereum Sepolia': chainId = '0xaa36a7'; break; // 11155111
+      case 'Optimism Sepolia': chainId = '0xaa37dc'; break; // 11155420
+      case 'Avalanche Fuji': chainId = '0xa869'; break; // 43113
+      case 'Polygon Amoy': chainId = '0x13882'; break; // 80002
+    }
+    try {
+      await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] });
+    } catch (e) {
+      console.log('Failed to switch network', e);
+    }
+  };
+
+  useEffect(() => {
+    if (walletConnected) {
+      switchNetwork(fromNet);
+    }
+  }, [fromNet, walletConnected]);
+
+  const getAppKitChainName = (net: string) => {
+    switch (net) {
+      case 'Arbitrum Sepolia': return 'Arbitrum_Sepolia';
+      case 'Base Sepolia': return 'Base_Sepolia';
+      case 'Ethereum Sepolia': return 'Ethereum_Sepolia';
+      case 'Optimism Sepolia': return 'OP_Sepolia';
+      case 'Avalanche Fuji': return 'Avalanche_Fuji';
+      case 'Polygon Amoy': return 'Polygon_Amoy';
+      case 'Arc Testnet': return 'Arc_Testnet';
+      default: return 'Arc_Testnet';
+    }
+  };
+
   const executeBridge = async () => {
-    const eth = getProvider();
-    if (!walletConnected || !amount || parseFloat(amount) <= 0) return;
+    if (!walletConnected) {
+      addNotification('error', 'Wallet Not Connected', 'Please connect your wallet to bridge.');
+      return;
+    }
     
+    const val = parseFloat(amount);
+    if (isNaN(val) || val <= 0) {
+      addNotification('error', 'Invalid Amount', 'Please enter a valid USDC amount to bridge.');
+      return;
+    }
+
+    if (val > currentBalance) {
+      addNotification('error', 'Insufficient Balance', \`You only have \${currentBalance} USDC on \${fromNet}.\`);
+      return;
+    }
+
     setIsBridging(true);
-    setCompletedSteps(null);
+
+    const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
+    if (!eth) {
+        addNotification('error', 'No Wallet', 'Please install MetaMask.');
+        setIsBridging(false);
+        return;
+    }
 
     try {
-        setBridgeStatus('APPROVING');
-        addNotification('info', 'Approving USDC', 'Please confirm the bridge transaction in your wallet...');
-        
-        const bridgingKitAddress = '0xc5567a5e3370d4dbfb0540025078e283e36a363d';
-        const arcUsdcAddress = '0x3600000000000000000000000000000000000000'; 
-        
-        const amountInWei = BigInt(Math.floor(parseFloat(amount) * 1e6));
-        
-        let destDomain = 0;
-        let destChainId = 0;
-        switch(toNet) {
-            case 'Arbitrum Sepolia': destDomain = 3; destChainId = 421614; break;
-            case 'Base Sepolia': destDomain = 6; destChainId = 84532; break;
-            case 'Ethereum Sepolia': destDomain = 0; destChainId = 11155111; break;
-            case 'Optimism Sepolia': destDomain = 2; destChainId = 11155420; break;
-            case 'Avalanche Fuji': destDomain = 1; destChainId = 43113; break;
-            case 'Polygon Amoy': destDomain = 7; destChainId = 80002; break;
-            case 'Arc Testnet': destDomain = 72509; destChainId = 72542; break;
-            default: destDomain = 3; destChainId = 421614;
+        console.log('[Bridge] Starting bridge process...');
+        console.log('[Bridge] Switching network to', fromNet);
+        await switchNetwork(fromNet);
+
+        if (fromNet === 'Arc Testnet') {
+            console.log('[Bridge] Executing on-chain bridge via BridgingKitContract on Arc Testnet...');
+            setBridgeStatus('APPROVING');
+            addNotification('info', 'Approving USDC', 'Please confirm the bridge transaction in your wallet...');
+            
+            const bridgingKitAddress = '0xc5567a5e3370d4dbfb0540025078e283e36a363d';
+            const arcUsdcAddress = '0x3600000000000000000000000000000000000000'; 
+            
+            const amountInWei = BigInt(Math.floor(val * 1e6));
+            
+            let destDomain = 0;
+            switch(toNet) {
+                case 'Arbitrum Sepolia': destDomain = 3; break;
+                case 'Base Sepolia': destDomain = 6; break;
+                case 'Ethereum Sepolia': destDomain = 0; break;
+                case 'Optimism Sepolia': destDomain = 2; break;
+                case 'Avalanche Fuji': destDomain = 1; break;
+                case 'Polygon Amoy': destDomain = 7; break;
+                default: destDomain = 3;
+            }
+            
+            let data = '0x513e1175';
+            data += amountInWei.toString(16).padStart(64, '0');
+            data += (72509).toString(16).padStart(64, '0');
+            data += walletAddress.replace('0x', '').padStart(64, '0');
+            data += arcUsdcAddress.replace('0x', '').padStart(64, '0');
+            data += bridgingKitAddress.replace('0x', '').padStart(64, '0');
+            data += destDomain.toString(16).padStart(64, '0');
+            data += (1000).toString(16).padStart(64, '0'); 
+            data += (320).toString(16).padStart(64, '0');  
+            data += (12).toString(16).padStart(64, '0');   
+            data += '636374702d666f72776172640000000000000000000000000000000000000000';
+            
+            const txHash = await eth.request({
+                method: 'eth_sendTransaction',
+                params: [{
+                    from: walletAddress,
+                    to: bridgingKitAddress,
+                    data: data
+                }]
+            });
+
+            setBridgeStatus('SUCCESS');
+            setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
+            addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
+            setIsBridging(false);
+            resetState();
+            return;
         }
+
+        console.log('[Bridge] Network switched. Initializing App Kit...');
+        const adapter = await createEthersAdapterFromProvider({
+            provider: eth
+        });
         
-        let data = '0x513e1175';
-        data += amountInWei.toString(16).padStart(64, '0');
-        data += (72509).toString(16).padStart(64, '0');
-        data += walletAddress.replace('0x', '').padStart(64, '0');
-        data += arcUsdcAddress.replace('0x', '').padStart(64, '0');
-        data += bridgingKitAddress.replace('0x', '').padStart(64, '0');
-        data += destDomain.toString(16).padStart(64, '0');
-        data += (1000).toString(16).padStart(64, '0'); 
-        data += (320).toString(16).padStart(64, '0');  
-        data += (12).toString(16).padStart(64, '0');   
-        data += '636374702d666f72776172640000000000000000000000000000000000000000';
+        console.log('[Bridge] Adapter created. Creating AppKit instance...');
+        const kit = new AppKit();
         
-        const txHash = await eth.request({
-            method: 'eth_sendTransaction',
-            params: [{
-                from: walletAddress,
-                to: bridgingKitAddress,
-                data: data
-            }]
+        kit.on("*", (payload: any) => {
+            console.log('[Bridge Event]', payload);
+            if (payload.method === 'approve' && payload.values?.state !== 'success') {
+                setBridgeStatus('APPROVING');
+                addNotification('info', 'Approving USDC', 'Approving USDC for cross-chain transfer...');
+            }
+            if (payload.method === 'burn') {
+                setBridgeStatus('BURNING');
+            }
         });
 
-        setBridgeStatus('SUCCESS');
-        
-        const val = parseFloat(amount);
-        setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-        
-        addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
-        setIsBridging(false);
-        refreshBalance();
-        resetState();
-    } catch (error: any) {
-        console.error(error);
-        addNotification('error', 'Transaction Failed', error.message || 'Transaction rejected by user.');
+        const fromChain = getAppKitChainName(fromNet);
+        const toChain = getAppKitChainName(toNet);
+
+        let result = await kit.bridge({
+            from: { adapter, chain: fromChain as any },
+            to: { 
+                adapter, 
+                chain: toChain as any,
+                useForwarder: true 
+            },
+            amount: amount,
+        });
+
+        if (result.state === "error") {
+            result = await kit.retryBridge(result as any, {
+                from: adapter,
+                to: adapter,
+            });
+        }
+
+        if (result.state === "success") {
+            setBridgeStatus('SUCCESS');
+            setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
+            addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
+            setIsBridging(false);
+            resetState();
+        } else {
+            throw new Error("Bridge failed on source chain.");
+        }
+
+    } catch (err: any) {
+        console.error(err);
+        addNotification('error', 'Transaction Failed', err.message || 'Transaction rejected by user.');
         setIsBridging(false);
         setBridgeStatus('IDLE');
     }
@@ -121,7 +209,7 @@ export default function BridgeView() {
 
   return (
     <div className="flex-1 w-full relative flex items-center justify-center p-4">
-      {/* Background - Soft Purple/White Waves mimicking the screenshot */}
+      {/* Background - Soft Purple/White Waves */}
       <div className="absolute inset-0 bg-[#f7f5ff] -z-10 overflow-hidden">
         <div className="absolute top-[0%] left-[10%] w-[60%] h-[60%] bg-[#e3dcff] blur-[100px] rounded-full opacity-60 mix-blend-multiply" />
         <div className="absolute bottom-[0%] right-[10%] w-[50%] h-[50%] bg-[#f0ebff] blur-[100px] rounded-full opacity-80 mix-blend-multiply" />
@@ -129,7 +217,7 @@ export default function BridgeView() {
       </div>
 
       <div className="w-full max-w-[900px] flex gap-12 items-start justify-center">
-        {/* Bridge Widget mimicking the right side of the screenshot */}
+        {/* Bridge Widget */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -138,7 +226,6 @@ export default function BridgeView() {
           {/* Header */}
           <div className="flex justify-between items-center mb-4 px-2">
             <h2 className="text-[13px] font-semibold text-slate-400">Cross-chain transfers</h2>
-
           </div>
 
           {/* FROM CARD */}
@@ -253,11 +340,11 @@ export default function BridgeView() {
              <button
                onClick={executeBridge}
                disabled={isBridging || !walletConnected || !amount || parseFloat(amount) <= 0}
-               className={`w-full py-3.5 rounded-[16px] font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
+               className={\`w-full py-3.5 rounded-[16px] font-bold text-sm transition-colors flex items-center justify-center gap-2 \${
                  isBridging || !walletConnected || !amount || parseFloat(amount) <= 0
                    ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
                    : 'bg-[#0052FF] text-white shadow-md hover:bg-blue-600'
-               }`}
+               }\`}
              >
                {isBridging ? (
                  <span className="flex items-center gap-2">
@@ -277,9 +364,6 @@ export default function BridgeView() {
              </button>
           </div>
         </motion.div>
-
-        
-
       </div>
     </div>
   );
