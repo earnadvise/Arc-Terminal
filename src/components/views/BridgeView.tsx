@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 const getAppKitChainName = (name: string) => name;
 
 export default function BridgeView() {
-  const { walletConnected, walletAddress, setBalances, balances, addNotification, eth } = useAppState();
+  const { walletConnected, walletAddress, setBalances, balances, addNotification, getProvider } = useAppState();
+  const eth = getProvider();
 
   const [fromNet, setFromNet] = useState('Arc Testnet');
   const [toNet, setToNet] = useState('Arbitrum Sepolia');
@@ -131,18 +132,6 @@ export default function BridgeView() {
       </div>
 
       <div className="w-full max-w-[900px] flex gap-12 items-start justify-center">
-        {/* Left Side "ArcFun" Style Menu (Optional to match aesthetic) */}
-        <div className="hidden md:flex flex-col gap-6 pt-8 min-w-[200px]">
-           <h1 className="text-2xl font-bold text-slate-800">Bridge</h1>
-           <div className="flex flex-col gap-4 text-sm font-semibold text-slate-400">
-              <button className="text-left hover:text-slate-700 transition-colors">Swap</button>
-              <button className="text-left text-indigo-600 transition-colors">Bridge</button>
-              <button className="text-left hover:text-slate-700 transition-colors">Faucet Hub</button>
-              <button className="text-left hover:text-slate-700 transition-colors">Recover</button>
-              <button className="text-left hover:text-slate-700 transition-colors">History</button>
-           </div>
-        </div>
-
         {/* Bridge Widget mimicking the right side of the screenshot */}
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
@@ -280,32 +269,102 @@ export default function BridgeView() {
           </div>
 
           {/* ACTION BUTTON */}
-          <div className="bg-white rounded-[20px] p-1.5 border border-slate-100 flex items-center gap-2 shadow-sm">
-             <div className="bg-[#EBF3FF] rounded-full px-4 py-2 flex items-center justify-center shrink-0">
-               <span className="text-xs font-semibold text-[#0052FF]">Rabby Wallet ^</span>
-             </div>
+          <div className="bg-white rounded-[20px] p-1.5 border border-slate-100 flex flex-col items-center gap-2 shadow-sm">
+             {walletConnected && (
+               <div className="bg-[#EBF3FF] rounded-full px-4 py-1.5 mt-1 flex items-center justify-center">
+                 <span className="text-[11px] font-semibold text-[#0052FF]">{walletAddress?.slice(0,6)}...{walletAddress?.slice(-4)}</span>
+               </div>
+             )}
              <button
                onClick={executeBridge}
                disabled={isBridging || !walletConnected || !amount || parseFloat(amount) <= 0}
-               className={`flex-1 py-3 rounded-[16px] font-semibold text-sm transition-colors flex items-center justify-center ${
+               className={`w-full py-3.5 rounded-[16px] font-bold text-sm transition-colors flex items-center justify-center gap-2 ${
                  isBridging || !walletConnected || !amount || parseFloat(amount) <= 0
                    ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
-                   : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+                   : 'bg-[#0052FF] text-white shadow-md hover:bg-blue-600'
                }`}
              >
                {isBridging ? (
                  <span className="flex items-center gap-2">
-                   <span className="w-4 h-4 border-2 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+                   <span className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
                    Bridging...
                  </span>
                ) : !walletConnected ? (
                  'Connect Wallet'
                ) : (
-                 'Select a chain / Bridge'
+                 <>
+                   <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center">
+                     <span className="text-white text-xs">→</span>
+                   </div>
+                   Approve & Bridge
+                 </>
                )}
              </button>
           </div>
         </motion.div>
+
+        {/* Route Details Card */}
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="w-full max-w-[360px] bg-white/60 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)] border border-white h-fit hidden lg:block"
+        >
+          <h2 className="text-[15px] font-bold text-slate-800 mb-6">Route Details</h2>
+          
+          <div className="flex flex-col gap-5 text-[13px]">
+            {/* Expected Output */}
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+              <span className="font-semibold text-slate-400">Expected Output</span>
+              <span className="font-bold text-slate-800">{amount || '0'} USDC</span>
+            </div>
+
+            {/* Via */}
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+              <span className="font-semibold text-slate-400">Via</span>
+              <div className="flex items-center gap-1.5 bg-[#4F46E5] text-white px-2 py-0.5 rounded-md font-bold text-[10px]">
+                 CCTP V2
+              </div>
+            </div>
+
+            {/* Route */}
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+              <span className="font-semibold text-slate-400">Route</span>
+              <div className="flex items-center gap-2 font-bold text-slate-700">
+                <div className="flex items-center gap-1.5">
+                   {fromNet.split(' ')[0]}
+                </div>
+                <span className="text-slate-300">→</span>
+                <div className="flex items-center gap-1.5">
+                   {toNet.split(' ')[0]}
+                </div>
+              </div>
+            </div>
+
+            {/* Estimated Time */}
+            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+              <span className="font-semibold text-slate-400">Estimated Time</span>
+              <span className="font-bold text-slate-800">~ 15 - 20s</span>
+            </div>
+
+            {/* Est. Network Fee */}
+            <div className="flex justify-between items-start pb-4 border-b border-slate-100">
+              <span className="font-semibold text-slate-400 mt-0.5">Est. Network Fee</span>
+              <div className="flex flex-col items-end gap-1 text-[11px] font-semibold text-slate-400 text-right">
+                 <span>Approve: <span className="text-slate-300">Unavailable ETH</span></span>
+                 <span>Burn: <span className="text-slate-300">Unavailable ETH</span></span>
+                 <span>Mint: <span className="text-slate-300">Unavailable USDC</span></span>
+              </div>
+            </div>
+
+            {/* Platform Fee */}
+            <div className="flex justify-between items-center">
+              <span className="font-semibold text-slate-400">Platform Fee</span>
+              <span className="font-bold text-[#10B981]">$0</span>
+            </div>
+          </div>
+        </motion.div>
+
       </div>
     </div>
   );
