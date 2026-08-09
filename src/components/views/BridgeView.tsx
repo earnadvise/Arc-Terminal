@@ -2,9 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/context/useAppState';
 import { RefreshCw, ChevronDown, CheckCircle2, ArrowDownUp, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AppKit } from "@circle-fin/app-kit";
+import { createEthersAdapterFromProvider } from "@circle-fin/adapter-ethers-v6";
 
 // Mock getAppKitChainName since we removed circle kit dependency
-const getAppKitChainName = (name: string) => name;
+const getAppKitChainName = (net: string) => {
+  switch(net) {
+    case 'Arc Testnet': return 'Arc_Testnet';
+    case 'Arbitrum Sepolia': return 'Arbitrum_Sepolia';
+    case 'Base Sepolia': return 'Base_Sepolia';
+    case 'Ethereum Sepolia': return 'Ethereum_Sepolia';
+    case 'Optimism Sepolia': return 'Optimism_Sepolia';
+    case 'Avalanche Fuji': return 'Avalanche_Fuji';
+    case 'Polygon Amoy': return 'Polygon_Amoy';
+    default: return net;
+  }
+};
 
 export default function BridgeView() {
   const { walletConnected, walletAddress, setBalances, balances, addNotification, getProvider } = useAppState();
@@ -108,12 +121,55 @@ export default function BridgeView() {
             return;
         }
 
-        // Dummy fallback for reverse
-        setBridgeStatus('SUCCESS');
-        addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
-        setIsBridging(false);
-        refreshBalance();
-        resetState();
+        
+        const adapter = await createEthersAdapterFromProvider({
+            provider: eth
+        });
+        
+        const kit = new AppKit();
+        
+        kit.on("*", (payload: any) => {
+            if (payload.method === 'approve' && payload.values?.state !== 'success') {
+                setBridgeStatus('APPROVING');
+            }
+            if (payload.method === 'burn') {
+                setBridgeStatus('BURNING');
+            }
+        });
+
+        const fromChain = getAppKitChainName(fromNet);
+        const toChain = getAppKitChainName(toNet);
+
+        let result = await kit.bridge({
+            from: { adapter, chain: fromChain as any },
+            to: { 
+                adapter, 
+                chain: toChain as any,
+                useForwarder: true 
+            },
+            amount: amount,
+        });
+
+        if (result.state === "error") {
+            result = await kit.retryBridge(result as any, {
+                from: adapter,
+                to: adapter,
+            });
+        }
+
+        if (result.state === "success") {
+            setBridgeStatus('SUCCESS');
+            addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
+            
+            const val = parseFloat(amount);
+            setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
+            
+            setIsBridging(false);
+            refreshBalance();
+            resetState();
+        } else {
+            throw new Error("Bridge failed on source chain.");
+        }
     } catch (err: any) {
         console.error(err);
         addNotification('error', 'Transaction Failed', err.message || 'Transaction rejected by user.');
@@ -263,7 +319,7 @@ export default function BridgeView() {
                   </div>
                   <span className="font-bold text-slate-700 text-sm">USDC</span>
                 </div>
-                {/* No input in TO card usually, or read-only output */}
+                <input type="text" readOnly placeholder="0" value={amount} className="w-full min-w-0 flex-1 bg-transparent border-none px-2 py-1 text-3xl font-semibold text-right text-slate-800 outline-none placeholder:text-slate-300 ml-2" />
               </div>
             </div>
           </div>
@@ -303,67 +359,7 @@ export default function BridgeView() {
           </div>
         </motion.div>
 
-        {/* Route Details Card */}
-        <motion.div 
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="w-full max-w-[360px] bg-white/60 backdrop-blur-xl rounded-[24px] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.04)] border border-white h-fit hidden lg:block"
-        >
-          <h2 className="text-[15px] font-bold text-slate-800 mb-6">Route Details</h2>
-          
-          <div className="flex flex-col gap-5 text-[13px]">
-            {/* Expected Output */}
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-              <span className="font-semibold text-slate-400">Expected Output</span>
-              <span className="font-bold text-slate-800">{amount || '0'} USDC</span>
-            </div>
-
-            {/* Via */}
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-              <span className="font-semibold text-slate-400">Via</span>
-              <div className="flex items-center gap-1.5 bg-[#4F46E5] text-white px-2 py-0.5 rounded-md font-bold text-[10px]">
-                 CCTP V2
-              </div>
-            </div>
-
-            {/* Route */}
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-              <span className="font-semibold text-slate-400">Route</span>
-              <div className="flex items-center gap-2 font-bold text-slate-700">
-                <div className="flex items-center gap-1.5">
-                   {fromNet.split(' ')[0]}
-                </div>
-                <span className="text-slate-300">→</span>
-                <div className="flex items-center gap-1.5">
-                   {toNet.split(' ')[0]}
-                </div>
-              </div>
-            </div>
-
-            {/* Estimated Time */}
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-              <span className="font-semibold text-slate-400">Estimated Time</span>
-              <span className="font-bold text-slate-800">~ 15 - 20s</span>
-            </div>
-
-            {/* Est. Network Fee */}
-            <div className="flex justify-between items-start pb-4 border-b border-slate-100">
-              <span className="font-semibold text-slate-400 mt-0.5">Est. Network Fee</span>
-              <div className="flex flex-col items-end gap-1 text-[11px] font-semibold text-slate-400 text-right">
-                 <span>Approve: <span className="text-slate-300">Unavailable ETH</span></span>
-                 <span>Burn: <span className="text-slate-300">Unavailable ETH</span></span>
-                 <span>Mint: <span className="text-slate-300">Unavailable USDC</span></span>
-              </div>
-            </div>
-
-            {/* Platform Fee */}
-            <div className="flex justify-between items-center">
-              <span className="font-semibold text-slate-400">Platform Fee</span>
-              <span className="font-bold text-[#10B981]">$0</span>
-            </div>
-          </div>
-        </motion.div>
+        
 
       </div>
     </div>
