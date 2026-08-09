@@ -149,7 +149,8 @@ export default function BridgeView() {
     }
   };
 
-  const BRIDGE_CONTRACT_ADDRESS = "0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275";
+  // Official Circle CCTP TokenMessenger Address (Same across all EVM chains)
+  const BRIDGE_CONTRACT_ADDRESS = "0xbd3fa81b58ba92a08d3c1ce7bb13e3b7b203c9eb";
   const padAddress = (addr: string) => addr.toLowerCase().replace('0x', '').padStart(64, '0');
   const padAmount = (amt: number) => {
     const amountWei = BigInt(Math.floor(amt * 1e6));
