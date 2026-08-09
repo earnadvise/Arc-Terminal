@@ -17,7 +17,7 @@ import { useAppState } from '../../context/useAppState';
 export default function BridgeView() {
   const { walletConnected, addNotification, balances, setBalances, getProvider, walletAddress } = useAppState();
 
-  const [sourceChain, setSourceChain] = useState<'Arbitrum' | 'Base' | 'Ethereum' | 'Optimism' | 'Avalanche' | 'Polygon'>('Arbitrum');
+  const [sourceChain, setSourceChain] = useState<'Arbitrum Sepolia' | 'Base Sepolia' | 'Ethereum Sepolia' | 'Optimism Sepolia' | 'Avalanche Fuji' | 'Polygon Amoy'>('Arbitrum Sepolia');
   const [isDirectionReversed, setIsDirectionReversed] = useState(false);
   const [amount, setAmount] = useState<string>('');
   const [isBridging, setIsBridging] = useState(false);
@@ -33,29 +33,29 @@ export default function BridgeView() {
     let rpc = '';
     let usdc = '';
     switch(sourceChain) {
-      case 'Arbitrum':
-        rpc = 'https://arb1.arbitrum.io/rpc';
-        usdc = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
+      case 'Arbitrum Sepolia':
+        rpc = 'https://sepolia-rollup.arbitrum.io/rpc';
+        usdc = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
         break;
-      case 'Base':
-        rpc = 'https://mainnet.base.org';
-        usdc = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+      case 'Base Sepolia':
+        rpc = 'https://sepolia.base.org';
+        usdc = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
         break;
-      case 'Ethereum':
-        rpc = 'https://eth.llamarpc.com';
-        usdc = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+      case 'Ethereum Sepolia':
+        rpc = 'https://rpc2.sepolia.org';
+        usdc = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
         break;
-      case 'Optimism':
-        rpc = 'https://mainnet.optimism.io';
-        usdc = '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85';
+      case 'Optimism Sepolia':
+        rpc = 'https://sepolia.optimism.io';
+        usdc = '0x5fd84259d66Cd46123540766Be93DFE6D43130D7';
         break;
-      case 'Avalanche':
-        rpc = 'https://api.avax.network/ext/bc/C/rpc';
-        usdc = '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E';
+      case 'Avalanche Fuji':
+        rpc = 'https://api.avax-test.network/ext/bc/C/rpc';
+        usdc = '0x5425890298aed601595a70AB815c96711a31Bc65';
         break;
-      case 'Polygon':
-        rpc = 'https://polygon-rpc.com';
-        usdc = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359';
+      case 'Polygon Amoy':
+        rpc = 'https://rpc-amoy.polygon.technology';
+        usdc = '0x41E94Eb019C0762f9Bfcf9Cb1EE62ce516f1F428';
         break;
       default:
         setExternalBalance(0);
@@ -102,12 +102,12 @@ export default function BridgeView() {
     if (!eth) return;
     let chainId = '0x4cef52'; // Arc Testnet default
     switch(networkName) {
-      case 'Arbitrum': chainId = '0xa4b1'; break; // 42161
-      case 'Base': chainId = '0x2105'; break; // 8453
-      case 'Ethereum': chainId = '0x1'; break; // 1
-      case 'Optimism': chainId = '0xa'; break; // 10
-      case 'Avalanche': chainId = '0xa86a'; break; // 43114
-      case 'Polygon': chainId = '0x89'; break; // 137
+      case 'Arbitrum Sepolia': chainId = '0x66eee'; break;
+      case 'Base Sepolia': chainId = '0x14a34'; break;
+      case 'Ethereum Sepolia': chainId = '0xaa36a7'; break;
+      case 'Optimism Sepolia': chainId = '0xaa37dc'; break;
+      case 'Avalanche Fuji': chainId = '0xa869'; break;
+      case 'Polygon Amoy': chainId = '0x13882'; break;
     }
     try {
       await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] });
@@ -146,12 +146,12 @@ export default function BridgeView() {
 
   const getUSDCAddress = (chain: string) => {
     switch(chain) {
-      case 'Arbitrum': return '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
-      case 'Base': return '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
-      case 'Ethereum': return '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
-      case 'Optimism': return '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85';
-      case 'Avalanche': return '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E';
-      case 'Polygon': return '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359';
+      case 'Arbitrum Sepolia': return '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
+      case 'Base Sepolia': return '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+      case 'Ethereum Sepolia': return '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+      case 'Optimism Sepolia': return '0x5fd84259d66Cd46123540766Be93DFE6D43130D7';
+      case 'Avalanche Fuji': return '0x5425890298aed601595a70AB815c96711a31Bc65';
+      case 'Polygon Amoy': return '0x41E94Eb019C0762f9Bfcf9Cb1EE62ce516f1F428';
       case 'Arc Testnet': return '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'; // Mock address for testnet
       default: return '0x3600000000000000000000000000000000000000';
     }
@@ -204,10 +204,10 @@ export default function BridgeView() {
            setExternalBalance(prev => prev + val);
         }
         
-        let explorerUrl = 'https://arbiscan.io';
-        if (fromNet === 'Base') explorerUrl = 'https://basescan.org';
-        if (fromNet === 'Ethereum') explorerUrl = 'https://etherscan.io';
-        if (fromNet === 'Optimism') explorerUrl = 'https://optimistic.etherscan.io';
+        let explorerUrl = 'https://sepolia.arbiscan.io';
+        if (fromNet === 'Base Sepolia') explorerUrl = 'https://sepolia.basescan.org';
+        if (fromNet === 'Ethereum Sepolia') explorerUrl = 'https://sepolia.etherscan.io';
+        if (fromNet === 'Optimism Sepolia') explorerUrl = 'https://sepolia-optimism.etherscan.io';
         if (fromNet === 'Arc Testnet') explorerUrl = 'https://testnet.arcscan.app';
         
         addNotification('success', 'Bridge Successful', `Successfully bridged ${val} USDC from ${fromNet} to ${toNet}!`, bridgeTxHash, explorerUrl);
@@ -336,12 +336,12 @@ export default function BridgeView() {
                   className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none cursor-pointer appearance-none px-4 py-3 relative z-10"
                 >
                   <option value="" disabled hidden>Select chain</option>
-                  <option value="Arbitrum">Arbitrum</option>
-                  <option value="Base">Base</option>
-                  <option value="Ethereum">Ethereum</option>
-                  <option value="Optimism">Optimism</option>
-                  <option value="Avalanche">Avalanche</option>
-                  <option value="Polygon">Polygon</option>
+                  <option value="Arbitrum Sepolia">Arbitrum Sepolia</option>
+                  <option value="Base Sepolia">Base Sepolia</option>
+                  <option value="Ethereum Sepolia">Ethereum Sepolia</option>
+                  <option value="Optimism Sepolia">Optimism Sepolia</option>
+                  <option value="Avalanche Fuji">Avalanche Fuji</option>
+                  <option value="Polygon Amoy">Polygon Amoy</option>
                 </select>
                 <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
               </div>
