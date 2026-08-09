@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ArrowRightLeft, 
+  ArrowDownUp, 
   Settings, 
   Coins, 
   Network, 
@@ -9,7 +9,8 @@ import {
   Clock, 
   ChevronDown,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  RefreshCw
 } from 'lucide-react';
 import { useAppState } from '../../context/useAppState';
 
@@ -22,6 +23,7 @@ export default function BridgeView() {
   const [isBridging, setIsBridging] = useState(false);
   const [bridgeStatus, setBridgeStatus] = useState<'IDLE' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'HOOK' | 'SUCCESS'>('IDLE');
   const [externalBalance, setExternalBalance] = useState<number>(0);
+  const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
   
   useEffect(() => {
     if (!walletAddress) {
@@ -83,6 +85,7 @@ export default function BridgeView() {
     })
     .catch(() => setExternalBalance(0));
 
+    setLastUpdated(new Date().toLocaleTimeString());
   }, [sourceChain, walletAddress]);
   
   // Advanced options
@@ -122,6 +125,11 @@ export default function BridgeView() {
 
   const handleMax = () => {
     setAmount(currentBalance.toString());
+  };
+
+  const refreshBalance = () => {
+    setLastUpdated(new Date().toLocaleTimeString());
+    // In a real app we'd re-trigger the balance fetch here
   };
 
   const reverseDirection = () => {
@@ -240,10 +248,11 @@ export default function BridgeView() {
 
   return (
     <div className="w-full min-h-screen pt-24 pb-12 px-4 relative flex flex-col items-center">
-      {/* Dynamic Background */}
-      <div className="absolute inset-0 bg-slate-50 -z-10 overflow-hidden">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-500/10 blur-[100px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-fuchsia-500/10 blur-[100px] rounded-full" />
+      {/* Dynamic Background - Soft Purple/White Waves */}
+      <div className="absolute inset-0 bg-[#F4EFFB] -z-10 overflow-hidden">
+        <div className="absolute top-[10%] left-[-10%] w-[60%] h-[60%] bg-[#E5D5F5] blur-[120px] rounded-full mix-blend-multiply opacity-70" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#FFFFFF] blur-[100px] rounded-full opacity-90" />
+        <div className="absolute top-[30%] right-[10%] w-[40%] h-[40%] bg-[#DED6F5] blur-[100px] rounded-full mix-blend-multiply opacity-50" />
       </div>
 
       {/* Hero Section */}
@@ -284,110 +293,118 @@ export default function BridgeView() {
         initial={{ opacity: 0, y: 20, scale: 0.95 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ delay: 0.3 }}
-        className="w-full max-w-[500px] bg-white/80 backdrop-blur-2xl border border-white/40 shadow-[0_8px_32px_rgba(0,0,0,0.08)] rounded-[2.5rem] p-6 md:p-8 relative z-10"
+        className="w-full max-w-[460px] bg-[#F8F9FA]/90 backdrop-blur-3xl border border-white/60 shadow-[0_8px_32px_rgba(0,0,0,0.04)] rounded-[2rem] p-6 relative z-10"
       >
-        {/* From Network */}
-        <div className="bg-slate-50/80 border border-slate-200 rounded-3xl p-4 mb-2 transition-all focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-400/10 hover:border-slate-300">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-bold text-slate-500">FROM</span>
-            <span className="text-xs font-medium text-slate-500">
-              Balance: <span className="text-slate-900 font-bold">{currentBalance.toLocaleString(undefined, {maximumFractionDigits:2})}</span>
-            </span>
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6 px-1">
+          <h2 className="text-sm font-bold text-slate-500">Cross-chain transfers</h2>
+          <div className="flex items-center gap-2 text-[11px] font-medium text-slate-400">
+            <span>Last updated: {lastUpdated}</span>
+            <button onClick={refreshBalance} className="w-6 h-6 rounded-md bg-white border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition-colors">
+              <RefreshCw size={12} className="text-slate-500" />
+            </button>
           </div>
-          
-          <div className="flex items-center gap-3">
-            <div className="flex-1">
-              {isDirectionReversed ? (
-                <div className="flex items-center gap-2 cursor-not-allowed">
-                  <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center">
-                    <Network size={16} className="text-white" />
-                  </div>
-                  <span className="text-xl font-bold text-slate-900">Arc Testnet</span>
-                </div>
-              ) : (
-                <div className="relative">
-                  <select
-                    value={sourceChain}
-                    onChange={(e) => setSourceChain(e.target.value as any)}
-                    className="w-full bg-transparent text-xl font-bold text-slate-900 outline-none cursor-pointer appearance-none pl-10 relative z-10"
-                  >
-                    <option value="Arbitrum">Arbitrum One</option>
-                    <option value="Base">Base</option>
-                    <option value="Ethereum">Ethereum</option>
-                    <option value="Optimism">Optimism</option>
-                    <option value="Avalanche">Avalanche</option>
-                    <option value="Polygon">Polygon</option>
-                  </select>
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-200/50 flex items-center justify-center pointer-events-none z-0">
-                    <Network size={16} className="text-slate-600" />
-                  </div>
-                  <ChevronDown size={20} className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
-                </div>
-              )}
+        </div>
+
+        {/* From Network */}
+        <div className="bg-white border border-slate-200 rounded-[1.5rem] p-4 mb-2 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-bold text-slate-400">From</span>
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold text-slate-400">
+                Balance: {currentBalance.toLocaleString(undefined, {minimumFractionDigits:4, maximumFractionDigits:4})}
+              </span>
+              <button 
+                onClick={handleMax}
+                className="text-[10px] font-bold text-slate-700 hover:text-white hover:bg-slate-800 px-2 py-0.5 rounded-md border border-slate-200 transition-colors"
+              >
+                MAX
+              </button>
             </div>
           </div>
+          
+          <div className="mb-4">
+            {isDirectionReversed ? (
+              <div className="flex items-center justify-between border border-slate-100 rounded-2xl px-4 py-3 bg-slate-50/50 cursor-not-allowed">
+                <span className="text-sm font-bold text-slate-900">Arc Testnet</span>
+              </div>
+            ) : (
+              <div className="relative border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors">
+                <select
+                  value={sourceChain}
+                  onChange={(e) => setSourceChain(e.target.value as any)}
+                  className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none cursor-pointer appearance-none px-4 py-3 relative z-10"
+                >
+                  <option value="" disabled hidden>Select chain</option>
+                  <option value="Arbitrum">Arbitrum</option>
+                  <option value="Base">Base</option>
+                  <option value="Ethereum">Ethereum</option>
+                  <option value="Optimism">Optimism</option>
+                  <option value="Avalanche">Avalanche</option>
+                  <option value="Polygon">Polygon</option>
+                </select>
+                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
+              </div>
+            )}
+          </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-200/60">
-            <div className="flex items-center gap-4">
+          <div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 bg-slate-50/80 border border-slate-100 rounded-full px-3 py-1.5 shrink-0">
+                <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Coins size={12} className="text-blue-500" />
+                </div>
+                <span className="font-bold text-slate-600 text-sm">USDC</span>
+              </div>
               <input
                 type="number"
-                placeholder="0.00"
+                placeholder="0"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="flex-1 bg-transparent text-4xl font-black text-slate-900 outline-none placeholder:text-slate-300 number-mono"
+                className="flex-1 bg-transparent text-4xl font-bold text-right text-slate-500 outline-none placeholder:text-slate-300 ml-4"
               />
-              <div className="flex flex-col items-end gap-2">
-                <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-sm shrink-0">
-                  <Coins size={16} className="text-blue-500" />
-                  <span className="font-bold text-slate-700">USDC</span>
-                </div>
-                <button 
-                  onClick={handleMax}
-                  className="text-[10px] font-bold text-slate-600 hover:text-white hover:bg-[#0052FF] px-3 py-1 rounded-full border border-slate-200 bg-white transition-colors"
-                >
-                  MAX
-                </button>
-              </div>
             </div>
           </div>
         </div>
 
         {/* Reverse Button */}
-        <div className="flex justify-center -my-5 relative z-20">
+        <div className="flex justify-center -my-4 relative z-20">
           <button
             onClick={reverseDirection}
-            className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 hover:text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-95 group"
+            className="w-8 h-8 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-all active:scale-95"
           >
-            <ArrowRightLeft size={18} className="rotate-90 group-hover:rotate-180 transition-transform duration-300" />
+            <ArrowDownUp size={14} />
           </button>
         </div>
 
         {/* To Network */}
-        <div className="bg-slate-50/80 border border-slate-200 rounded-3xl p-4 mt-2 mb-6">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-xs font-bold text-slate-500">TO</span>
+        <div className="bg-white border border-slate-200 rounded-[1.5rem] p-4 mt-2 mb-6 shadow-sm">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-sm font-bold text-slate-400">To</span>
           </div>
-          <div className="flex items-center gap-3">
+
+          <div className="mb-4">
             {!isDirectionReversed ? (
-              <div className="flex items-center gap-2 cursor-not-allowed">
-                <div className="w-8 h-8 rounded-full bg-slate-900 flex items-center justify-center">
-                  <Network size={16} className="text-white" />
-                </div>
-                <span className="text-xl font-bold text-slate-900">Arc Testnet</span>
+              <div className="flex items-center justify-between border border-slate-100 rounded-2xl px-4 py-3 bg-slate-50/50 cursor-not-allowed">
+                <span className="text-sm font-bold text-slate-900">Arc Testnet</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 cursor-not-allowed">
-                <div className="w-8 h-8 rounded-full bg-slate-200/50 flex items-center justify-center">
-                  <Network size={16} className="text-slate-600" />
-                </div>
-                <span className="text-xl font-bold text-slate-900">{sourceChain}</span>
+              <div className="flex items-center justify-between border border-slate-100 rounded-2xl px-4 py-3 bg-slate-50/50 cursor-not-allowed">
+                <span className="text-sm font-bold text-slate-900">{sourceChain}</span>
               </div>
             )}
           </div>
-          <div className="mt-4 pt-4 border-t border-slate-200/60">
-            <span className="text-4xl font-black text-slate-900 opacity-50 number-mono">
-              {amount || "0.00"}
-            </span>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 bg-slate-50/80 border border-slate-100 rounded-full px-3 py-1.5 shrink-0">
+                <div className="w-5 h-5 bg-blue-100 rounded-full flex items-center justify-center">
+                  <Coins size={12} className="text-blue-500" />
+                </div>
+                <span className="font-bold text-slate-600 text-sm">USDC</span>
+              </div>
+              {/* Optional: Show output amount if desired, or hide it */}
+            </div>
           </div>
         </div>
 
@@ -445,19 +462,36 @@ export default function BridgeView() {
           </AnimatePresence>
         </div>
 
+        {/* Connected Wallet Pill */}
+        {walletConnected && (
+          <div className="flex justify-center mb-4">
+            <div className="bg-white border border-slate-200 rounded-full px-4 py-2 flex items-center gap-2 shadow-sm">
+              <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                <div className="w-2 h-2 bg-white rounded-full" />
+              </div>
+              <span className="text-xs font-bold text-slate-700">
+                {walletAddress?.slice(0,6)}...{walletAddress?.slice(-4)}
+              </span>
+              <ChevronDown size={14} className="text-slate-400 ml-1" />
+            </div>
+          </div>
+        )}
+
         {/* Action Button */}
         <button
           onClick={executeBridge}
-          disabled={isBridging || !walletConnected}
-          className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-300 relative overflow-hidden ${
+          disabled={isBridging || !walletConnected || !amount}
+          className={`w-full py-3.5 rounded-[1.25rem] font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden ${
             isBridging 
-              ? 'bg-slate-100 text-slate-400 cursor-not-allowed scale-[0.98]'
-              : 'bg-slate-900 hover:bg-slate-800 text-white hover:scale-[1.02] shadow-md hover:shadow-lg'
+              ? 'bg-[#E5E7EB] text-slate-400 cursor-not-allowed scale-[0.99]'
+              : !amount
+              ? 'bg-[#F3F4F6] text-slate-400 cursor-not-allowed'
+              : 'bg-[#EBF3FF] hover:bg-[#E1EDFF] text-[#0052FF] hover:scale-[1.01]'
           }`}
         >
           {isBridging ? (
             <span className="flex items-center gap-3">
-              <span className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+              <span className="w-5 h-5 border-2 border-[#0052FF]/20 border-t-[#0052FF] rounded-full animate-spin" />
               {bridgeStatus === 'APPROVING' && 'Approving USDC...'}
               {bridgeStatus === 'BURNING' && 'Executing CCTP Burn...'}
               {bridgeStatus === 'ATTESTING' && 'Awaiting Attestation...'}
@@ -465,9 +499,23 @@ export default function BridgeView() {
               {bridgeStatus === 'SUCCESS' && 'Bridge Successful!'}
             </span>
           ) : !walletConnected ? (
-            'Connect Wallet'
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
+                <ArrowRightLeft size={12} className="text-slate-400" />
+              </div>
+              Connect Wallet
+            </div>
+          ) : !amount ? (
+            <div className="flex items-center gap-2 text-slate-400">
+               Enter an amount
+            </div>
           ) : (
-            'Review & Bridge'
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-[#0052FF] flex items-center justify-center text-white">
+                <ArrowRightLeft size={12} />
+              </div>
+              Review & Bridge
+            </div>
           )}
         </button>
 
