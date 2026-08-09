@@ -4,6 +4,7 @@ import { RefreshCw, ChevronDown, ArrowDownUp, CheckCircle2, Circle, Loader2 } fr
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppKit } from "@circle-fin/app-kit";
 import { createEthersAdapterFromProvider } from "@circle-fin/adapter-ethers-v6";
+import { ethers } from "ethers";
 
 type BridgeStep = 'IDLE' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'SUCCESS' | 'ERROR';
 
@@ -17,11 +18,61 @@ export default function BridgeView() {
   const [isBridging, setIsBridging] = useState(false);
   const [step, setStep] = useState<BridgeStep>('IDLE');
   const [errorMessage, setErrorMessage] = useState('');
+  const [currentBalance, setCurrentBalance] = useState(0);
 
-  const currentBalance = balances.USDC || 0;
+  // AppKit uses these official USDC contract addresses for testnets
+  const USDC_ADDRESSES: Record<string, string> = {
+    'Arbitrum Sepolia': '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d',
+    'Base Sepolia': '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
+    'Ethereum Sepolia': '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+    'Optimism Sepolia': '0x5fd84259d66Cd46123540766Be93DFE6D43130D7',
+    'Avalanche Fuji': '0x5425890298aed601595a70AB815c96711a31Bc65',
+    'Polygon Amoy': '0x41e94eb019c0762f9bfcf9fb1e58725bfb0e7582',
+  };
+
+  useEffect(() => {
+    let active = true;
+    const fetchBalance = async () => {
+      if (!walletConnected || !walletAddress) {
+        if (active) setCurrentBalance(0);
+        return;
+      }
+
+      if (fromNet === 'Arc Testnet') {
+        if (active) setCurrentBalance(balances.USDC || 0);
+        return;
+      }
+
+      const usdcAddr = USDC_ADDRESSES[fromNet];
+      const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
+      if (!eth || !usdcAddr) {
+        if (active) setCurrentBalance(0);
+        return;
+      }
+
+      try {
+        const provider = new ethers.BrowserProvider(eth);
+        const contract = new ethers.Contract(usdcAddr, ['function balanceOf(address) view returns (uint256)'], provider);
+        const bal = await contract.balanceOf(walletAddress);
+        if (active) {
+          setCurrentBalance(Number(ethers.formatUnits(bal, 6))); // USDC has 6 decimals
+        }
+      } catch (e) {
+        console.error('Failed to fetch balance', e);
+        if (active) setCurrentBalance(0);
+      }
+    };
+    
+    fetchBalance();
+    const interval = setInterval(fetchBalance, 5000);
+    return () => {
+      active = false;
+      clearInterval(interval);
+    };
+  }, [fromNet, walletConnected, walletAddress, balances.USDC, getProvider]);
 
   const handleMax = () => {
-    setAmount((balances.USDC || 0).toString());
+    setAmount((currentBalance || 0).toString());
   };
 
   const reverseDirection = () => {
@@ -262,7 +313,7 @@ export default function BridgeView() {
                         placeholder="0.00"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="w-full min-w-0 flex-1 bg-transparent border-none px-2 py-1 text-4xl font-semibold text-right text-slate-800 outline-none placeholder:text-slate-200"
+                        className="w-full min-w-0 flex-1 bg-transparent border-none px-2 py-1 text-4xl font-semibold text-right text-slate-800 outline-none placeholder:text-slate-200 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
                       />
                     </div>
                   </div>
