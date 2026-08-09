@@ -440,7 +440,7 @@ export default function BridgeView() {
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
                     {completedSteps && (
                       <div className="flex flex-col gap-2 pt-4 border-t border-slate-100">
-                        {completedSteps.filter(s => s.txHash).slice(-1).map((s, idx) => (
+                        {completedSteps.filter(s => s.txHash).slice(0, 1).map((s, idx) => (
                           <div key={idx} className="flex justify-between items-center text-xs">
                             <span className="text-slate-500 font-medium capitalize">Transaction Hash</span>
                             <a 
