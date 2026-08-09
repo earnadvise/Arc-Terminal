@@ -174,7 +174,7 @@ export default function BridgeView() {
             
             if (method === 'approve') setStep('APPROVING');
             if (method === 'burn') setStep('BURNING');
-            if (method === 'attest') setStep('ATTESTING');
+            if (method === 'fetchAttestation') setStep('ATTESTING');
             if (method === 'mint') setStep('MINTING');
         });
 
@@ -183,9 +183,8 @@ export default function BridgeView() {
 
         let result = await kit.bridge({
             from: { adapter, chain: fromChain as any },
-            to: { adapter, chain: toChain as any },
-            amount: amount,
-            token: "USDC"
+            to: { adapter, chain: toChain as any, useForwarder: true },
+            amount: amount
         });
 
         console.log('[AppKit Result]', result);
