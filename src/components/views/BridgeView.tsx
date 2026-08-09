@@ -82,7 +82,7 @@ export default function BridgeView() {
     }
 
     if (val > currentBalance) {
-      addNotification('error', 'Insufficient Balance', \`You only have \${currentBalance} USDC on \${fromNet}.\`);
+      addNotification('error', 'Insufficient Balance', `You only have \${currentBalance} USDC on \${fromNet}.`);
       return;
     }
 
@@ -340,11 +340,11 @@ export default function BridgeView() {
              <button
                onClick={executeBridge}
                disabled={isBridging || !walletConnected || !amount || parseFloat(amount) <= 0}
-               className={\`w-full py-3.5 rounded-[16px] font-bold text-sm transition-colors flex items-center justify-center gap-2 \${
+               className={`w-full py-3.5 rounded-[16px] font-bold text-sm transition-colors flex items-center justify-center gap-2 \${
                  isBridging || !walletConnected || !amount || parseFloat(amount) <= 0
                    ? 'bg-slate-50 text-slate-400 cursor-not-allowed'
                    : 'bg-[#0052FF] text-white shadow-md hover:bg-blue-600'
-               }\`}
+               }`}
              >
                {isBridging ? (
                  <span className="flex items-center gap-2">
