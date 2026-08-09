@@ -90,7 +90,7 @@ export default function BridgeView() {
   const switchNetwork = async (networkName: string) => {
     const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
     if (!eth) return;
-    let chainId = '0x11b5e'; // Arc Testnet (72542)
+    let chainId = '0x4cef52'; // Arc Testnet (5042002)
     switch(networkName) {
       case 'Arbitrum Sepolia': chainId = '0x66eee'; break; // 421614
       case 'Base Sepolia': chainId = '0x14a34'; break; // 84532
