@@ -26,6 +26,7 @@ export default function BridgeView() {
   const [amount, setAmount] = useState<string>('');
   const [isBridging, setIsBridging] = useState(false);
   const [bridgeStatus, setBridgeStatus] = useState<'IDLE' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'HOOK' | 'SUCCESS'>('IDLE');
+  const [completedTx, setCompletedTx] = useState<{hash: string, url: string} | null>(null);
   const [externalBalance, setExternalBalance] = useState<number>(0);
   const [lastUpdated, setLastUpdated] = useState<string>(new Date().toLocaleTimeString());
   const [fetchTrigger, setFetchTrigger] = useState(0);
@@ -146,7 +147,8 @@ export default function BridgeView() {
       setAmount('');
       setIsBridging(false);
       setBridgeStatus('IDLE');
-    }, 3000);
+      setCompletedTx(null);
+    }, 15000); // Increased to 15 seconds to give user time to click link
   };
 
   const getUSDCAddress = (chain: string) => {
@@ -257,13 +259,18 @@ export default function BridgeView() {
                 from: adapter,
                 to: adapter,
             });
-            console.log('[Bridge] retryBridge returned:', result);
+        console.log('[Bridge] retryBridge returned:', result);
         }
 
         if (result.state === "success") {
             setBridgeStatus('SUCCESS');
+            
+            const burnStep = (result as any).steps?.find((s: any) => s.name.toLowerCase() === 'burn');
+            if (burnStep?.txHash) {
+                setCompletedTx({ hash: burnStep.txHash, url: burnStep.explorerUrl || `https://testnet.arcexplorer.xyz/tx/${burnStep.txHash}` });
+            }
 
-            addNotification('success', 'Bridge Successful', `Successfully bridged ${val} USDC from ${fromNet} to ${toNet}!`);
+            addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
             
             if (isDirectionReversed) {
                setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
@@ -538,13 +545,24 @@ export default function BridgeView() {
         >
           {isBridging ? (
             <span className="flex items-center gap-3">
-              <span className="w-5 h-5 border-2 border-[#0052FF]/20 border-t-[#0052FF] rounded-full animate-spin" />
+              {bridgeStatus !== 'SUCCESS' && <span className="w-5 h-5 border-2 border-[#0052FF]/20 border-t-[#0052FF] rounded-full animate-spin" />}
               {bridgeStatus === 'APPROVING' && 'Approving USDC...'}
               {bridgeStatus === 'BURNING' && 'Executing CCTP Burn...'}
               {bridgeStatus === 'ATTESTING' && 'Awaiting Attestation...'}
               {bridgeStatus === 'MINTING' && 'Minting Destination...'}
               {bridgeStatus === 'SUCCESS' && 'Bridge Successful!'}
             </span>
+          ) : completedTx ? (
+            <a 
+              href={completedTx.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center w-full h-full text-[#0052FF]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <CheckCircle2 size={16} className="mr-2" />
+              View Transaction Details
+            </a>
           ) : !walletConnected ? (
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center shadow-sm">
