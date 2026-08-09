@@ -183,7 +183,7 @@ export default function BridgeView() {
 
         let result = await kit.bridge({
             from: { adapter, chain: fromChain as any },
-            to: { adapter, chain: toChain as any },
+            to: { adapter, chain: toChain as any, useForwarder: true },
             amount: amount
         });
 
