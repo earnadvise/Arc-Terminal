@@ -193,7 +193,7 @@ export default function BridgeView() {
     }
 
     setIsBridging(true);
-    setCurrentStepIndex(0);
+
 
     const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
     if (!eth) {
@@ -224,16 +224,16 @@ export default function BridgeView() {
             }
             if (payload.method === 'burn') {
                 setBridgeStatus('BURNING');
-                setCurrentStepIndex(1);
+
             }
             if (payload.method === 'fetchAttestation') {
                 setBridgeStatus('ATTESTING');
-                setCurrentStepIndex(2);
+
                 addNotification('info', 'Awaiting Attestation', 'Waiting for Circle attestation...');
             }
             if (payload.method === 'mint') {
                 setBridgeStatus('MINTING');
-                setCurrentStepIndex(3);
+
                 addNotification('info', 'Minting Native USDC', 'Minting USDC on destination chain...');
             }
         });
@@ -257,7 +257,7 @@ export default function BridgeView() {
 
         if (result.state === "success") {
             setBridgeStatus('SUCCESS');
-            setCurrentStepIndex(4);
+
             addNotification('success', 'Bridge Successful', `Successfully bridged ${val} USDC from ${fromNet} to ${toNet}!`);
             
             if (isDirectionReversed) {
@@ -281,7 +281,7 @@ export default function BridgeView() {
         addNotification('error', 'Transaction Failed', err.message || 'Transaction rejected by user.');
         setIsBridging(false);
         setBridgeStatus('IDLE');
-        setCurrentStepIndex(0);
+
     }
   };
 
