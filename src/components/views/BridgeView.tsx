@@ -203,16 +203,21 @@ export default function BridgeView() {
     }
 
     try {
+        console.log('[Bridge] Starting bridge process...');
+        console.log('[Bridge] Switching network to', fromNet);
         await switchNetwork(fromNet);
 
+        console.log('[Bridge] Network switched. Initializing App Kit...');
         addNotification('info', 'Initializing App Kit', 'Setting up Circle App Kit...');
         const adapter = await createEthersAdapterFromProvider({
             provider: eth
         });
         
+        console.log('[Bridge] Adapter created. Creating AppKit instance...');
         const kit = new AppKit();
         
         kit.on("*", (payload: any) => {
+            console.log('[Bridge Event]', payload);
             if (payload.method === 'approve' && payload.values?.state !== 'success') {
                 setBridgeStatus('APPROVING');
                 addNotification('info', 'Approving USDC', 'Approving USDC for cross-chain transfer...');
@@ -233,13 +238,16 @@ export default function BridgeView() {
             }
         });
 
+        console.log('[Bridge] Calling kit.bridge()...');
         let result = await kit.bridge({
             from: { adapter, chain: getAppKitChainName(fromNet) as any },
             to: { adapter, chain: getAppKitChainName(toNet) as any },
             amount: amount,
         });
+        console.log('[Bridge] kit.bridge() returned:', result);
 
         if (result.state === "error") {
+            console.log('[Bridge] Error in result, retrying...');
             addNotification('info', 'Bridge Retry', 'First attempt errored, retrying bridge...');
             result = await kit.retryBridge(result as any, {
                 from: adapter,
@@ -541,7 +549,8 @@ export default function BridgeView() {
             </div>
           ) : (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) ? (
             <div className="flex items-center gap-2 text-slate-400">
-               Enter an amount
+               <ArrowRightLeft size={12} />
+               Review & Bridge
             </div>
           ) : (
             <div className="flex items-center gap-2">
