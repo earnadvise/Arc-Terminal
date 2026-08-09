@@ -21,8 +21,8 @@ import { createEthersAdapterFromProvider } from "@circle-fin/adapter-ethers-v6";
 export default function BridgeView() {
   const { walletConnected, addNotification, balances, setBalances, getProvider, walletAddress } = useAppState();
 
-  const [sourceChain, setSourceChain] = useState<'Arbitrum Sepolia' | 'Base Sepolia' | 'Ethereum Sepolia' | 'Optimism Sepolia' | 'Avalanche Fuji' | 'Polygon Amoy'>('Arbitrum Sepolia');
-  const [isDirectionReversed, setIsDirectionReversed] = useState(false);
+  const [fromNet, setFromNet] = useState<string>('Arc Testnet');
+  const [toNet, setToNet] = useState<string>('Arbitrum Sepolia');
   const [amount, setAmount] = useState<string>('');
   const [isBridging, setIsBridging] = useState(false);
   const [bridgeStatus, setBridgeStatus] = useState<'IDLE' | 'APPROVING' | 'BURNING' | 'ATTESTING' | 'MINTING' | 'HOOK' | 'SUCCESS'>('IDLE');
@@ -100,9 +100,7 @@ export default function BridgeView() {
   const [recipient, setRecipient] = useState('');
   const [slippage, setSlippage] = useState('0.1');
 
-  const fromNet = isDirectionReversed ? 'Arc Testnet' : sourceChain;
-  const toNet = isDirectionReversed ? sourceChain : 'Arc Testnet';
-  const currentBalance = isDirectionReversed ? balances.USDC : externalBalance;
+  const currentBalance = fromNet === 'Arc Testnet' ? balances.USDC : externalBalance;
 
   const switchNetwork = async (networkName: string) => {
     const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
@@ -140,7 +138,9 @@ export default function BridgeView() {
   };
 
   const reverseDirection = () => {
-    setIsDirectionReversed(!isDirectionReversed);
+    const temp = fromNet;
+    setFromNet(toNet);
+    setToNet(temp);
   };
 
   const resetState = () => {
@@ -403,28 +403,26 @@ export default function BridgeView() {
           </div>
           
           <div className="mb-4">
-            {isDirectionReversed ? (
-              <div className="flex items-center justify-between border border-slate-100 rounded-2xl px-4 py-3 bg-slate-50/50 cursor-not-allowed">
-                <span className="text-sm font-bold text-slate-900">Arc Testnet</span>
-              </div>
-            ) : (
-              <div className="relative border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors">
-                <select
-                  value={sourceChain}
-                  onChange={(e) => setSourceChain(e.target.value as any)}
-                  className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none cursor-pointer appearance-none px-4 py-3 relative z-10"
-                >
-                  <option value="" disabled hidden>Select chain</option>
-                  <option value="Arbitrum Sepolia">Arbitrum Sepolia</option>
-                  <option value="Base Sepolia">Base Sepolia</option>
-                  <option value="Ethereum Sepolia">Ethereum Sepolia</option>
-                  <option value="Optimism Sepolia">Optimism Sepolia</option>
-                  <option value="Avalanche Fuji">Avalanche Fuji</option>
-                  <option value="Polygon Amoy">Polygon Amoy</option>
-                </select>
-                <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
-              </div>
-            )}
+            <div className="relative border border-slate-100 rounded-2xl bg-white hover:bg-slate-50 transition-colors">
+              <select
+                value={fromNet}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === toNet) setToNet(fromNet);
+                  setFromNet(val);
+                }}
+                className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none cursor-pointer appearance-none px-4 py-3 relative z-10"
+              >
+                <option value="Arc Testnet">Arc Testnet</option>
+                <option value="Arbitrum Sepolia">Arbitrum Sepolia</option>
+                <option value="Base Sepolia">Base Sepolia</option>
+                <option value="Ethereum Sepolia">Ethereum Sepolia</option>
+                <option value="Optimism Sepolia">Optimism Sepolia</option>
+                <option value="Avalanche Fuji">Avalanche Fuji</option>
+                <option value="Polygon Amoy">Polygon Amoy</option>
+              </select>
+              <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
+            </div>
           </div>
 
           <div>
