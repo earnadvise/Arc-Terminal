@@ -160,8 +160,8 @@ export default function BridgeView() {
     }
   };
 
-  // Custom BridgingKitContract Address provided by user
-  const BRIDGE_CONTRACT_ADDRESS = "0xC5567a5E3370d4DBfB0540025078e283e36A363d";
+  // Official Circle CCTP TokenMessenger Address (Same across all Sepolia Testnets)
+  const BRIDGE_CONTRACT_ADDRESS = "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5";
   
   const executeBridge = async () => {
     if (!walletConnected) {
@@ -196,31 +196,19 @@ export default function BridgeView() {
     ]);
     const approveData = erc20Iface.encodeFunctionData("approve", [BRIDGE_CONTRACT_ADDRESS, amountWei]);
 
-    // Custom BridgingKitContract ABI
+    // Official CCTP TokenMessenger ABI
     const cctpIface = new ethers.Interface([
-      "function bridgeWithPreapproval(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient) external",
-      "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) external" // Fallback
+      "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) external returns (uint64)"
     ]);
     const mintRecipient = ethers.zeroPadValue(walletAddress, 32);
-    const destinationDomain = 0; // Mock domain for Arc Testnet / internal relay
+    const destinationDomain = 0; // Target domain index (0 for Ethereum, 3 for Arbitrum, etc. Mocked here)
     
-    // We try to use bridgeWithPreapproval as requested
-    let depositData;
-    try {
-        depositData = cctpIface.encodeFunctionData("bridgeWithPreapproval", [
-          amountWei,
-          destinationDomain,
-          mintRecipient
-        ]);
-    } catch (e) {
-        // Fallback to standard CCTP if something goes wrong
-        depositData = cctpIface.encodeFunctionData("depositForBurn", [
-          amountWei,
-          destinationDomain,
-          mintRecipient,
-          usdcAddr
-        ]);
-    }
+    const depositData = cctpIface.encodeFunctionData("depositForBurn", [
+      amountWei,
+      destinationDomain,
+      mintRecipient,
+      usdcAddr
+    ]);
 
     const finalizeBridge = () => {
       setBridgeStatus('MINTING');
