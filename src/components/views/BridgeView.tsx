@@ -15,6 +15,8 @@ import {
 } from 'lucide-react';
 import { useAppState } from '../../context/useAppState';
 import { ethers } from 'ethers';
+import { AppKit } from "@circle-fin/app-kit";
+import { createEthersAdapterFromProvider } from "@circle-fin/adapter-ethers-v6";
 
 export default function BridgeView() {
   const { walletConnected, addNotification, balances, setBalances, getProvider, walletAddress } = useAppState();
@@ -160,9 +162,19 @@ export default function BridgeView() {
     }
   };
 
-  // Official Circle CCTP TokenMessenger Address (Same across all Sepolia Testnets)
-  const BRIDGE_CONTRACT_ADDRESS = "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5";
-  
+  const getAppKitChainName = (net: string) => {
+    switch (net) {
+      case 'Arbitrum Sepolia': return 'Arbitrum_Sepolia';
+      case 'Base Sepolia': return 'Base_Sepolia';
+      case 'Ethereum Sepolia': return 'Ethereum_Sepolia';
+      case 'Optimism Sepolia': return 'OP_Sepolia'; // As per typical circle identifiers, but will default if wrong
+      case 'Avalanche Fuji': return 'Avalanche_Fuji';
+      case 'Polygon Amoy': return 'Polygon_Amoy';
+      case 'Arc Testnet': return 'Arc_Testnet';
+      default: return 'Arc_Testnet';
+    }
+  };
+
   const executeBridge = async () => {
     if (!walletConnected) {
       addNotification('error', 'Wallet Not Connected', 'Please connect your wallet to bridge.');
@@ -181,103 +193,87 @@ export default function BridgeView() {
     }
 
     setIsBridging(true);
-    setBridgeStatus('APPROVING');
-    addNotification('info', 'Approving USDC', `Please approve the transaction to spend ${val} USDC on ${fromNet}...`);
-
-    let bridgeTxHash = '';
-    
-    // Construct Official CCTP Calldata
-    const amountWei = BigInt(Math.floor(val * 1e6));
-    const usdcAddr = getUSDCAddress(fromNet);
-    
-    // ERC20 Approve ABI
-    const erc20Iface = new ethers.Interface([
-      "function approve(address spender, uint256 amount) external returns (bool)"
-    ]);
-    const approveData = erc20Iface.encodeFunctionData("approve", [BRIDGE_CONTRACT_ADDRESS, amountWei]);
-
-    // Official CCTP TokenMessenger ABI
-    const cctpIface = new ethers.Interface([
-      "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) external returns (uint64)"
-    ]);
-    const mintRecipient = ethers.zeroPadValue(walletAddress, 32);
-    const destinationDomain = 0; // Target domain index (0 for Ethereum, 3 for Arbitrum, etc. Mocked here)
-    
-    const depositData = cctpIface.encodeFunctionData("depositForBurn", [
-      amountWei,
-      destinationDomain,
-      mintRecipient,
-      usdcAddr
-    ]);
-
-    const finalizeBridge = () => {
-      setBridgeStatus('MINTING');
-      addNotification('info', 'Attestation Received', `Minting USDC natively on ${toNet}...`);
-      
-      setTimeout(async () => {
-        setBridgeStatus('SUCCESS');
-        
-        if (isDirectionReversed) {
-           // Arc Testnet -> External
-           setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-           setExternalBalance(prev => prev + val);
-        } else {
-           // External -> Arc Testnet
-           setBalances(prev => ({ ...prev, USDC: prev.USDC + val }));
-           setExternalBalance(prev => Math.max(0, prev - val));
-        }
-        
-        let explorerUrl = 'https://sepolia.arbiscan.io';
-        if (fromNet === 'Base Sepolia') explorerUrl = 'https://sepolia.basescan.org';
-        if (fromNet === 'Ethereum Sepolia') explorerUrl = 'https://sepolia.etherscan.io';
-        if (fromNet === 'Optimism Sepolia') explorerUrl = 'https://sepolia-optimism.etherscan.io';
-        if (fromNet === 'Arc Testnet') explorerUrl = 'https://testnet.arcscan.app';
-        
-        addNotification('success', 'Bridge Successful', `Successfully bridged ${val} USDC from ${fromNet} to ${toNet}!`, bridgeTxHash, explorerUrl);
-        await switchNetwork(toNet);
-        refreshBalance();
-        resetState();
-      }, 2000);
-    };
+    setCurrentStepIndex(0);
 
     const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
-    if (eth && walletAddress) {
-        try {
-            await switchNetwork(fromNet);
-            
-            // 1. Approve Transaction
-            setBridgeStatus('APPROVING');
-            addNotification('info', 'Approving USDC', `Please confirm the transaction to allow CCTP to spend ${val} USDC...`);
-            const approveTxHash = await eth.request({
-              method: 'eth_sendTransaction',
-              params: [{ from: walletAddress, to: usdcAddr, value: '0x0', data: approveData }]
+    if (!eth) {
+        addNotification('error', 'No Wallet', 'Please install MetaMask.');
+        setIsBridging(false);
+        return;
+    }
+
+    try {
+        await switchNetwork(fromNet);
+
+        addNotification('info', 'Initializing App Kit', 'Setting up Circle App Kit...');
+        const adapter = await createEthersAdapterFromProvider({
+            provider: eth
+        });
+        
+        const kit = new AppKit();
+        
+        kit.on("*", (payload: any) => {
+            if (payload.method === 'approve' && payload.values?.state !== 'success') {
+                setBridgeStatus('APPROVING');
+                addNotification('info', 'Approving USDC', 'Approving USDC for cross-chain transfer...');
+            }
+            if (payload.method === 'burn') {
+                setBridgeStatus('BURNING');
+                setCurrentStepIndex(1);
+            }
+            if (payload.method === 'fetchAttestation') {
+                setBridgeStatus('ATTESTING');
+                setCurrentStepIndex(2);
+                addNotification('info', 'Awaiting Attestation', 'Waiting for Circle attestation...');
+            }
+            if (payload.method === 'mint') {
+                setBridgeStatus('MINTING');
+                setCurrentStepIndex(3);
+                addNotification('info', 'Minting Native USDC', 'Minting USDC on destination chain...');
+            }
+        });
+
+        let result = await kit.bridge({
+            from: { adapter, chain: getAppKitChainName(fromNet) as any },
+            to: { adapter, chain: getAppKitChainName(toNet) as any },
+            amount: amount,
+        });
+
+        if (result.state === "error") {
+            addNotification('info', 'Bridge Retry', 'First attempt errored, retrying bridge...');
+            result = await kit.retryBridge(result as any, {
+                from: adapter,
+                to: adapter,
             });
-
-            // Note: In a production app, we would wait for approveTxHash to be mined here using a provider
-            // For now, we simulate waiting a few seconds before prompting the deposit
-            await new Promise(r => setTimeout(r, 4000));
-
-            // 2. Deposit For Burn Transaction
-            setBridgeStatus('BURNING');
-            addNotification('info', 'Executing Cross-Chain Transfer', `Transferring USDC to official bridge. Please confirm...`);
-            const txHash = await eth.request({
-              method: 'eth_sendTransaction',
-              params: [{ from: walletAddress, to: BRIDGE_CONTRACT_ADDRESS, value: '0x0', data: depositData }]
-            }) as string;
-            bridgeTxHash = txHash;
-
-            setBridgeStatus('ATTESTING');
-            addNotification('info', 'Awaiting Circle Attestation', 'Waiting for Circle to attest the cross-chain message...');
-            
-            // Note: In production we wait for the tx to be mined. Simulating mine wait here.
-            setTimeout(finalizeBridge, 5000);
-            
-        } catch (err: any) {
-            console.error(err);
-            addNotification('error', 'Transaction Failed', err.message || 'Transaction rejected by user.');
-            setIsBridging(false);
-            setBridgeStatus('IDLE');
         }
+
+        if (result.state === "success") {
+            setBridgeStatus('SUCCESS');
+            setCurrentStepIndex(4);
+            addNotification('success', 'Bridge Successful', `Successfully bridged ${val} USDC from ${fromNet} to ${toNet}!`);
+            
+            if (isDirectionReversed) {
+               setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
+               setExternalBalance(prev => prev + val);
+            } else {
+               setBalances(prev => ({ ...prev, USDC: prev.USDC + val }));
+               setExternalBalance(prev => Math.max(0, prev - val));
+            }
+
+            await switchNetwork(toNet);
+            refreshBalance();
+            setTimeout(() => {
+                resetState();
+            }, 3000);
+        } else {
+            throw new Error("Bridge failed, please check logs.");
+        }
+    } catch (err: any) {
+        console.error(err);
+        addNotification('error', 'Transaction Failed', err.message || 'Transaction rejected by user.');
+        setIsBridging(false);
+        setBridgeStatus('IDLE');
+        setCurrentStepIndex(0);
     }
   };
 
