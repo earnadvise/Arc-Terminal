@@ -21,7 +21,6 @@ const getAppKitChainName = (net: string) => {
 
 export default function BridgeView() {
   const { walletConnected, walletAddress, setBalances, balances, addNotification, getProvider } = useAppState();
-  const eth = getProvider();
 
   const [fromNet, setFromNet] = useState('Arc Testnet');
   const [toNet, setToNet] = useState('Arbitrum Sepolia');
@@ -54,6 +53,7 @@ export default function BridgeView() {
   };
 
   const executeBridge = async () => {
+    const eth = getProvider();
     if (!walletConnected || !amount || parseFloat(amount) <= 0) return;
     
     setIsBridging(true);
@@ -314,11 +314,6 @@ export default function BridgeView() {
 
           {/* ACTION BUTTON */}
           <div className="bg-white rounded-[20px] p-1.5 border border-slate-100 flex flex-col items-center gap-2 shadow-sm">
-             {walletConnected && (
-               <div className="bg-[#EBF3FF] rounded-full px-4 py-1.5 mt-1 flex items-center justify-center">
-                 <span className="text-[11px] font-semibold text-[#0052FF]">{walletAddress?.slice(0,6)}...{walletAddress?.slice(-4)}</span>
-               </div>
-             )}
              <button
                onClick={executeBridge}
                disabled={isBridging || !walletConnected || !amount || parseFloat(amount) <= 0}
