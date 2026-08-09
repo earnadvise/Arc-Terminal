@@ -14,6 +14,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useAppState } from '../../context/useAppState';
+import { ethers } from 'ethers';
 
 export default function BridgeView() {
   const { walletConnected, addNotification, balances, setBalances, getProvider, walletAddress } = useAppState();
@@ -158,13 +159,8 @@ export default function BridgeView() {
     }
   };
 
-  // Official Circle CCTP TokenMessenger Address (Same across all EVM chains)
-  const BRIDGE_CONTRACT_ADDRESS = "0xbd3fa81b58ba92a08d3c1ce7bb13e3b7b203c9eb";
-  const padAddress = (addr: string) => addr.toLowerCase().replace('0x', '').padStart(64, '0');
-  const padAmount = (amt: number) => {
-    const amountWei = BigInt(Math.floor(amt * 1e6));
-    return amountWei.toString(16).padStart(64, '0');
-  };
+  // Official Circle CCTP TokenMessenger Address (Testnet)
+  const BRIDGE_CONTRACT_ADDRESS = "0x9f3B8679c73C2Fef8b59B4f3444d4e156fb70AA5";
   
   const executeBridge = async () => {
     if (!walletConnected) {
@@ -188,7 +184,29 @@ export default function BridgeView() {
     addNotification('info', 'Approving USDC', `Please approve the transaction to spend ${val} USDC on ${fromNet}...`);
 
     let bridgeTxHash = '';
-    const depositData = '0xa9059cbb' + padAddress(BRIDGE_CONTRACT_ADDRESS) + padAmount(val);
+    
+    // Construct Official CCTP Calldata
+    const amountWei = BigInt(Math.floor(val * 1e6));
+    const usdcAddr = getUSDCAddress(fromNet);
+    
+    // ERC20 Approve ABI
+    const erc20Iface = new ethers.Interface([
+      "function approve(address spender, uint256 amount) external returns (bool)"
+    ]);
+    const approveData = erc20Iface.encodeFunctionData("approve", [BRIDGE_CONTRACT_ADDRESS, amountWei]);
+
+    // CCTP TokenMessenger ABI
+    const cctpIface = new ethers.Interface([
+      "function depositForBurn(uint256 amount, uint32 destinationDomain, bytes32 mintRecipient, address burnToken) external returns (uint64)"
+    ]);
+    const mintRecipient = ethers.zeroPadValue(walletAddress, 32);
+    const destinationDomain = 0; // Mock domain for Arc Testnet / internal relay
+    const depositData = cctpIface.encodeFunctionData("depositForBurn", [
+      amountWei,
+      destinationDomain,
+      mintRecipient,
+      usdcAddr
+    ]);
 
     const finalizeBridge = () => {
       setBridgeStatus('MINTING');
@@ -198,11 +216,13 @@ export default function BridgeView() {
         setBridgeStatus('SUCCESS');
         
         if (isDirectionReversed) {
-           setBalances(prev => ({ ...prev, USDC: prev.USDC + val }));
-           setExternalBalance(prev => Math.max(0, prev - val));
-        } else {
+           // Arc Testnet -> External
            setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
            setExternalBalance(prev => prev + val);
+        } else {
+           // External -> Arc Testnet
+           setBalances(prev => ({ ...prev, USDC: prev.USDC + val }));
+           setExternalBalance(prev => Math.max(0, prev - val));
         }
         
         let explorerUrl = 'https://sepolia.arbiscan.io';
@@ -221,12 +241,21 @@ export default function BridgeView() {
     if (eth && walletAddress) {
         try {
             await switchNetwork(fromNet);
-            setBridgeStatus('BURNING');
-            addNotification('info', 'Executing Cross-Chain Transfer', `Transferring USDC to bridge. Please confirm...`);
             
+            // 1. Approve Transaction
+            setBridgeStatus('APPROVING');
+            addNotification('info', 'Approving USDC', `Please confirm the transaction to allow CCTP to spend ${val} USDC...`);
+            await eth.request({
+              method: 'eth_sendTransaction',
+              params: [{ from: walletAddress, to: usdcAddr, value: '0x0', data: approveData }]
+            });
+
+            // 2. Deposit For Burn Transaction
+            setBridgeStatus('BURNING');
+            addNotification('info', 'Executing Cross-Chain Transfer', `Transferring USDC to official bridge. Please confirm...`);
             const txHash = await eth.request({
               method: 'eth_sendTransaction',
-              params: [{ from: walletAddress, to: getUSDCAddress(fromNet), value: '0x0', data: depositData }]
+              params: [{ from: walletAddress, to: BRIDGE_CONTRACT_ADDRESS, value: '0x0', data: depositData }]
             }) as string;
             bridgeTxHash = txHash;
 
@@ -481,11 +510,11 @@ export default function BridgeView() {
         {/* Action Button */}
         <button
           onClick={executeBridge}
-          disabled={isBridging || !walletConnected || !amount}
+          disabled={isBridging || !walletConnected || !amount || parseFloat(amount) <= 0}
           className={`w-full py-3.5 rounded-[1.25rem] font-bold text-base flex items-center justify-center gap-3 transition-all duration-300 relative overflow-hidden ${
             isBridging 
               ? 'bg-[#E5E7EB] text-slate-400 cursor-not-allowed scale-[0.99]'
-              : !amount
+              : (!amount || parseFloat(amount) <= 0)
               ? 'bg-[#F3F4F6] text-slate-400 cursor-not-allowed'
               : 'bg-[#EBF3FF] hover:bg-[#E1EDFF] text-[#0052FF] hover:scale-[1.01]'
           }`}
@@ -506,7 +535,7 @@ export default function BridgeView() {
               </div>
               Connect Wallet
             </div>
-          ) : !amount ? (
+          ) : (!amount || parseFloat(amount) <= 0) ? (
             <div className="flex items-center gap-2 text-slate-400">
                Enter an amount
             </div>
