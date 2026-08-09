@@ -705,10 +705,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             await eth.request({
               method: 'wallet_addEthereumChain',
               params: [{
-                chainId: '0x66eee',
+                chainId: '0x4cef52',
                 chainName: 'Arc Testnet',
-                rpcUrls: ['https://sepolia-rollup.arbitrum.io/rpc'],
-                nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                rpcUrls: ['https://rpc.testnet.arc.network', 'https://rpc.quicknode.testnet.arc.network/'],
+                nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 },
                 blockExplorerUrls: ['https://sepolia.arbiscan.io']
               }]
             });
