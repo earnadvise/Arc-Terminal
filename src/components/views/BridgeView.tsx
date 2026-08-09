@@ -16,7 +16,7 @@ import { useAppState } from '../../context/useAppState';
 export default function BridgeView() {
   const { walletConnected, addNotification, balances, setBalances, getProvider, walletAddress } = useAppState();
 
-  const [sourceChain, setSourceChain] = useState<'Arbitrum Sepolia' | 'Base Sepolia' | 'Ethereum Sepolia' | 'Optimism Sepolia' | 'Avalanche Fuji' | 'Polygon Amoy'>('Arbitrum Sepolia');
+  const [sourceChain, setSourceChain] = useState<'Arbitrum' | 'Base' | 'Ethereum' | 'Optimism' | 'Avalanche' | 'Polygon'>('Arbitrum');
   const [isDirectionReversed, setIsDirectionReversed] = useState(false);
   const [amount, setAmount] = useState<string>('');
   const [isBridging, setIsBridging] = useState(false);
@@ -31,29 +31,29 @@ export default function BridgeView() {
     let rpc = '';
     let usdc = '';
     switch(sourceChain) {
-      case 'Arbitrum Sepolia':
-        rpc = 'https://sepolia-rollup.arbitrum.io/rpc';
-        usdc = '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
+      case 'Arbitrum':
+        rpc = 'https://arb1.arbitrum.io/rpc';
+        usdc = '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
         break;
-      case 'Base Sepolia':
-        rpc = 'https://sepolia.base.org';
-        usdc = '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
+      case 'Base':
+        rpc = 'https://mainnet.base.org';
+        usdc = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
         break;
-      case 'Ethereum Sepolia':
-        rpc = 'https://rpc2.sepolia.org';
-        usdc = '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
+      case 'Ethereum':
+        rpc = 'https://eth.llamarpc.com';
+        usdc = '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
         break;
-      case 'Optimism Sepolia':
-        rpc = 'https://sepolia.optimism.io';
-        usdc = '0x5fd84259d66Cd46123540766Be93DFE6D43130D7';
+      case 'Optimism':
+        rpc = 'https://mainnet.optimism.io';
+        usdc = '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85';
         break;
-      case 'Avalanche Fuji':
-        rpc = 'https://api.avax-test.network/ext/bc/C/rpc';
-        usdc = '0x5425890298aed601595a70AB815c96711a31Bc65';
+      case 'Avalanche':
+        rpc = 'https://api.avax.network/ext/bc/C/rpc';
+        usdc = '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E';
         break;
-      case 'Polygon Amoy':
-        rpc = 'https://rpc-amoy.polygon.technology';
-        usdc = '0x41E94Eb019C0762f9Bfcf9Cb1EE62ce516f1F428';
+      case 'Polygon':
+        rpc = 'https://polygon-rpc.com';
+        usdc = '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359';
         break;
       default:
         setExternalBalance(0);
@@ -99,12 +99,12 @@ export default function BridgeView() {
     if (!eth) return;
     let chainId = '0x4cef52'; // Arc Testnet default
     switch(networkName) {
-      case 'Arbitrum Sepolia': chainId = '0x66eee'; break;
-      case 'Base Sepolia': chainId = '0x14a34'; break;
-      case 'Ethereum Sepolia': chainId = '0xaa36a7'; break;
-      case 'Optimism Sepolia': chainId = '0xaa37dc'; break;
-      case 'Avalanche Fuji': chainId = '0xa869'; break;
-      case 'Polygon Amoy': chainId = '0x13882'; break;
+      case 'Arbitrum': chainId = '0xa4b1'; break; // 42161
+      case 'Base': chainId = '0x2105'; break; // 8453
+      case 'Ethereum': chainId = '0x1'; break; // 1
+      case 'Optimism': chainId = '0xa'; break; // 10
+      case 'Avalanche': chainId = '0xa86a'; break; // 43114
+      case 'Polygon': chainId = '0x89'; break; // 137
     }
     try {
       await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId }] });
@@ -138,12 +138,12 @@ export default function BridgeView() {
 
   const getUSDCAddress = (chain: string) => {
     switch(chain) {
-      case 'Arbitrum Sepolia': return '0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d';
-      case 'Base Sepolia': return '0x036CbD53842c5426634e7929541eC2318f3dCF7e';
-      case 'Ethereum Sepolia': return '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238';
-      case 'Optimism Sepolia': return '0x5fd84259d66Cd46123540766Be93DFE6D43130D7';
-      case 'Avalanche Fuji': return '0x5425890298aed601595a70AB815c96711a31Bc65';
-      case 'Polygon Amoy': return '0x41E94Eb019C0762f9Bfcf9Cb1EE62ce516f1F428';
+      case 'Arbitrum': return '0xaf88d065e77c8cC2239327C5EDb3A432268e5831';
+      case 'Base': return '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
+      case 'Ethereum': return '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48';
+      case 'Optimism': return '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85';
+      case 'Avalanche': return '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E';
+      case 'Polygon': return '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359';
       case 'Arc Testnet': return '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238'; // Mock address for testnet
       default: return '0x3600000000000000000000000000000000000000';
     }
@@ -195,10 +195,10 @@ export default function BridgeView() {
            setExternalBalance(prev => prev + val);
         }
         
-        let explorerUrl = 'https://sepolia.arbiscan.io';
-        if (fromNet === 'Base Sepolia') explorerUrl = 'https://sepolia.basescan.org';
-        if (fromNet === 'Ethereum Sepolia') explorerUrl = 'https://sepolia.etherscan.io';
-        if (fromNet === 'Optimism Sepolia') explorerUrl = 'https://sepolia-optimism.etherscan.io';
+        let explorerUrl = 'https://arbiscan.io';
+        if (fromNet === 'Base') explorerUrl = 'https://basescan.org';
+        if (fromNet === 'Ethereum') explorerUrl = 'https://etherscan.io';
+        if (fromNet === 'Optimism') explorerUrl = 'https://optimistic.etherscan.io';
         if (fromNet === 'Arc Testnet') explorerUrl = 'https://testnet.arcscan.app';
         
         addNotification('success', 'Bridge Successful', `Successfully bridged ${val} USDC from ${fromNet} to ${toNet}!`, bridgeTxHash, explorerUrl);
@@ -250,9 +250,9 @@ export default function BridgeView() {
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-white text-xs font-bold mb-6 shadow-sm"
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold mb-6 shadow-sm"
         >
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          <span className="w-2 h-2 rounded-full bg-[#01C38E] animate-pulse" />
           CCTP v2 is Live
         </motion.div>
         
@@ -263,7 +263,7 @@ export default function BridgeView() {
           className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight mb-6 leading-tight"
         >
           The fastest way to <br />
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500">
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0052FF] via-[#01C38E] to-[#0A786A]">
             cross-chain
           </span>
         </motion.h1>
@@ -310,15 +310,15 @@ export default function BridgeView() {
                     onChange={(e) => setSourceChain(e.target.value as any)}
                     className="w-full bg-transparent text-xl font-bold text-slate-900 outline-none cursor-pointer appearance-none pl-10 relative z-10"
                   >
-                    <option value="Arbitrum Sepolia">Arbitrum Sepolia</option>
-                    <option value="Base Sepolia">Base Sepolia</option>
-                    <option value="Ethereum Sepolia">Ethereum Sepolia</option>
-                    <option value="Optimism Sepolia">Optimism Sepolia</option>
-                    <option value="Avalanche Fuji">Avalanche Fuji</option>
-                    <option value="Polygon Amoy">Polygon Amoy</option>
+                    <option value="Arbitrum">Arbitrum One</option>
+                    <option value="Base">Base</option>
+                    <option value="Ethereum">Ethereum</option>
+                    <option value="Optimism">Optimism</option>
+                    <option value="Avalanche">Avalanche</option>
+                    <option value="Polygon">Polygon</option>
                   </select>
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center pointer-events-none z-0">
-                    <Network size={16} className="text-indigo-600" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-slate-200/50 flex items-center justify-center pointer-events-none z-0">
+                    <Network size={16} className="text-slate-600" />
                   </div>
                   <ChevronDown size={20} className="absolute right-0 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
                 </div>
@@ -342,7 +342,7 @@ export default function BridgeView() {
                 </div>
                 <button 
                   onClick={handleMax}
-                  className="text-[10px] font-bold text-indigo-600 hover:text-white hover:bg-indigo-600 px-3 py-1 rounded-full border border-indigo-200 bg-indigo-50 transition-colors"
+                  className="text-[10px] font-bold text-slate-600 hover:text-white hover:bg-[#0052FF] px-3 py-1 rounded-full border border-slate-200 bg-white transition-colors"
                 >
                   MAX
                 </button>
@@ -355,7 +355,7 @@ export default function BridgeView() {
         <div className="flex justify-center -my-5 relative z-20">
           <button
             onClick={reverseDirection}
-            className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-md flex items-center justify-center text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all active:scale-95 group"
+            className="w-10 h-10 rounded-full bg-white border border-slate-200 shadow-sm flex items-center justify-center text-slate-400 hover:text-slate-700 hover:border-slate-300 hover:bg-slate-50 transition-all active:scale-95 group"
           >
             <ArrowRightLeft size={18} className="rotate-90 group-hover:rotate-180 transition-transform duration-300" />
           </button>
@@ -376,8 +376,8 @@ export default function BridgeView() {
               </div>
             ) : (
               <div className="flex items-center gap-2 cursor-not-allowed">
-                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <Network size={16} className="text-indigo-600" />
+                <div className="w-8 h-8 rounded-full bg-slate-200/50 flex items-center justify-center">
+                  <Network size={16} className="text-slate-600" />
                 </div>
                 <span className="text-xl font-bold text-slate-900">{sourceChain}</span>
               </div>
@@ -448,10 +448,10 @@ export default function BridgeView() {
         <button
           onClick={executeBridge}
           disabled={isBridging || !walletConnected}
-          className={`w-full py-4 rounded-2xl font-black text-lg shadow-lg flex items-center justify-center gap-2 transition-all duration-300 relative overflow-hidden ${
+          className={`w-full py-4 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-300 relative overflow-hidden ${
             isBridging 
-              ? 'bg-slate-900 text-white cursor-not-allowed scale-[0.98]'
-              : 'bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 hover:shadow-xl hover:shadow-indigo-500/20 text-white hover:scale-[1.02]'
+              ? 'bg-slate-100 text-slate-400 cursor-not-allowed scale-[0.98]'
+              : 'bg-slate-900 hover:bg-slate-800 text-white hover:scale-[1.02] shadow-md hover:shadow-lg'
           }`}
         >
           {isBridging ? (
@@ -493,11 +493,11 @@ export default function BridgeView() {
                   return (
                     <div key={step} className="flex flex-col items-center gap-2 relative bg-white px-2">
                       <div className={`w-5 h-5 rounded-full flex items-center justify-center transition-colors duration-300 ${
-                        isPast ? 'bg-indigo-500 text-white' : 
-                        isActive ? 'bg-indigo-100 border-2 border-indigo-500 text-indigo-500' : 
+                        isPast ? 'bg-[#0052FF] text-white' : 
+                        isActive ? 'bg-[#0052FF]/10 border-2 border-[#0052FF] text-[#0052FF]' : 
                         'bg-slate-100 text-slate-300'
                       }`}>
-                        {isPast ? <CheckCircle2 size={12} /> : <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-indigo-500' : 'bg-slate-300'}`} />}
+                        {isPast ? <CheckCircle2 size={12} /> : <div className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-[#0052FF]' : 'bg-slate-300'}`} />}
                       </div>
                     </div>
                   );

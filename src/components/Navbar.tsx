@@ -19,16 +19,12 @@ export default function Navbar() {
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // Toggle this flag to true/false to enable or disable the Fiat On-Ramp (Buy) feature
-  const ENABLE_FIAT_ONRAMP = true;
-
   const navItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
     { id: 'Home',       label: 'Home',       icon: <HomeIcon size={15} /> },
     { id: 'Perpetuals', label: 'Perpetuals', icon: <Activity size={15} /> },
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
     { id: 'Vault',      label: 'Vault',      icon: <VaultIcon size={15} /> },
     { id: 'Bridge',     label: 'Bridge',     icon: <Network size={15} /> },
-    ...(ENABLE_FIAT_ONRAMP ? [{ id: 'Buy' as AppTab, label: 'Buy', icon: <DollarSign size={15} /> }] : []),
     { id: 'SafePay',    label: 'SafePay', icon: <Bot size={15} /> },
     { id: 'Agents',     label: 'Arc AI',  icon: <Bot size={15} /> },
     { id: 'History',    label: 'History',    icon: <HistIcon size={15} /> },

@@ -54,15 +54,14 @@ export default function LandingView() {
   ];
 
   return (
-    <div className="flex-1 bg-sky-50 relative overflow-hidden flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 select-none">
+    <div className="flex-1 bg-white relative overflow-hidden flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 select-none">
       
-      {/* Decorative ambient background glows */}
-      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-[#01C38E]/5 blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] rounded-full bg-[#0052FF]/5 blur-3xl -z-10 pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-indigo-500/[0.02] blur-3xl -z-10 pointer-events-none" />
+      {/* Decorative ambient background glows - Made extremely subtle */}
+      <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-slate-100 blur-3xl -z-10 pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 translate-x-1/2 translate-y-1/2 w-[450px] h-[450px] rounded-full bg-slate-100 blur-3xl -z-10 pointer-events-none" />
 
-      {/* Grid Pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b12_1px,transparent_1px),linear-gradient(to_bottom,#1e293b12_1px,transparent_1px)] bg-[size:24px_24px] -z-20" />
+      {/* Subtle Grid Pattern */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#f1f5f9_1px,transparent_1px),linear-gradient(to_bottom,#f1f5f9_1px,transparent_1px)] bg-[size:48px_48px] -z-20" />
 
       <div className="max-w-[1280px] mx-auto w-full space-y-16">
         
@@ -88,7 +87,7 @@ export default function LandingView() {
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <button
                 onClick={() => setActiveTab('Perpetuals')}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-[#0A786A] to-[#01C38E] hover:from-[#098b7c] hover:to-[#04dca0] text-slate-900 font-bold rounded-xl shadow-[0_0_20px_rgba(1,195,142,0.25)] hover:shadow-[0_0_30px_rgba(1,195,142,0.4)] transition-all cursor-pointer group"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-full shadow-md transition-all cursor-pointer group"
               >
                 Launch Terminal
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -98,15 +97,15 @@ export default function LandingView() {
 
           {/* Hero Visual Block */}
           <div className="lg:col-span-5 relative hidden lg:block">
-            <div className="relative bg-white/60 border border-slate-200 rounded-3xl p-6 backdrop-blur-md shadow-2xl flex flex-col gap-6 overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-[#01C38E]/10 rounded-full blur-2xl -z-10" />
+            <div className="relative bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col gap-6 overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full blur-2xl -z-10" />
               
-              <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 rounded-full bg-[#01C38E]" />
-                  <span className="text-xs font-bold text-slate-900 tracking-wider">BTC Market Price</span>
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#0052FF]" />
+                  <span className="text-xs font-semibold text-slate-700 tracking-wider">BTC Market Price</span>
                 </div>
-                <span className="text-[10px] text-slate-500 font-bold">1m Realtime Feed</span>
+                <span className="text-[10px] text-slate-400 font-medium">1m Realtime Feed</span>
               </div>
               
               {/* Mock mini candlestick visual */}
@@ -124,13 +123,13 @@ export default function LandingView() {
 
               {/* Quick stats on visual panel */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
-                  <div className="text-[10px] text-slate-500 font-semibold">BTC LAST PRICE</div>
-                  <div className="text-lg font-black text-slate-900 number-mono mt-0.5">${btcPrice}</div>
+                <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl text-center">
+                  <div className="text-[10px] text-slate-500 font-medium">BTC LAST PRICE</div>
+                  <div className="text-lg font-bold text-slate-900 number-mono mt-0.5">${btcPrice}</div>
                 </div>
-                <div className="p-3 bg-white/5 border border-white/5 rounded-xl text-center">
-                  <div className="text-[10px] text-slate-500 font-semibold">24h CHANGE</div>
-                  <div className={`text-lg font-black number-mono mt-0.5 ${isGainer ? 'text-[#01C38E]' : 'text-red-500'}`}>
+                <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl text-center">
+                  <div className="text-[10px] text-slate-500 font-medium">24h CHANGE</div>
+                  <div className={`text-lg font-bold number-mono mt-0.5 ${isGainer ? 'text-[#01C38E]' : 'text-red-500'}`}>
                     {isGainer ? '+' : ''}{btcChange.toFixed(2)}%
                   </div>
                 </div>

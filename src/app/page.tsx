@@ -11,7 +11,6 @@ import HistoryView    from '@/components/views/HistoryView';
 import SwapView       from '@/components/views/SwapView';
 import VaultView      from '@/components/views/VaultView';
 import BridgeView     from '@/components/views/BridgeView';
-import BuyView        from '@/components/views/BuyView';
 import ArcSafePayView from '@/components/views/ArcSafePayView';
 import AgentsView     from '@/components/views/AgentsView';
 
@@ -28,7 +27,6 @@ export default function Home() {
       case 'Swap':       return <SwapView />;
       case 'Vault':      return <VaultView />;
       case 'Bridge':     return <BridgeView />;
-      case 'Buy':        return <BuyView />;
       case 'SafePay':    return <ArcSafePayView />;
       case 'Agents':     return <AgentsView />;
       case 'History':    return <HistoryView />;
