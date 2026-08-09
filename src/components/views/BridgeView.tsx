@@ -19,6 +19,7 @@ export default function BridgeView() {
   const [step, setStep] = useState<BridgeStep>('IDLE');
   const [errorMessage, setErrorMessage] = useState('');
   const [currentBalance, setCurrentBalance] = useState(0);
+  const [completedSteps, setCompletedSteps] = useState<any[] | null>(null);
 
   // AppKit uses these official USDC contract addresses for testnets
   const USDC_ADDRESSES: Record<string, string> = {
@@ -85,6 +86,7 @@ export default function BridgeView() {
     setStep('IDLE');
     setErrorMessage('');
     setIsBridging(false);
+    setCompletedSteps(null);
   };
 
   const switchNetwork = async (networkName: string) => {
@@ -199,9 +201,12 @@ export default function BridgeView() {
 
         if (result.state === "success") {
             setStep('SUCCESS');
+            if ((result as any).steps) {
+                setCompletedSteps((result as any).steps);
+            }
             setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
             addNotification('success', 'Bridge Complete', 'USDC successfully bridged across chains!');
-            setTimeout(() => resetState(), 3000);
+            setTimeout(() => resetState(), 10000);
         } else {
             throw new Error(result.error?.message || "Bridge failed to complete.");
         }
@@ -432,14 +437,37 @@ export default function BridgeView() {
                 </div>
 
                 {step === 'SUCCESS' && (
-                  <motion.button
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    onClick={resetState}
-                    className="w-full mt-6 py-3.5 rounded-[16px] font-bold text-[15px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
-                  >
-                    Done
-                  </motion.button>
+                  <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
+                    {completedSteps && (
+                      <div className="flex flex-col gap-2 pt-4 border-t border-slate-100">
+                        {completedSteps.map((s, idx) => (
+                          <div key={idx} className="flex justify-between items-center text-xs">
+                            <span className="text-slate-500 font-medium capitalize">{s.name}</span>
+                            {s.txHash ? (
+                              <a 
+                                href={s.explorerUrl || `https://testnet.arcscan.app/tx/${s.txHash}`} 
+                                target="_blank" 
+                                rel="noreferrer"
+                                className="text-blue-500 hover:underline flex items-center gap-1 font-semibold"
+                              >
+                                {s.txHash.substring(0, 6)}...{s.txHash.substring(s.txHash.length - 4)}
+                              </a>
+                            ) : (
+                              <span className="text-slate-400 italic">No Tx</span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <motion.button
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={resetState}
+                      className="w-full mt-6 py-3.5 rounded-[16px] font-bold text-[15px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                    >
+                      Done
+                    </motion.button>
+                  </motion.div>
                 )}
               </motion.div>
             )}
