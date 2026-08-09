@@ -205,18 +205,6 @@ export default function BridgeView() {
             </div>
           </div>
 
-          {bridgeStatus === 'SUCCESS' && (
-            <div className="bg-[#EBF3FF] rounded-2xl p-5 border border-[#0052FF]/20 mb-4 flex items-center gap-3">
-               <div className="w-8 h-8 rounded-full bg-[#0052FF] flex items-center justify-center text-white shrink-0">
-                 <CheckCircle2 size={18} />
-               </div>
-               <div>
-                 <h3 className="font-bold text-[#0052FF] text-sm leading-tight">Bridge Complete!</h3>
-                 <p className="text-xs text-slate-600 mt-0.5">Your USDC has been delivered to {toNet}</p>
-               </div>
-            </div>
-          )}
-
           {/* FROM CARD */}
           <div className="bg-white rounded-[20px] p-4 border border-slate-100 shadow-sm relative z-10">
             <div className="flex justify-between items-center mb-2">
