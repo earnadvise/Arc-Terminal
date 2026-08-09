@@ -546,59 +546,6 @@ export default function BridgeView() {
           </div>
         </div>
 
-        {/* Advanced Options Toggle */}
-        <div className="mb-6">
-          <button 
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors mx-auto"
-          >
-            <Settings size={16} />
-            Advanced Options
-            <ChevronDown size={16} className={`transition-transform duration-300 ${showAdvanced ? 'rotate-180' : ''}`} />
-          </button>
-          
-          <AnimatePresence>
-            {showAdvanced && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden mt-4"
-              >
-                <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-4">
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 mb-1.5 block">RECIPIENT ADDRESS</label>
-                    <input 
-                      type="text" 
-                      placeholder={walletAddress || "0x..."}
-                      value={recipient}
-                      onChange={(e) => setRecipient(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-medium text-slate-900 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/10"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-bold text-slate-500 mb-1.5 block">MAX SLIPPAGE</label>
-                    <div className="flex gap-2">
-                      {['0.1', '0.5', '1.0'].map(val => (
-                        <button
-                          key={val}
-                          onClick={() => setSlippage(val)}
-                          className={`flex-1 py-1.5 rounded-lg text-sm font-bold border transition-colors ${
-                            slippage === val 
-                              ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
-                              : 'bg-white border-slate-200 text-slate-500 hover:border-slate-300'
-                          }`}
-                        >
-                          {val}%
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
 
         {/* Connected Wallet Pill */}
         {walletConnected && (
