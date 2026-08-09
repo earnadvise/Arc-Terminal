@@ -131,8 +131,8 @@ export default function BridgeView() {
         const toChain = getAppKitChainName(toNet);
 
         let result = await kit.bridge({
-            from: { adapter, chain: fromChain as any, address: walletAddress },
-            to: { adapter, chain: toChain as any, address: walletAddress },
+            from: { adapter, chain: fromChain as any },
+            to: { adapter, chain: toChain as any },
             amount: amount,
             token: "USDC"
         });
