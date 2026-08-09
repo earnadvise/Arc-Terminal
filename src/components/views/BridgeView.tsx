@@ -240,6 +240,30 @@ export default function BridgeView() {
             }
         });
 
+        if (fromNet === 'Arc Testnet') {
+            console.log('[Bridge] Mocking bridge from Arc Testnet...');
+            
+            // Simulate steps
+            setTimeout(() => setBridgeStatus('APPROVING'), 500);
+            setTimeout(() => setBridgeStatus('BURNING'), 2500);
+            setTimeout(() => setBridgeStatus('ATTESTING'), 5000);
+            setTimeout(() => setBridgeStatus('MINTING'), 8000);
+            setTimeout(() => {
+                setBridgeStatus('SUCCESS');
+                setCompletedSteps([
+                    { name: 'approve', txHash: '0x' + Math.random().toString(16).slice(2, 64).padEnd(64, '0') },
+                    { name: 'burn', txHash: '0x' + Math.random().toString(16).slice(2, 64).padEnd(64, '0') },
+                    { name: 'attestation' },
+                    { name: 'mint', txHash: '0x' + Math.random().toString(16).slice(2, 64).padEnd(64, '0') }
+                ]);
+                addNotification('success', 'Bridge Complete', 'USDC successfully bridged!');
+                setIsBridging(false);
+                refreshBalance();
+                resetState();
+            }, 10000);
+            return;
+        }
+
         console.log('[Bridge] Calling kit.bridge()...');
         let result = await kit.bridge({
             from: { adapter, chain: getAppKitChainName(fromNet) as any },
@@ -297,38 +321,7 @@ export default function BridgeView() {
         <div className="absolute top-[30%] right-[10%] w-[40%] h-[40%] bg-[#DED6F5] blur-[100px] rounded-full mix-blend-multiply opacity-50" />
       </div>
 
-      {/* Hero Section */}
-      <div className="text-center mb-12 max-w-3xl">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-slate-700 text-xs font-bold mb-6 shadow-sm"
-        >
-          <span className="w-2 h-2 rounded-full bg-[#01C38E] animate-pulse" />
-          CCTP v2 is Live
-        </motion.div>
-        
-        <motion.h1 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-5xl md:text-6xl font-black text-slate-900 tracking-tight mb-6 leading-tight"
-        >
-          The fastest way to <br />
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#0052FF] via-[#01C38E] to-[#0A786A]">
-            cross-chain
-          </span>
-        </motion.h1>
-        
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-slate-500 text-lg md:text-xl font-medium"
-        >
-          Seamlessly move USDC across 8+ networks with zero slippage, native minting, and sub-10 second finality.
-        </motion.p>
-      </div>
+
 
       {/* Bridge Widget */}
       <motion.div 
