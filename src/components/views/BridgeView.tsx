@@ -312,7 +312,7 @@ export default function BridgeView() {
             <span className="text-sm font-bold text-slate-400">From</span>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-semibold text-slate-400">
-                Balance: {currentBalance.toLocaleString(undefined, {minimumFractionDigits:4, maximumFractionDigits:4})}
+                Balance: {(currentBalance || 0).toLocaleString(undefined, {minimumFractionDigits:4, maximumFractionDigits:4})}
               </span>
               <button 
                 onClick={handleMax}
