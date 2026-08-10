@@ -709,12 +709,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 chainName: 'Arc Testnet',
                 rpcUrls: ['https://rpc.testnet.arc.network', 'https://rpc.quicknode.testnet.arc.network/'],
                 nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 },
-                blockExplorerUrls: ['https://sepolia.arbiscan.io']
+                blockExplorerUrls: ['https://testnet.arcscan.app']
               }]
             });
             await eth.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x66eee' }]
+              params: [{ chainId: '0x4cef52' }]
             });
           } catch (e) {
             console.warn("Could not add or switch to Arc Testnet:", e);
