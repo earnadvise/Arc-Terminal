@@ -84,20 +84,20 @@ export default function Navbar() {
 
         {/* Right Controls */}
         <div className="flex items-center gap-3">
-          {/* Testnet badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-[#8b5cf6]">
-            <Network size={14} className="animate-pulse" />
-            <span className="hidden sm:inline">Arc Testnet</span>
-          </div>
-
           {/* Faucet */}
           <button
             onClick={claimFaucet}
             className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#3b82f6]/15 to-[#8b5cf6]/15 border border-[#8b5cf6]/30 hover:border-[#8b5cf6]/70 text-slate-700 hover:text-slate-900 text-xs font-semibold transition-all duration-250"
           >
             <Coins size={14} className="text-[#8b5cf6]" />
-            Claim Faucet
+            Faucets
           </button>
+
+          {/* Testnet badge */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-[#8b5cf6]">
+            <Network size={14} className="animate-pulse" />
+            <span className="hidden sm:inline">Arc Testnet</span>
+          </div>
 
           {/* Wallet */}
           {walletConnected ? (
