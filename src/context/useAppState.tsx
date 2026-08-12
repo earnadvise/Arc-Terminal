@@ -132,13 +132,6 @@ export interface AppNotification {
   explorerUrl?: string;
 }
 
-export interface PriceAlert {
-  id: string;
-  symbol: string;
-  targetPrice: number;
-  condition: 'ABOVE' | 'BELOW';
-}
-
 interface AppContextType {
   activeTab: AppTab;
   setActiveTab: (tab: AppTab) => void;
@@ -181,9 +174,6 @@ interface AppContextType {
   closePosition: (id: string, closeSize?: number) => Promise<void>;
   cancelOrder: (id: string) => void;
   setTPSL: (symbol: string, tpPrice: number, slPrice: number) => Promise<void>;
-  priceAlerts: PriceAlert[];
-  addPriceAlert: (symbol: string, targetPrice: number) => void;
-  removePriceAlert: (id: string) => void;
   depositFunds: (amount: number) => Promise<void>;
   withdrawFunds: (amount: number) => Promise<void>;
   addHistoryItem: (item: Omit<HistoryItem, 'id' | 'time'>) => void;
@@ -275,67 +265,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   
-  // Price Alerts
-  const [priceAlerts, setPriceAlerts] = useState<PriceAlert[]>([]);
-
-  const addPriceAlert = (symbol: string, targetPrice: number) => {
-    const market = markets.find(m => m.symbol === symbol);
-    if (!market) return;
-    
-    // Request permission if needed
-    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted') {
-      Notification.requestPermission();
-    }
-
-    const condition = market.lastPrice < targetPrice ? 'ABOVE' : 'BELOW';
-    const newAlert: PriceAlert = {
-      id: `alert-${Math.random().toString(36).substr(2, 9)}`,
-      symbol,
-      targetPrice,
-      condition
-    };
-    setPriceAlerts(prev => [...prev, newAlert]);
-    addNotification('success', 'Price Alert Set', `We will notify you when ${symbol} hits $${targetPrice.toLocaleString()}`);
-  };
-
-  const removePriceAlert = (id: string) => {
-    setPriceAlerts(prev => prev.filter(a => a.id !== id));
-  };
-
-  useEffect(() => {
-    if (priceAlerts.length === 0 || markets.length === 0) return;
-
-    let triggeredAlerts: PriceAlert[] = [];
-    
-    priceAlerts.forEach(alert => {
-      const market = markets.find(m => m.symbol === alert.symbol);
-      if (market) {
-        if ((alert.condition === 'ABOVE' && market.lastPrice >= alert.targetPrice) ||
-            (alert.condition === 'BELOW' && market.lastPrice <= alert.targetPrice)) {
-          triggeredAlerts.push(alert);
-        }
-      }
-    });
-
-    if (triggeredAlerts.length > 0) {
-      setPriceAlerts(prev => prev.filter(a => !triggeredAlerts.find(t => t.id === a.id)));
-      
-      triggeredAlerts.forEach(alert => {
-        try {
-          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-            new Notification(`Arc Terminal Alert: ${alert.symbol}`, {
-              body: `${alert.symbol} just hit your target price of $${alert.targetPrice.toLocaleString()}!`,
-              icon: '/favicon.ico'
-            });
-          }
-        } catch (e) {
-          console.error('Push notification failed', e);
-        }
-        addNotification('success', 'Price Alert Triggered!', `${alert.symbol} hit your target of $${alert.targetPrice.toLocaleString()}`);
-      });
-    }
-  }, [markets, priceAlerts]); // Only triggers when markets or priceAlerts changes
-
   // Candle Chart Data cache per market-timeframe
   const [candleData, setCandleData] = useState<Candlestick[]>([]);
   
@@ -1321,9 +1250,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         closePosition,
         cancelOrder,
         setTPSL,
-        priceAlerts,
-        addPriceAlert,
-        removePriceAlert,
         depositFunds,
         withdrawFunds
       }}
