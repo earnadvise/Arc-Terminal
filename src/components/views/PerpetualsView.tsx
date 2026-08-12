@@ -43,6 +43,8 @@ export default function PerpetualsView() {
   const [showTPSL, setShowTPSL] = useState(false);
   const [sharePosition, setSharePosition] = useState<any>(null);
   const [tpSlPosition, setTpSlPosition] = useState<any>(null);
+  const [closingPosition, setClosingPosition] = useState<any>(null);
+  const [closeSizeInput, setCloseSizeInput] = useState<string>('');
   const shareCardRef = useRef<HTMLDivElement>(null);
 
   const handleDownloadImage = async () => {
@@ -289,7 +291,10 @@ export default function PerpetualsView() {
                           <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                           </button>
-                          <button onClick={() => closePosition(pos.id)} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
+                          <button onClick={() => {
+                            setClosingPosition(pos);
+                            setCloseSizeInput(pos.size.toString());
+                          }} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
                         </td>
                       </tr>
                     );
@@ -695,6 +700,82 @@ export default function PerpetualsView() {
                 setSlPrice('');
                 setTpSlPosition(null);
               }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors shadow-lg shadow-[#8b5cf6]/30">Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Partial Close Modal */}
+      {closingPosition && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h3 className="font-bold text-slate-800">Close Position</h3>
+              <button onClick={() => setClosingPosition(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${closingPosition.side === 'LONG' ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>{closingPosition.side}</span>
+                <span className="font-black text-slate-800">{closingPosition.symbol}</span>
+                <span className="text-xs font-bold text-slate-500">Total Size: {closingPosition.size}</span>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Amount to Close</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={closeSizeInput}
+                      onChange={e => setCloseSizeInput(e.target.value)}
+                      className="w-full pl-3 pr-16 py-2 bg-slate-50 border border-slate-200 focus:border-[#8b5cf6]/50 focus:ring-2 focus:ring-[#8b5cf6]/20 rounded-lg text-sm font-bold number-mono text-slate-900 outline-none transition-all"
+                    />
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                       <span className="text-[10px] text-slate-400 font-bold">{closingPosition.symbol.split('-')[0]}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-1.5">
+                  {[0.25, 0.5, 0.75, 1].map(fraction => (
+                    <button
+                      key={fraction}
+                      onClick={() => setCloseSizeInput((closingPosition.size * fraction).toFixed(4))}
+                      className="flex-1 py-1.5 text-[10px] font-bold text-slate-500 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+                    >
+                      {fraction * 100}%
+                    </button>
+                  ))}
+                </div>
+                
+                {(() => {
+                  const inputVal = parseFloat(closeSizeInput);
+                  if (!isNaN(inputVal) && inputVal > 0) {
+                     const fraction = Math.min(inputVal / closingPosition.size, 1);
+                     const estPnl = closingPosition.unrealizedPnl * fraction;
+                     return (
+                        <div className="pt-2 text-xs font-bold text-slate-600 flex justify-between">
+                          <span>Est. Realized PnL:</span>
+                          <span className={estPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}>
+                             {estPnl >= 0 ? '+' : ''}${estPnl.toFixed(2)}
+                          </span>
+                        </div>
+                     );
+                  }
+                  return null;
+                })()}
+
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
+              <button onClick={() => setClosingPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">Cancel</button>
+              <button onClick={() => {
+                const amt = parseFloat(closeSizeInput);
+                if (!isNaN(amt) && amt > 0) {
+                  closePosition(closingPosition.id, amt);
+                }
+                setClosingPosition(null);
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#ef4444] hover:bg-[#dc2626] transition-colors shadow-lg shadow-[#ef4444]/30">Confirm Close</button>
             </div>
           </div>
         </div>

@@ -170,7 +170,7 @@ interface AppContextType {
     symbolOverride?: string,
     isTpSl?: boolean
   ) => Promise<void>;
-  closePosition: (id: string) => Promise<void>;
+  closePosition: (id: string, closeSize?: number) => Promise<void>;
   cancelOrder: (id: string) => void;
   setTPSL: (symbol: string, tpPrice: number, slPrice: number) => Promise<void>;
   depositFunds: (amount: number) => Promise<void>;
@@ -946,7 +946,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const closePosition = async (id: string) => {
+  const closePosition = async (id: string, closeSize?: number) => {
     const pos = positions.find(p => p.id === id);
     if (!pos) return;
 
@@ -956,10 +956,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    addNotification('info', 'Closing Position', 'Please confirm the close position transaction in MetaMask/Rabby...');
+    const actualCloseSize = (closeSize !== undefined && closeSize > 0 && closeSize < pos.size) ? closeSize : pos.size;
+    const isPartial = actualCloseSize < pos.size;
+    const fraction = actualCloseSize / pos.size;
+    const realizedPnl = pos.unrealizedPnl * fraction;
+
+    addNotification('info', isPartial ? 'Closing Partial Position' : 'Closing Position', 'Please confirm the transaction in MetaMask/Rabby...');
     try {
       // Generate dynamic ABI data for closePosition(string,uint256,uint256,int256)
-      const txData = encodeClosePosition(pos.symbol, pos.size, pos.entryPrice, pos.leverage, pos.unrealizedPnl);
+      const txData = encodeClosePosition(pos.symbol, actualCloseSize, pos.entryPrice, pos.leverage, realizedPnl);
 
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
@@ -970,15 +975,29 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }]
       });
 
-      addNotification('success', 'Transaction Submitted', `Close Position sent: ${txHash.slice(0, 10)}...`);
+      addNotification('success', 'Transaction Submitted', `${isPartial ? 'Partial ' : ''}Close Position sent: ${txHash.slice(0, 10)}...`);
 
-      // Remove position locally for immediate responsive UI feedback
-      setPositions(prev => prev.filter(p => p.id !== id));
+      // Update position locally for immediate responsive UI feedback
+      if (isPartial) {
+        setPositions(prev => prev.map(p => {
+          if (p.id === id) {
+            return {
+              ...p,
+              size: p.size - actualCloseSize,
+              margin: p.margin - (p.margin * fraction),
+              unrealizedPnl: p.unrealizedPnl - realizedPnl,
+            };
+          }
+          return p;
+        }));
+      } else {
+        setPositions(prev => prev.filter(p => p.id !== id));
+      }
 
       addNotification(
         'success',
-        'Position Closed',
-        `Closed ${pos.side} position on ${pos.symbol} at mark price $${pos.markPrice.toFixed(getPrecision(pos.symbol))}. PnL: $${pos.unrealizedPnl.toFixed(2)}`
+        isPartial ? 'Partial Position Closed' : 'Position Closed',
+        `Closed ${actualCloseSize} ${pos.symbol} at mark price $${pos.markPrice.toFixed(getPrecision(pos.symbol))}. PnL: $${realizedPnl.toFixed(2)}`
       );
 
       // Record close in history
@@ -987,12 +1006,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         time: (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}`; })(),
         pair: pos.symbol,
         side: pos.side === 'LONG' ? 'SELL' : 'BUY',
-        type: 'Market (Close)',
-        size: `${pos.size} ${pos.symbol.split('-')[0]}`,
+        type: isPartial ? 'Market (Partial Close)' : 'Market (Close)',
+        size: `${actualCloseSize} ${pos.symbol.split('-')[0]}`,
         price: `$${pos.markPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
-        fee: `$${((pos.size * pos.markPrice) * 0.0006).toFixed(2)} USDC`,
+        fee: `$${((actualCloseSize * pos.markPrice) * 0.0006).toFixed(2)} USDC`,
         status: 'FILLED',
-        realizedPnl: pos.unrealizedPnl
+        realizedPnl: realizedPnl
       };
       setHistory(prev => [historyItem, ...prev]);
 
