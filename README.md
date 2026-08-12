@@ -17,7 +17,7 @@
 ## 🔗 Live Demo & Video
 
 - **Live Demo Link:** [https://arcterminalai.xyz](https://arcterminalai.xyz)
-- **Demo Video Link:** [Watch Demo Video on YouTube](https://youtu.be/sW4ftxIae-o)
+- **Demo Video Link:** [Watch Demo Video on YouTube](https://youtu.be/obzSXVyPAaM)
 
 ---
 
@@ -101,3 +101,22 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 ```bash
 npm run build
 ```
+
+---
+
+## 🏗️ Architecture & Smart Contracts
+
+Arc Terminal functions as a **Smart Routing DEX Aggregator**.
+
+### Smart Contract Integrations
+- **ArcRouter (Custom Deployment):** [`0x2de601bE529C4D59DC2b11725a2c75e06aC4cDBa`](https://testnet.arcscan.app/address/0x2de601bE529C4D59DC2b11725a2c75e06aC4cDBa)
+  - All token swaps on Arc Terminal are routed through our own custom deployed smart contract which acts as a pass-through proxy to capture a 0.1% protocol fee for the treasury.
+- **Synthra V3 SwapRouter:** Underlying AMM liquidity pools used to solve the "cold-start" liquidity problem.
+
+### Hackathon Q&A
+
+**Q: Did you build your own liquidity pools or use a third party?**
+> We built Arc Terminal as a **DEX Aggregator**, so we tap into third-party liquidity like Synthra. We chose this architecture to solve the "cold-start" liquidity problem—it ensures our users get zero slippage and the best possible execution prices from day one. However, all trades are routed through **our own custom ArcRouter smart contract** (`0x2de...`) that we deployed. This allows us to automatically capture a 0.1% protocol fee for our treasury on every single swap before passing it to the underlying pools.
+
+**Q: What did you do to ensure the security of user funds?**
+> Security was our top priority, so we designed Arc Terminal to be completely **non-custodial and stateless**. We never hold user funds—money stays in the user's wallet until the exact second of execution. Second, our custom `ArcRouter` smart contract does not hold TVL. It acts purely as a pass-through proxy. Because there is no "honey pot" of funds sitting inside our contract, there is nothing for a hacker to steal. Finally, we enforce strict slippage protection on-chain using the `amountOutMinimum` parameter, meaning if a user gets front-run by MEV bots, the transaction safely reverts and their funds are completely protected.
