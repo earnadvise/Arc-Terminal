@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { useAppState } from '@/context/useAppState';
-import { RefreshCw, Trash2, ArrowRightLeft, ArrowDownRight, ArrowUpRight, TrendingUp, TrendingDown, ExternalLink, History } from 'lucide-react';
+import { RefreshCw, Trash2, ArrowRightLeft, ArrowDownRight, ArrowUpRight, TrendingUp, TrendingDown, ExternalLink, History, Download } from 'lucide-react';
 
 export default function HistoryView() {
   const { history, clearHistory, addNotification } = useAppState();
@@ -38,6 +38,36 @@ export default function HistoryView() {
     return true;
   });
 
+  const handleExportCSV = () => {
+    if (filteredHistory.length === 0) return;
+    
+    const headers = ['Time', 'Category', 'Side', 'Amount/Size', 'Price', 'Status', 'Tx Hash'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredHistory.map(item => {
+        return [
+          `"${item.time}"`,
+          `"${item.category || ''}"`,
+          `"${item.side}"`,
+          `"${item.size || item.amount || ''}"`,
+          `"${item.price || ''}"`,
+          `"${item.status}"`,
+          `"${item.txHash || ''}"`
+        ].join(',');
+      })
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `arc_history_${activeTab.toLowerCase()}_${Date.now()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addNotification('success', 'Export Complete', 'Your transaction history has been downloaded as a CSV.');
+  };
+
   return (
     <main className="w-full flex-1 max-w-[1200px] mx-auto p-4 lg:p-6 space-y-6 select-none animate-fadeIn">
       
@@ -59,7 +89,7 @@ export default function HistoryView() {
           </p>
         </div>
 
-        {/* Action Buttons: Refresh & Clear */}
+        {/* Action Buttons: Refresh & Clear & Export */}
         <div className="flex items-center gap-3 pt-2">
           <button
             onClick={handleRefresh}
@@ -71,9 +101,18 @@ export default function HistoryView() {
           </button>
 
           <button
+            onClick={handleExportCSV}
+            disabled={filteredHistory.length === 0}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#8b5cf6]/10 hover:bg-[#8b5cf6]/20 border border-[#8b5cf6]/20 hover:border-[#8b5cf6]/40 text-xs font-bold text-[#8b5cf6] transition-all cursor-pointer shadow-md disabled:opacity-50"
+          >
+            <Download size={13} className="text-[#8b5cf6]" />
+            Export CSV
+          </button>
+
+          <button
             onClick={() => {
               if (history.length === 0) return;
-              if (confirm('Clear all local transaction history logs?')) {
+              if (window.confirm('Clear all local transaction history logs?')) {
                 clearHistory();
                 addNotification('info', 'History Cleared', 'Transaction history logs cleared.');
               }
