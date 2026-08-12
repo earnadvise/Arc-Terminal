@@ -174,9 +174,7 @@ export default function SwapView() {
             fromAddress,
             toAddress,
             fee,
-            walletAddress,
             amountInWei,
-            BigInt(0),
             BigInt(0)
           );
 

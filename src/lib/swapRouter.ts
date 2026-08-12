@@ -19,7 +19,7 @@ export const ARC_TOKENS: Record<string, { address: string; decimals: number; nam
 
 // Arc Terminal Router on Arc Testnet (Our custom protocol proxy contract)
 // This contract handles protocol fees and routes the remaining liquidity to SynthraV3
-export const SWAP_ROUTER_ADDRESS = '0xA5C0000000000000000000000000000000000000';
+export const SWAP_ROUTER_ADDRESS = '0xd22c3fCB7896F219c8f4Cb6F68db395E3ca39b52';
 
 // Discovered on-chain pools from SynthraV3Factory
 export const POOLS: Record<string, { address: string; fee: number }> = {
@@ -105,33 +105,25 @@ export const MAX_UINT256 = BigInt(
 
 // ─── exactInputSingle (Uniswap V3 SwapRouter02) ──────────────────
 /**
- * ABI-encode a Uniswap V3-style `exactInputSingle` call.
+ * Generates ABI-encoded calldata for ArcRouter swapExactInputSingle
  *
- * Struct layout (SwapRouter02, no deadline field):
- *   (address tokenIn, address tokenOut, uint24 fee,
- *    address recipient, uint256 amountIn,
- *    uint256 amountOutMinimum, uint160 sqrtPriceLimitX96)
- *
- * Selector: 0x04e45aaf
+ * Signature: swapExactInputSingle(address tokenIn, address tokenOut, uint24 poolFee, uint256 amountIn, uint256 amountOutMinimum)
+ * Selector: 0x65650ea1
  */
 export function encodeExactInputSingle(
   tokenIn: string,
   tokenOut: string,
   fee: number,
-  recipient: string,
   amountIn: bigint,
-  amountOutMinimum: bigint,
-  sqrtPriceLimitX96: bigint = BigInt(0),
+  amountOutMinimum: bigint
 ): string {
   return (
-    '0x04e45aaf' +
+    '0x65650ea1' +
     padAddress(tokenIn) +
     padAddress(tokenOut) +
     padUint(BigInt(fee)) +
-    padAddress(recipient) +
     padUint(amountIn) +
-    padUint(amountOutMinimum) +
-    padUint(sqrtPriceLimitX96)
+    padUint(amountOutMinimum)
   );
 }
 
