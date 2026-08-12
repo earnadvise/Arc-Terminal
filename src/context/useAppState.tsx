@@ -321,14 +321,17 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setPriceAlerts(prev => prev.filter(a => !triggeredAlerts.find(t => t.id === a.id)));
       
       triggeredAlerts.forEach(alert => {
-        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-          new Notification(`Arc Terminal Alert: ${alert.symbol}`, {
-            body: `${alert.symbol} just hit your target price of $${alert.targetPrice.toLocaleString()}!`,
-            icon: '/favicon.ico'
-          });
-        } else {
-          addNotification('success', 'Price Alert Triggered!', `${alert.symbol} hit your target of $${alert.targetPrice.toLocaleString()}`);
+        try {
+          if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+            new Notification(`Arc Terminal Alert: ${alert.symbol}`, {
+              body: `${alert.symbol} just hit your target price of $${alert.targetPrice.toLocaleString()}!`,
+              icon: '/favicon.ico'
+            });
+          }
+        } catch (e) {
+          console.error('Push notification failed', e);
         }
+        addNotification('success', 'Price Alert Triggered!', `${alert.symbol} hit your target of $${alert.targetPrice.toLocaleString()}`);
       });
     }
   }, [markets, priceAlerts]); // Only triggers when markets or priceAlerts changes
