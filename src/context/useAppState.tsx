@@ -279,10 +279,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   // Keep refs of state variables to avoid resetting the fetch interval unnecessarily
   const marketsRef = useRef(markets);
   const activePairRef = useRef(activePair);
+  const positionsRef = useRef(positions);
   useEffect(() => {
     marketsRef.current = markets;
     activePairRef.current = activePair;
-  }, [markets, activePair]);
+    positionsRef.current = positions;
+  }, [markets, activePair, positions]);
 
   const tickCounter = useRef<number>(0);
 
@@ -444,10 +446,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 if (order.side === 'SELL' && markPrice <= order.price) shouldExecute = true;
               } else if (order.type === 'TPSL') {
                 // If it's TP/SL, check if price crossed TP or SL
-                if (order.tpPrice && order.side === 'BUY' && markPrice >= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
-                if (order.slPrice && order.side === 'BUY' && markPrice <= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
-                if (order.tpPrice && order.side === 'SELL' && markPrice <= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
-                if (order.slPrice && order.side === 'SELL' && markPrice >= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
+                if (order.tpPrice && order.side === 'BUY' && markPrice <= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
+                if (order.slPrice && order.side === 'BUY' && markPrice >= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
+                if (order.tpPrice && order.side === 'SELL' && markPrice >= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
+                if (order.slPrice && order.side === 'SELL' && markPrice <= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
               }
 
               if (shouldExecute) {
@@ -458,6 +460,25 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             });
 
             if (executedOrders.length > 0) {
+              executedOrders.forEach(order => {
+                if (order.isTpSlTrigger) {
+                  const posToClose = positionsRef.current.find(p => p.symbol === order.symbol);
+                  if (posToClose) {
+                    const returnMargin = (posToClose.size * posToClose.entryPrice) / posToClose.leverage;
+                    const finalPnl = order.tpSlPnl;
+                    const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
+                    const markPrice = currentMarket ? currentMarket.lastPrice : posToClose.markPrice;
+                    const closeFee = (posToClose.size * markPrice) * 0.0006;
+                    const netReturn = returnMargin + finalPnl - closeFee;
+                    
+                    setBalances(prev => ({
+                      ...prev,
+                      vaultUSDC: prev.vaultUSDC + netReturn
+                    }));
+                  }
+                }
+              });
+
               setPositions(prevPos => {
                 let newPos = [...prevPos];
                 executedOrders.forEach(order => {
