@@ -446,10 +446,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 if (order.side === 'SELL' && markPrice <= order.price) shouldExecute = true;
               } else if (order.type === 'TPSL') {
                 // If it's TP/SL, check if price crossed TP or SL
-                if (order.tpPrice && order.side === 'BUY' && markPrice <= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
-                if (order.slPrice && order.side === 'BUY' && markPrice >= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
-                if (order.tpPrice && order.side === 'SELL' && markPrice >= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
-                if (order.slPrice && order.side === 'SELL' && markPrice <= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
+                if (order.tpPrice && order.side === 'BUY' && markPrice >= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
+                if (order.slPrice && order.side === 'BUY' && markPrice <= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
+                if (order.tpPrice && order.side === 'SELL' && markPrice <= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
+                if (order.slPrice && order.side === 'SELL' && markPrice >= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
               }
 
               if (shouldExecute) {
