@@ -19,7 +19,7 @@ export const ARC_TOKENS: Record<string, { address: string; decimals: number; nam
 
 // Arc Terminal Router on Arc Testnet (Our custom protocol proxy contract)
 // This contract handles protocol fees and routes the remaining liquidity to SynthraV3
-export const SWAP_ROUTER_ADDRESS = '0xArc0000000000000000000000000000000000000';
+export const SWAP_ROUTER_ADDRESS = '0xA5C0000000000000000000000000000000000000';
 
 // Discovered on-chain pools from SynthraV3Factory
 export const POOLS: Record<string, { address: string; fee: number }> = {
