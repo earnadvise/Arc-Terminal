@@ -17,8 +17,9 @@ export const ARC_TOKENS: Record<string, { address: string; decimals: number; nam
   cirBTC: { address: '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF', decimals: 8,  name: 'Circle BTC' },
 };
 
-// SynthraV3 SwapRouter on Arc Testnet (same one Tower Exchange routes through)
-export const SWAP_ROUTER_ADDRESS = '0xA545bCB1Bd7985c59ea162aB1748A0803434C31b';
+// Arc Terminal Router on Arc Testnet (Our custom protocol proxy contract)
+// This contract handles protocol fees and routes the remaining liquidity to SynthraV3
+export const SWAP_ROUTER_ADDRESS = '0xArc0000000000000000000000000000000000000';
 
 // Discovered on-chain pools from SynthraV3Factory
 export const POOLS: Record<string, { address: string; fee: number }> = {

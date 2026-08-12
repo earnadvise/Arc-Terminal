@@ -158,7 +158,7 @@ export default function SwapView() {
           const currentAllowance = allowanceRes ? BigInt(allowanceRes) : BigInt(0);
 
           if (currentAllowance < amountInWei) {
-            addNotification('info', 'Approve Token', `Approve ${fromToken} spending for Synthra V3 SwapRouter...`);
+            addNotification('info', 'Approve Token', `Approve ${fromToken} spending for Arc Terminal Router...`);
             const approveData = encodeApprove(SWAP_ROUTER_ADDRESS, amountInWei);
             const approveTxHash = await eth.request({
               method: 'eth_sendTransaction',
