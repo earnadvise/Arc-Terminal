@@ -132,6 +132,13 @@ export interface AppNotification {
   explorerUrl?: string;
 }
 
+export interface PriceAlert {
+  id: string;
+  symbol: string;
+  targetPrice: number;
+  condition: 'ABOVE' | 'BELOW';
+}
+
 interface AppContextType {
   activeTab: AppTab;
   setActiveTab: (tab: AppTab) => void;
@@ -168,11 +175,15 @@ interface AppContextType {
     price: number,
     amount: number,
     symbolOverride?: string,
-    isTpSl?: boolean
+    isTpSl?: boolean,
+    skipMarginCheck?: boolean
   ) => Promise<void>;
   closePosition: (id: string, closeSize?: number) => Promise<void>;
   cancelOrder: (id: string) => void;
   setTPSL: (symbol: string, tpPrice: number, slPrice: number) => Promise<void>;
+  priceAlerts: PriceAlert[];
+  addPriceAlert: (symbol: string, targetPrice: number) => void;
+  removePriceAlert: (id: string) => void;
   depositFunds: (amount: number) => Promise<void>;
   withdrawFunds: (amount: number) => Promise<void>;
   addHistoryItem: (item: Omit<HistoryItem, 'id' | 'time'>) => void;
@@ -263,6 +274,33 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, [history]);
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  
+  // Price Alerts
+  const [priceAlerts, setPriceAlerts] = useState<PriceAlert[]>([]);
+
+  const addPriceAlert = (symbol: string, targetPrice: number) => {
+    const market = markets.find(m => m.symbol === symbol);
+    if (!market) return;
+    
+    // Request permission if needed
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted') {
+      Notification.requestPermission();
+    }
+
+    const condition = market.lastPrice < targetPrice ? 'ABOVE' : 'BELOW';
+    const newAlert: PriceAlert = {
+      id: `alert-${Math.random().toString(36).substr(2, 9)}`,
+      symbol,
+      targetPrice,
+      condition
+    };
+    setPriceAlerts(prev => [...prev, newAlert]);
+    addNotification('success', 'Price Alert Set', `We will notify you when ${symbol} hits $${targetPrice.toLocaleString()}`);
+  };
+
+  const removePriceAlert = (id: string) => {
+    setPriceAlerts(prev => prev.filter(a => a.id !== id));
+  };
 
   // Candle Chart Data cache per market-timeframe
   const [candleData, setCandleData] = useState<Candlestick[]>([]);
@@ -403,8 +441,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }
 
         // 1. Update Markets and Positions
-        setMarkets(prevMarkets => {
-          const updated = prevMarkets.map(m => {
+        setMarkets(prev => {
+          const newMarkets = prev.map(m => {
             const marketData = apiData[m.symbol];
             if (!marketData) return m;
 
@@ -418,6 +456,36 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             };
           });
 
+          // Check Price Alerts
+          if (priceAlerts.length > 0) {
+            setPriceAlerts(currentAlerts => {
+              const remainingAlerts = [...currentAlerts];
+              let changed = false;
+              
+              for (let i = remainingAlerts.length - 1; i >= 0; i--) {
+                const alert = remainingAlerts[i];
+                const market = newMarkets.find(m => m.symbol === alert.symbol);
+                if (market) {
+                  const triggered = (alert.condition === 'ABOVE' && market.lastPrice >= alert.targetPrice) ||
+                                    (alert.condition === 'BELOW' && market.lastPrice <= alert.targetPrice);
+                  if (triggered) {
+                    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+                      new Notification(`Arc Terminal Alert: ${alert.symbol}`, {
+                        body: `${alert.symbol} just hit your target price of $${alert.targetPrice.toLocaleString()}!`,
+                        icon: '/favicon.ico'
+                      });
+                    } else {
+                      addNotification('success', 'Price Alert Triggered!', `${alert.symbol} hit your target of $${alert.targetPrice.toLocaleString()}`);
+                    }
+                    remainingAlerts.splice(i, 1);
+                    changed = true;
+                  }
+                }
+              }
+              return changed ? remainingAlerts : currentAlerts;
+            });
+          }
+
           // Trigger updates in positions PnL based on these new prices
           // ALSO Mock Execute Limit Orders and TP/SL
           setOpenOrders(prevOrders => {
@@ -425,7 +493,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             const remainingOrders: typeof prevOrders = [];
             
             prevOrders.forEach(order => {
-              const currentMarket = updated.find(m => m.symbol === order.symbol);
+              const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
               if (!currentMarket) {
                 remainingOrders.push(order);
                 return;
@@ -463,7 +531,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                   if (order.isTpSlTrigger) {
                     newPos = newPos.filter(p => p.symbol !== order.symbol);
                   } else {
-                    const currentMarket = updated.find(m => m.symbol === order.symbol);
+                    const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
                     const markPrice = currentMarket ? currentMarket.lastPrice : order.price;
                     const buffer = order.marginMode === 'ISOLATED' ? 0.95 : 0.98;
                     const liqPrice = order.side === 'BUY'
@@ -502,7 +570,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                     side: order.side === 'BUY' ? (order.isTpSlTrigger ? 'SELL' : 'BUY') : (order.isTpSlTrigger ? 'BUY' : 'SELL'),
                     type: order.isTpSlTrigger ? 'TP/SL Triggered' : `${order.type} Filled`,
                     size: `${order.amount} ${order.symbol.split('-')[0]}`,
-                    price: `$${(order.isTpSlTrigger ? (updated.find(m => m.symbol === order.symbol)?.lastPrice || 0) : order.price).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                    price: `$${(order.isTpSlTrigger ? (newMarkets.find(m => m.symbol === order.symbol)?.lastPrice || 0) : order.price).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
                     fee: `$${((order.amount * (order.price || 1)) * 0.0006).toFixed(2)} USDC`,
                     status: 'FILLED',
                     realizedPnl: order.isTpSlTrigger ? order.tpSlPnl : undefined
@@ -517,7 +585,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
           setPositions(prevPos =>
             prevPos.map(pos => {
-              const currentMarket = updated.find(m => m.symbol === pos.symbol);
+              const currentMarket = newMarkets.find(m => m.symbol === pos.symbol);
               if (!currentMarket) return pos;
 
               const markPrice = currentMarket.lastPrice;
@@ -534,7 +602,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             })
           );
 
-          return updated;
+          return newMarkets;
         });
       } catch (err) {
         console.error('Error fetching live prices, falling back to simulated drift:', err);
@@ -775,7 +843,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     price: number,
     amount: number,
     symbolOverride?: string,
-    isTpSl?: boolean
+    isTpSl?: boolean,
+    skipMarginCheck?: boolean
   ) => {
     const orderSymbol = symbolOverride || activePair.symbol;
     if (!walletConnected || !walletAddress) {
@@ -793,7 +862,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
       if (eth && walletAddress) {
         try {
-          if (balances.vaultUSDC < requiredMargin) {
+          if (!skipMarginCheck && balances.vaultUSDC < requiredMargin) {
             if (unifiedBalances?.USDC >= requiredMargin) {
               addNotification('info', 'Unified Balance Kit', 'Auto-allocating cross-chain USDC margin...');
               const calldata = encodeOpenPosition(
@@ -1248,6 +1317,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         closePosition,
         cancelOrder,
         setTPSL,
+        priceAlerts,
+        addPriceAlert,
+        removePriceAlert,
         depositFunds,
         withdrawFunds
       }}
