@@ -291,6 +291,12 @@ export default function PerpetualsView() {
                           <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                           </button>
+                          <button onClick={async () => {
+                            await closePosition(pos.id);
+                            await placeOrder(pos.side === 'LONG' ? 'SHORT' : 'LONG', 'MARKET', pos.markPrice, pos.size, pos.symbol);
+                          }} className="px-2 py-1 text-[10px] font-semibold text-amber-500 hover:bg-amber-500/10 border border-amber-500/30 rounded transition-all" title="Reverse Position">
+                            Reverse
+                          </button>
                           <button onClick={() => {
                             setClosingPosition(pos);
                             setCloseSizeInput(pos.size.toString());
