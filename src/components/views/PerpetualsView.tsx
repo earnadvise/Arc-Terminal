@@ -88,6 +88,19 @@ export default function PerpetualsView() {
     return matchesSearch && matchesCategory;
   });
 
+  let estimatedTPPnl: number | null = null;
+  let estimatedSLPnl: number | null = null;
+  if (tpSlPosition) {
+    const tp = parseFloat(tpPrice);
+    const sl = parseFloat(slPrice);
+    if (!isNaN(tp)) {
+      estimatedTPPnl = (tpSlPosition.side === 'LONG' ? tp - tpSlPosition.entryPrice : tpSlPosition.entryPrice - tp) * tpSlPosition.size;
+    }
+    if (!isNaN(sl)) {
+      estimatedSLPnl = (tpSlPosition.side === 'LONG' ? sl - tpSlPosition.entryPrice : tpSlPosition.entryPrice - sl) * tpSlPosition.size;
+    }
+  }
+
   return (
     <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 xl:grid-cols-4 gap-4 select-none">
 
@@ -647,6 +660,11 @@ export default function PerpetualsView() {
                     onChange={e => setTpPrice(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 rounded-lg text-sm font-bold number-mono text-slate-900 outline-none transition-all"
                   />
+                  {estimatedTPPnl !== null && (
+                    <div className={`mt-1.5 text-[10px] font-bold ${estimatedTPPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                      Est. PnL: {estimatedTPPnl >= 0 ? '+' : ''}${estimatedTPPnl.toFixed(2)}
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Stop Loss Price</label>
@@ -657,6 +675,11 @@ export default function PerpetualsView() {
                     onChange={e => setSlPrice(e.target.value)}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-[#ef4444]/50 focus:ring-2 focus:ring-[#ef4444]/20 rounded-lg text-sm font-bold number-mono text-slate-900 outline-none transition-all"
                   />
+                  {estimatedSLPnl !== null && (
+                    <div className={`mt-1.5 text-[10px] font-bold ${estimatedSLPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                      Est. PnL: {estimatedSLPnl >= 0 ? '+' : ''}${estimatedSLPnl.toFixed(2)}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
