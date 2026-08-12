@@ -302,6 +302,37 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setPriceAlerts(prev => prev.filter(a => a.id !== id));
   };
 
+  useEffect(() => {
+    if (priceAlerts.length === 0 || markets.length === 0) return;
+
+    let triggeredAlerts: PriceAlert[] = [];
+    
+    priceAlerts.forEach(alert => {
+      const market = markets.find(m => m.symbol === alert.symbol);
+      if (market) {
+        if ((alert.condition === 'ABOVE' && market.lastPrice >= alert.targetPrice) ||
+            (alert.condition === 'BELOW' && market.lastPrice <= alert.targetPrice)) {
+          triggeredAlerts.push(alert);
+        }
+      }
+    });
+
+    if (triggeredAlerts.length > 0) {
+      setPriceAlerts(prev => prev.filter(a => !triggeredAlerts.find(t => t.id === a.id)));
+      
+      triggeredAlerts.forEach(alert => {
+        if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+          new Notification(`Arc Terminal Alert: ${alert.symbol}`, {
+            body: `${alert.symbol} just hit your target price of $${alert.targetPrice.toLocaleString()}!`,
+            icon: '/favicon.ico'
+          });
+        } else {
+          addNotification('success', 'Price Alert Triggered!', `${alert.symbol} hit your target of $${alert.targetPrice.toLocaleString()}`);
+        }
+      });
+    }
+  }, [markets, priceAlerts]); // Only triggers when markets or priceAlerts changes
+
   // Candle Chart Data cache per market-timeframe
   const [candleData, setCandleData] = useState<Candlestick[]>([]);
   
@@ -456,35 +487,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             };
           });
 
-          // Check Price Alerts
-          setPriceAlerts(currentAlerts => {
-            if (currentAlerts.length === 0) return currentAlerts;
-            const remainingAlerts = [...currentAlerts];
-            let changed = false;
-            
-            for (let i = remainingAlerts.length - 1; i >= 0; i--) {
-              const alert = remainingAlerts[i];
-              const market = newMarkets.find(m => m.symbol === alert.symbol);
-              if (market) {
-                const triggered = (alert.condition === 'ABOVE' && market.lastPrice >= alert.targetPrice) ||
-                                  (alert.condition === 'BELOW' && market.lastPrice <= alert.targetPrice);
-                if (triggered) {
-                  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                    new Notification(`Arc Terminal Alert: ${alert.symbol}`, {
-                      body: `${alert.symbol} just hit your target price of $${alert.targetPrice.toLocaleString()}!`,
-                      icon: '/favicon.ico'
-                    });
-                  } else {
-                    addNotification('success', 'Price Alert Triggered!', `${alert.symbol} hit your target of $${alert.targetPrice.toLocaleString()}`);
-                  }
-                  remainingAlerts.splice(i, 1);
-                  changed = true;
-                }
-              }
-            }
-            return changed ? remainingAlerts : currentAlerts;
-          });
-
           // Trigger updates in positions PnL based on these new prices
           // ALSO Mock Execute Limit Orders and TP/SL
           setOpenOrders(prevOrders => {
@@ -626,35 +628,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               low24h: low,
               volume24h: m.volume24h + Math.round(Math.random() * 5000)
             };
-          });
-
-          // Check Price Alerts
-          setPriceAlerts(currentAlerts => {
-            if (currentAlerts.length === 0) return currentAlerts;
-            const remainingAlerts = [...currentAlerts];
-            let changed = false;
-            
-            for (let i = remainingAlerts.length - 1; i >= 0; i--) {
-              const alert = remainingAlerts[i];
-              const market = updated.find(m => m.symbol === alert.symbol);
-              if (market) {
-                const triggered = (alert.condition === 'ABOVE' && market.lastPrice >= alert.targetPrice) ||
-                                  (alert.condition === 'BELOW' && market.lastPrice <= alert.targetPrice);
-                if (triggered) {
-                  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-                    new Notification(`Arc Terminal Alert: ${alert.symbol}`, {
-                      body: `${alert.symbol} just hit your target price of $${alert.targetPrice.toLocaleString()}!`,
-                      icon: '/favicon.ico'
-                    });
-                  } else {
-                    addNotification('success', 'Price Alert Triggered!', `${alert.symbol} hit your target of $${alert.targetPrice.toLocaleString()}`);
-                  }
-                  remainingAlerts.splice(i, 1);
-                  changed = true;
-                }
-              }
-            }
-            return changed ? remainingAlerts : currentAlerts;
           });
 
           // Trigger updates in positions PnL based on fallback prices
