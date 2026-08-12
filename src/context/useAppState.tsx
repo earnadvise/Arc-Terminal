@@ -446,14 +446,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 if (order.side === 'SELL' && markPrice <= order.price) shouldExecute = true;
               } else if (order.type === 'TPSL') {
                 // If it's TP/SL, check if price crossed TP or SL
-                if (order.tpPrice && order.side === 'BUY' && markPrice >= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
-                if (order.slPrice && order.side === 'BUY' && markPrice <= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = (markPrice - (order.price || markPrice)) * order.amount; }
-                if (order.tpPrice && order.side === 'SELL' && markPrice <= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
-                if (order.slPrice && order.side === 'SELL' && markPrice >= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; tpSlPnl = ((order.price || markPrice) - markPrice) * order.amount; }
+                if (order.tpPrice && order.side === 'BUY' && markPrice <= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; }
+                if (order.slPrice && order.side === 'BUY' && markPrice >= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; }
+                if (order.tpPrice && order.side === 'SELL' && markPrice >= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; }
+                if (order.slPrice && order.side === 'SELL' && markPrice <= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; }
               }
 
               if (shouldExecute) {
-                executedOrders.push({ ...order, isTpSlTrigger, tpSlPnl });
+                executedOrders.push({ ...order, isTpSlTrigger });
               } else {
                 remainingOrders.push(order);
               }
@@ -465,9 +465,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                   const posToClose = positionsRef.current.find(p => p.symbol === order.symbol);
                   if (posToClose) {
                     const returnMargin = (posToClose.size * posToClose.entryPrice) / posToClose.leverage;
-                    const finalPnl = order.tpSlPnl;
                     const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
                     const markPrice = currentMarket ? currentMarket.lastPrice : posToClose.markPrice;
+                    
+                    // Calculate proper PnL for TP/SL using entry price
+                    const diff = posToClose.side === 'LONG' ? (markPrice - posToClose.entryPrice) : (posToClose.entryPrice - markPrice);
+                    const finalPnl = (diff / posToClose.entryPrice) * (posToClose.size * posToClose.entryPrice);
+                    order.tpSlPnl = finalPnl; // Attach PnL to order for history logging
+
                     const closeFee = (posToClose.size * markPrice) * 0.0006;
                     const netReturn = returnMargin + finalPnl - closeFee;
                     
