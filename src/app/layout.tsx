@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppStateProvider } from "@/context/useAppState";
 import { UnifiedBalanceProvider } from "@/lib/circle-unified-balance-kit";
@@ -8,8 +8,14 @@ export const metadata: Metadata = {
   title: "Arc Terminal | Modern Perpetual DEX",
   description: "Trade perpetual futures with up to 20x leverage on Arc Testnet.",
   manifest: "/manifest.json",
+};
+
+export const viewport: Viewport = {
   themeColor: "#000000",
-  viewport: "minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, viewport-fit=cover",
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
