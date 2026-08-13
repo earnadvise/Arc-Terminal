@@ -1011,9 +1011,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           if (p.id === id) {
             return {
               ...p,
-              size: p.size - actualCloseSize,
-              margin: p.margin - (p.margin * fraction),
-              unrealizedPnl: p.unrealizedPnl - realizedPnl,
+              size: Number((p.size - actualCloseSize).toFixed(6)),
+              margin: Number((p.margin - (p.margin * fraction)).toFixed(2)),
+              unrealizedPnl: Number((p.unrealizedPnl - realizedPnl).toFixed(2)),
             };
           }
           return p;
