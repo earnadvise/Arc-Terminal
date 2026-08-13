@@ -24,12 +24,12 @@ export default function PWAInstallPrompt() {
 
     window.addEventListener('beforeinstallprompt', handler);
     
-    // For testing/demo purposes if we want it to always show up after a delay
-    // const timer = setTimeout(() => setIsVisible(true), 3000);
+    // For testing/demo purposes: always show up after a delay so they see it even if the browser restricts the event
+    const timer = setTimeout(() => setIsVisible(true), 1500);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
-      // clearTimeout(timer);
+      clearTimeout(timer);
     };
   }, []);
 
