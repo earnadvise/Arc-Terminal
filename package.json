@@ -13,6 +13,7 @@
     "@ai-sdk/openai": "^4.0.27",
     "@circle-fin/adapter-ethers-v6": "^1.10.0",
     "@circle-fin/app-kit": "^1.12.0",
+    "@ducanh2912/next-pwa": "^10.2.9",
     "ai": "^7.0.47",
     "ethers": "^6.17.0",
     "framer-motion": "^12.40.0",
