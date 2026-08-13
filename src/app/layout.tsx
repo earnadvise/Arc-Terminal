@@ -2,12 +2,10 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { AppStateProvider } from "@/context/useAppState";
 import { UnifiedBalanceProvider } from "@/lib/circle-unified-balance-kit";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 export const metadata: Metadata = {
   title: "Arc Terminal | Modern Perpetual DEX",
   description: "Trade perpetual futures with up to 20x leverage on Arc Testnet.",
-  manifest: "/manifest.json",
 };
 
 export const viewport: Viewport = {
@@ -30,15 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
           rel="stylesheet"
         />
-        <link rel="manifest" href="/manifest.json" />
-        <meta name="theme-color" content="#000000" />
       </head>
-      <body className="min-h-full flex flex-col antialiased bg-[#030304] text-[#f4f4f7] selection:bg-[#8b5cf6]/30 relative">
+      <body className="min-h-full flex flex-col antialiased bg-[#030304] text-[#f4f4f7] selection:bg-[#8b5cf6]/30">
         <UnifiedBalanceProvider apiKey={apiKey}>
-          <AppStateProvider>
-            {children}
-            <PWAInstallPrompt />
-          </AppStateProvider>
+          <AppStateProvider>{children}</AppStateProvider>
         </UnifiedBalanceProvider>
       </body>
     </html>
