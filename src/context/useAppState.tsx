@@ -1018,9 +1018,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           }
           return p;
         }));
-      } else {
-        setPositions(prev => prev.filter(p => p.id !== id));
-      }
+        } else {
+          setPositions(prev => prev.filter(p => p.id !== id));
+          // Clean up any stray TP/SL orders for this symbol since the position is fully closed
+          setOpenOrders(prev => prev.filter(o => !(o.type === 'TPSL' && o.symbol === pos.symbol)));
+        }
 
       addNotification(
         'success',
