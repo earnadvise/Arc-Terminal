@@ -492,28 +492,55 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                   } else {
                     const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
                     const markPrice = currentMarket ? currentMarket.lastPrice : order.price;
-                    const buffer = order.marginMode === 'ISOLATED' ? 0.95 : 0.98;
-                    const liqPrice = order.side === 'BUY'
-                      ? order.price * (1 - (1 / order.leverage) * buffer)
-                      : order.price * (1 + (1 / order.leverage) * buffer);
+                    const orderSide = order.side === 'BUY' ? 'LONG' : 'SHORT';
                     const margin = (order.amount * order.price) / order.leverage;
-                    
-                    newPos.unshift({
-                      id: `pos-${Math.random().toString(36).substring(7)}`,
-                      symbol: order.symbol,
-                      side: order.side === 'BUY' ? 'LONG' : 'SHORT',
-                      size: order.amount,
-                      entryPrice: order.price, 
-                      markPrice: markPrice,
-                      liqPrice: Number(liqPrice.toFixed(getPrecision(order.symbol))),
-                      margin: Number(margin.toFixed(2)),
-                      leverage: order.leverage,
-                      marginMode: order.marginMode,
-                      marginRatio: (1 / order.leverage) * 100,
-                      unrealizedPnl: 0,
-                      tpPrice: order.tpPrice,
-                      slPrice: order.slPrice,
-                    });
+
+                    const existingPosIndex = newPos.findIndex(p => p.symbol === order.symbol && p.side === orderSide);
+
+                    if (existingPosIndex !== -1) {
+                      const existingPos = newPos[existingPosIndex];
+                      const newSize = existingPos.size + order.amount;
+                      const newMargin = existingPos.margin + margin;
+                      const newEntryPrice = ((existingPos.size * existingPos.entryPrice) + (order.amount * order.price)) / newSize;
+                      const newLeverage = (newSize * newEntryPrice) / newMargin;
+                      
+                      const buffer = existingPos.marginMode === 'ISOLATED' ? 0.95 : 0.98;
+                      const liqPrice = orderSide === 'LONG'
+                        ? newEntryPrice * (1 - (1 / newLeverage) * buffer)
+                        : newEntryPrice * (1 + (1 / newLeverage) * buffer);
+                        
+                      newPos[existingPosIndex] = {
+                        ...existingPos,
+                        size: Number(newSize.toFixed(6)),
+                        margin: Number(newMargin.toFixed(2)),
+                        entryPrice: newEntryPrice,
+                        markPrice: markPrice,
+                        leverage: newLeverage,
+                        liqPrice: Number(liqPrice.toFixed(getPrecision(order.symbol))),
+                      };
+                    } else {
+                      const buffer = order.marginMode === 'ISOLATED' ? 0.95 : 0.98;
+                      const liqPrice = orderSide === 'LONG'
+                        ? order.price * (1 - (1 / order.leverage) * buffer)
+                        : order.price * (1 + (1 / order.leverage) * buffer);
+                      
+                      newPos.unshift({
+                        id: `pos-${Math.random().toString(36).substring(7)}`,
+                        symbol: order.symbol,
+                        side: orderSide,
+                        size: order.amount,
+                        entryPrice: order.price, 
+                        markPrice: markPrice,
+                        liqPrice: Number(liqPrice.toFixed(getPrecision(order.symbol))),
+                        margin: Number(margin.toFixed(2)),
+                        leverage: order.leverage,
+                        marginMode: order.marginMode,
+                        marginRatio: (1 / order.leverage) * 100,
+                        unrealizedPnl: 0,
+                        tpPrice: order.tpPrice,
+                        slPrice: order.slPrice,
+                      });
+                    }
                   }
                 });
                 return newPos;
@@ -873,27 +900,54 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
       const entryPrice = activePair.lastPrice;
 
-        // Create position locally for immediate responsive UI feedback
-        const buffer = marginMode === 'ISOLATED' ? 0.95 : 0.98;
-        const liqPrice = side === 'LONG'
-          ? entryPrice * (1 - (1 / leverage) * buffer)
-          : entryPrice * (1 + (1 / leverage) * buffer);
+        setPositions(prev => {
+          const existingPosIndex = prev.findIndex(p => p.symbol === activePair.symbol && p.side === side);
+          
+          if (existingPosIndex !== -1) {
+            const existingPos = prev[existingPosIndex];
+            const newSize = existingPos.size + amount;
+            const newMargin = existingPos.margin + requiredMargin;
+            const newEntryPrice = ((existingPos.size * existingPos.entryPrice) + (amount * entryPrice)) / newSize;
+            const newLeverage = (newSize * newEntryPrice) / newMargin;
+            
+            const buffer = existingPos.marginMode === 'ISOLATED' ? 0.95 : 0.98;
+            const liqPrice = side === 'LONG'
+              ? newEntryPrice * (1 - (1 / newLeverage) * buffer)
+              : newEntryPrice * (1 + (1 / newLeverage) * buffer);
+              
+            const newPositions = [...prev];
+            newPositions[existingPosIndex] = {
+              ...existingPos,
+              size: Number(newSize.toFixed(6)),
+              margin: Number(newMargin.toFixed(2)),
+              entryPrice: newEntryPrice,
+              markPrice: entryPrice,
+              leverage: newLeverage,
+              liqPrice: Number(liqPrice.toFixed(getPrecision(activePair.symbol))),
+            };
+            return newPositions;
+          }
 
-        const newPosition: Position = {
-          id: `pos-${Math.random().toString(36).substring(7)}`,
-          symbol: activePair.symbol,
-          side,
-          size: amount,
-          entryPrice,
-          markPrice: entryPrice,
-          liqPrice: Number(liqPrice.toFixed(getPrecision(activePair.symbol))),
-          margin: Number(requiredMargin.toFixed(2)),
-          leverage,
-          unrealizedPnl: 0,
-          marginMode
-        };
+          const buffer = marginMode === 'ISOLATED' ? 0.95 : 0.98;
+          const liqPrice = side === 'LONG'
+            ? entryPrice * (1 - (1 / leverage) * buffer)
+            : entryPrice * (1 + (1 / leverage) * buffer);
 
-        setPositions(prev => [newPosition, ...prev]);
+          const newPosition: Position = {
+            id: `pos-${Math.random().toString(36).substring(7)}`,
+            symbol: activePair.symbol,
+            side,
+            size: amount,
+            entryPrice,
+            markPrice: entryPrice,
+            liqPrice: Number(liqPrice.toFixed(getPrecision(activePair.symbol))),
+            margin: Number(requiredMargin.toFixed(2)),
+            leverage,
+            unrealizedPnl: 0,
+            marginMode
+          };
+          return [newPosition, ...prev];
+        });
         
         // Add to history
         const historyItem: HistoryItem = {
