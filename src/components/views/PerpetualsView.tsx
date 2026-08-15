@@ -265,7 +265,7 @@ export default function PerpetualsView() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
-                    <th className="py-2">Market</th><th>Side</th>
+                    <th className="py-2">Market</th>
                     <th>Size</th><th>Entry</th><th>Mark</th>
                     <th>Liq</th><th>PnL</th><th className="text-right">Action</th>
                   </tr>
@@ -275,8 +275,12 @@ export default function PerpetualsView() {
                     const isGain = pos.unrealizedPnl >= 0;
                     return (
                       <tr key={pos.id} className="hover:bg-slate-100/30 transition-colors">
-                        <td className="py-2.5 font-bold text-slate-900">{pos.symbol}</td>
-                        <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${pos.side === 'LONG' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{pos.side}</span></td>
+                        <td className="py-2.5">
+                          <div className="font-bold text-slate-900">{pos.symbol}</div>
+                          <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                            {pos.side}
+                          </div>
+                        </td>
                         <td className="number-mono text-slate-900">{pos.size}</td>
                         <td className="number-mono text-slate-700">${pos.entryPrice.toLocaleString()}</td>
                         <td className="number-mono text-slate-700">${pos.markPrice.toLocaleString()}</td>
@@ -318,7 +322,7 @@ export default function PerpetualsView() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
-                    <th className="py-2">Market</th><th>Side</th><th>Type</th>
+                    <th className="py-2">Market</th><th>Type</th>
                     <th>Price</th><th>Amount</th><th>Lev</th>
                     <th className="text-right">Action</th>
                   </tr>
@@ -326,8 +330,12 @@ export default function PerpetualsView() {
                 <tbody className="divide-y divide-[#13131a]">
                   {openOrders.map(order => (
                     <tr key={order.id} className="hover:bg-slate-100/30 transition-colors">
-                      <td className="py-2.5 font-bold text-slate-900">{order.symbol}</td>
-                      <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${order.side === 'BUY' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{order.side === 'BUY' ? 'LONG' : 'SHORT'}</span></td>
+                      <td className="py-2.5">
+                        <div className="font-bold text-slate-900">{order.symbol}</div>
+                        <div className={`text-[9px] font-bold ${order.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                          {order.side === 'BUY' ? 'LONG' : 'SHORT'}
+                        </div>
+                      </td>
                       <td className="text-slate-700">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
                       <td className="number-mono text-slate-700">
                         {order.type === 'TPSL' ? (
@@ -369,7 +377,7 @@ export default function PerpetualsView() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
-                    <th className="py-2">Time</th><th>Pair</th><th>Side</th>
+                    <th className="py-2">Time</th><th>Market</th>
                     <th>Type</th><th>Size</th><th>Price</th><th>Fee</th><th>PnL</th><th>Status</th>
                   </tr>
                 </thead>
@@ -377,8 +385,12 @@ export default function PerpetualsView() {
                   {history.filter(h => h.side !== 'DEPOSIT' && h.side !== 'WITHDRAW').slice(0, 8).map(h => (
                     <tr key={h.id}>
                       <td className="py-2.5 text-slate-400 number-mono text-[10px]">{h.time}</td>
-                      <td className="font-bold text-slate-900">{h.pair}</td>
-                      <td><span className={`text-[9px] font-bold ${h.side === 'LONG' || h.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{h.side}</span></td>
+                      <td>
+                        <div className="font-bold text-slate-900">{h.pair}</div>
+                        <div className={`text-[9px] font-bold ${h.side === 'LONG' || h.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                          {h.side}
+                        </div>
+                      </td>
                       <td className="text-slate-700">{h.type}</td>
                       <td className="number-mono text-slate-700">{h.size}</td>
                       <td className="number-mono text-slate-700">{h.price}</td>
