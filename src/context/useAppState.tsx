@@ -172,6 +172,7 @@ interface AppContextType {
     skipMarginCheck?: boolean
   ) => Promise<void>;
   closePosition: (id: string, closeSize?: number) => Promise<void>;
+  adjustPositionMargin: (id: string, additionalMargin: number) => void;
   cancelOrder: (id: string) => void;
   setTPSL: (symbol: string, tpPrice: number, slPrice: number) => Promise<void>;
   depositFunds: (amount: number) => Promise<void>;
@@ -513,9 +514,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                         ...existingPos,
                         size: Number(newSize.toFixed(6)),
                         margin: Number(newMargin.toFixed(2)),
-                        entryPrice: newEntryPrice,
+                        entryPrice: Number(newEntryPrice.toFixed(2)),
                         markPrice: markPrice,
-                        leverage: newLeverage,
+                        leverage: Number(newLeverage.toFixed(2)),
                         liqPrice: Number(liqPrice.toFixed(getPrecision(order.symbol))),
                       };
                     } else {
@@ -920,9 +921,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               ...existingPos,
               size: Number(newSize.toFixed(6)),
               margin: Number(newMargin.toFixed(2)),
-              entryPrice: newEntryPrice,
+              entryPrice: Number(newEntryPrice.toFixed(2)),
               markPrice: entryPrice,
-              leverage: newLeverage,
+              leverage: Number(newLeverage.toFixed(2)),
               liqPrice: Number(liqPrice.toFixed(getPrecision(activePair.symbol))),
             };
             return newPositions;
@@ -1105,6 +1106,43 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       console.error(err);
       addNotification('error', 'Close Failed', err.message || 'Transaction rejected.');
     }
+  };
+
+  const adjustPositionMargin = async (id: string, additionalMargin: number) => {
+    const pos = positions.find(p => p.id === id);
+    if (!pos) return;
+    
+    if (balances.vaultUSDC < additionalMargin) {
+      addNotification('error', 'Execution Failed', `Insufficient Vault USDC. Need $${additionalMargin.toFixed(2)}`);
+      return;
+    }
+    
+    setBalances(prev => ({
+      ...prev,
+      vaultUSDC: prev.vaultUSDC - additionalMargin
+    }));
+    
+    setPositions(prev => prev.map(p => {
+      if (p.id !== id) return p;
+      
+      const newMargin = p.margin + additionalMargin;
+      const positionValue = p.size * p.entryPrice;
+      const newLeverage = positionValue / newMargin;
+      
+      const buffer = p.marginMode === 'ISOLATED' ? 0.95 : 0.98;
+      const liqPrice = p.side === 'LONG'
+        ? p.entryPrice * (1 - (1 / newLeverage) * buffer)
+        : p.entryPrice * (1 + (1 / newLeverage) * buffer);
+        
+      return {
+        ...p,
+        margin: Number(newMargin.toFixed(2)),
+        leverage: Number(newLeverage.toFixed(2)),
+        liqPrice: Number(liqPrice.toFixed(getPrecision(p.symbol))),
+      };
+    }));
+    
+    addNotification('success', 'Margin Adjusted', `Added $${additionalMargin.toFixed(2)} to ${pos.symbol} position.`);
   };
 
   const cancelOrder = async (id: string) => {

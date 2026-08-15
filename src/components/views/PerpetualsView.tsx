@@ -24,6 +24,7 @@ export default function PerpetualsView() {
     setMarginMode,
     placeOrder,
     closePosition,
+    adjustPositionMargin,
     cancelOrder,
     connectWallet,
     depositFunds,
@@ -285,6 +286,15 @@ export default function PerpetualsView() {
                           {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
                         </td>
                         <td className="text-right flex items-center justify-end gap-1">
+                          <button onClick={() => {
+                            const amountStr = window.prompt(`Add margin to ${pos.symbol} position (USDC):`);
+                            const amount = parseFloat(amountStr || '');
+                            if (amount && amount > 0) {
+                              adjustPositionMargin(pos.id, amount);
+                            }
+                          }} className="px-2 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded transition-all" title="Add Margin">
+                            + Margin
+                          </button>
                           <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded transition-all" title="Set TP/SL">
                             TP/SL
                           </button>
