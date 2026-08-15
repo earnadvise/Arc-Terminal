@@ -1341,6 +1341,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }]
       });
 
+      // Optimistically update local vault margin
+      setBalances(prev => ({
+        ...prev,
+        vaultUSDC: prev.vaultUSDC + amount,
+        walletUSDC: prev.walletUSDC - amount
+      }));
+
       addNotification('success', 'Deposit Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
       refreshOnChainBalances(walletAddress);
       setTimeout(() => refreshOnChainBalances(walletAddress), 1000);
@@ -1375,6 +1382,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           data: '0x6112fe2e' + amountHex
         }]
       });
+
+      // Optimistically update local vault margin
+      setBalances(prev => ({
+        ...prev,
+        vaultUSDC: prev.vaultUSDC - amount,
+        walletUSDC: prev.walletUSDC + amount
+      }));
 
       addNotification('success', 'Withdrawal Submitted', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
       refreshOnChainBalances(walletAddress);
