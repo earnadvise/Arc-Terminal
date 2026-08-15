@@ -26,6 +26,19 @@ const getPrecision = (symbol: string): number => {
   return 2;
 };
 
+const encodeAddMargin = (symbol: string, amount: number) => {
+  const selector = '02b91811'; // addMargin(string,uint256)
+  const offsetHex = '40'.padStart(64, '0');
+  
+  const amountWei = BigInt(Math.floor(amount * 1e6));
+  const amountHex = amountWei.toString(16).padStart(64, '0');
+
+  const stringBytes = Array.from(symbol).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+  const stringLenHex = symbol.length.toString(16).padStart(64, '0');
+  const stringContentHex = stringBytes.padEnd(64, '0');
+  return '0x' + selector + offsetHex + amountHex + stringLenHex + stringContentHex;
+};
+
 const encodeOpenPosition = (symbol: string, isLong: boolean, amount: number, entryPrice: number, leverage: number) => {
   const selector = '67491bd2'; // openPosition(string,bool,uint256,uint256,uint256)
   const offsetHex = 'a0'.padStart(64, '0');
@@ -1112,11 +1125,52 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const pos = positions.find(p => p.id === id);
     if (!pos) return;
     
-    if (balances.vaultUSDC < additionalMargin) {
-      addNotification('error', 'Execution Failed', `Insufficient Vault USDC. Need $${additionalMargin.toFixed(2)}`);
+    let txHash = '';
+    const eth = getProvider();
+    
+    if (eth && walletConnected && walletAddress) {
+      if (balances.vaultUSDC < additionalMargin) {
+        if (unifiedBalances?.USDC >= additionalMargin) {
+          addNotification('info', 'Unified Balance Kit', 'Auto-allocating cross-chain USDC margin...');
+          try {
+            txHash = await spend({ 
+              amount: additionalMargin, 
+              to: VAULT_ADDRESS, 
+              chain: "ARC_TESTNET"
+            });
+          } catch (err: any) {
+            console.error(err);
+            addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
+            return;
+          }
+        } else {
+          addNotification('error', 'Execution Failed', `Insufficient margin. You need at least $${additionalMargin.toFixed(2)} USDC in the Vault.`);
+          return;
+        }
+      } else {
+        addNotification('info', 'Adjusting Margin', 'Please confirm the transaction in MetaMask/Rabby...');
+        try {
+          const calldata = encodeAddMargin(pos.symbol, additionalMargin);
+          txHash = await eth.request({
+            method: 'eth_sendTransaction',
+            params: [{
+              from: walletAddress,
+              to: VAULT_ADDRESS,
+              data: calldata
+            }]
+          });
+          addNotification('success', 'Transaction Submitted', `Margin adjustment sent: ${txHash.slice(0, 10)}...`, txHash);
+        } catch (err: any) {
+          console.error(err);
+          addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
+          return;
+        }
+      }
+    } else {
+      addNotification('error', 'Execution Failed', 'Please connect your wallet.');
       return;
     }
-    
+
     setBalances(prev => ({
       ...prev,
       vaultUSDC: prev.vaultUSDC - additionalMargin
@@ -1142,7 +1196,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       };
     }));
     
-    addNotification('success', 'Margin Adjusted', `Added $${additionalMargin.toFixed(2)} to ${pos.symbol} position.`);
+    setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
   };
 
   const cancelOrder = async (id: string) => {
