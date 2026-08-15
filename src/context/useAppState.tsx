@@ -332,20 +332,20 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // Execute sequentially to prevent burst rate limits
       const nativeRes = await req('eth_getBalance', [address, 'latest']);
       
-      // Fetch testnet wallet USDC balance (to allow deposits from testnet faucet funds)
+      // Fetch testnet vault and wallet USDC balances
+      const vaultRes = await req('eth_call', [{ to: VAULT_ADDRESS, data: '0xf69f1e4a' + padAddress(address) }, 'latest']);
       const walletRes = await req('eth_call', [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest']);
 
       const nativeHex = nativeRes?.result;
+      const vaultBalRes = vaultRes?.result;
       const walletBalRes = walletRes?.result;
 
       setBalances(prev => {
         const nextNativeBal = nativeHex && nativeHex !== '0x' && !nativeHex.error ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
         
-        // Parse testnet wallet USDC
+        // Parse testnet vault and wallet USDC
+        const nextVaultUSDC = vaultBalRes && vaultBalRes !== '0x' && !vaultBalRes.error ? Number(BigInt(vaultBalRes)) / 1e6 : prev.vaultUSDC;
         const nextWalletUSDC = walletBalRes && walletBalRes !== '0x' && !walletBalRes.error ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
-        
-        // Use purely local state for Vault USDC to prevent the massive fake/garbage contract return value from breaking the UI
-        const nextVaultUSDC = prev.vaultUSDC;
         
         const localUSDC = nextVaultUSDC + nextWalletUSDC;
         const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
