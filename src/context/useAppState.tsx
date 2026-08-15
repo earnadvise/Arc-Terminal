@@ -906,6 +906,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           }
 
           addNotification('success', 'Transaction Submitted', `Open Position sent: ${txHash.slice(0, 10)}...`, txHash);
+  
+          // Optimistically deduct margin
+          setBalances(prev => ({
+            ...prev,
+            vaultUSDC: prev.vaultUSDC - requiredMargin
+          }));
+          
         } catch (err: any) {
           console.error(err);
           addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
@@ -1013,6 +1020,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             });
           
           addNotification('success', 'Limit Order Placed', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
+          
+          // Optimistically deduct margin
+          setBalances(prev => ({
+            ...prev,
+            vaultUSDC: prev.vaultUSDC - requiredMargin
+          }));
+          
         } catch (err: any) {
           console.error(err);
           addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
@@ -1076,6 +1090,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       });
 
       addNotification('success', 'Transaction Submitted', `${isPartial ? 'Partial ' : ''}Close Position sent: ${txHash.slice(0, 10)}...`);
+
+      const returnMargin = pos.margin * fraction;
+      const closeFee = (actualCloseSize * pos.markPrice) * 0.0006;
+      const netReturn = returnMargin + realizedPnl - closeFee;
+
+      // Optimistically refund margin + PnL to vault
+      setBalances(prev => ({
+        ...prev,
+        vaultUSDC: prev.vaultUSDC + netReturn
+      }));
 
       // Update position locally for immediate responsive UI feedback
       if (isPartial) {
@@ -1220,8 +1244,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             data: calldata
           }]
         });
-        addNotification('success', 'Transaction Submitted', `Cancel Order sent: ${txHash.slice(0, 10)}...`);
-        setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
+          addNotification('success', 'Transaction Submitted', `Cancel Order sent: ${txHash.slice(0, 10)}...`);
+          
+          const returnMargin = (order.amount * order.price) / order.leverage;
+          setBalances(prev => ({
+            ...prev,
+            vaultUSDC: prev.vaultUSDC + returnMargin
+          }));
+          
+          setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
       } catch (err: any) {
         console.error(err);
         addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.');
