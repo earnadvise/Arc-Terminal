@@ -217,36 +217,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [walletConnected, setWalletConnected] = useState<boolean>(false);
   const [walletAddress, setWalletAddress] = useState<string>('');
   const [walletType, setWalletType] = useState<string>('');
-  const [balances, setBalances] = useState(() => {
-    let savedVault = 0;
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('arc_terminal_vault_margin');
-        if (saved) savedVault = Number(saved);
-      } catch (e) {}
-    }
-    return {
-      USDC: savedVault,
-      walletUSDC: 0,
-      vaultUSDC: savedVault,
-      BTC: 0,
-      ETH: 0,
-      SOL: 0,
-      ARC: 0,
-      EURC: 0,
-      USDT: 0
-    };
+  const [balances, setBalances] = useState({
+    USDC: 0,
+    walletUSDC: 0,
+    vaultUSDC: 0,
+    BTC: 0,
+    ETH: 0,
+    SOL: 0,
+    ARC: 0,
+    EURC: 0,
+    USDT: 0
   });
 
   const walletAddressRef = useRef(walletAddress);
-  
-  // Persist Vault Margin
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('arc_terminal_vault_margin', balances.vaultUSDC.toString());
-    }
-  }, [balances.vaultUSDC]);
-  
   useEffect(() => {
     walletAddressRef.current = walletAddress;
   }, [walletAddress]);
