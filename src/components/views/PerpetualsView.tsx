@@ -278,7 +278,7 @@ export default function PerpetualsView() {
                         <td className="py-2.5">
                           <div className="font-bold text-slate-900">{pos.symbol}</div>
                           <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                            {pos.side}
+                            {pos.side} {pos.leverage}x
                           </div>
                         </td>
                         <td className="number-mono text-slate-900">{pos.size}</td>
@@ -323,7 +323,7 @@ export default function PerpetualsView() {
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
                     <th className="py-2">Market</th><th>Type</th>
-                    <th>Price</th><th>Amount</th><th>Lev</th>
+                    <th>Price</th><th>Amount</th>
                     <th className="text-right">Action</th>
                   </tr>
                 </thead>
@@ -333,7 +333,7 @@ export default function PerpetualsView() {
                       <td className="py-2.5">
                         <div className="font-bold text-slate-900">{order.symbol}</div>
                         <div className={`text-[9px] font-bold ${order.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                          {order.side === 'BUY' ? 'LONG' : 'SHORT'}
+                          {order.side === 'BUY' ? 'LONG' : 'SHORT'} {order.leverage}x
                         </div>
                       </td>
                       <td className="text-slate-700">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
@@ -348,7 +348,6 @@ export default function PerpetualsView() {
                         )}
                       </td>
                       <td className="number-mono text-slate-900">{order.amount}</td>
-                      <td className="number-mono text-slate-700">{order.leverage}x</td>
                       <td className="text-right flex items-center justify-end gap-1.5 py-1.5 pr-2">
                         {order.type === 'TPSL' && (
                           <button onClick={() => {
