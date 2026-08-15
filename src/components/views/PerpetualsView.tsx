@@ -265,7 +265,7 @@ export default function PerpetualsView() {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
-                    <th className="py-2">Market</th><th>Side</th><th>Lev</th>
+                    <th className="py-2">Market</th><th>Side</th>
                     <th>Size</th><th>Entry</th><th>Mark</th>
                     <th>Liq</th><th>PnL</th><th className="text-right">Action</th>
                   </tr>
@@ -277,7 +277,6 @@ export default function PerpetualsView() {
                       <tr key={pos.id} className="hover:bg-slate-100/30 transition-colors">
                         <td className="py-2.5 font-bold text-slate-900">{pos.symbol}</td>
                         <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${pos.side === 'LONG' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{pos.side}</span></td>
-                        <td className="number-mono text-slate-700">{pos.leverage}x</td>
                         <td className="number-mono text-slate-900">{pos.size}</td>
                         <td className="number-mono text-slate-700">${pos.entryPrice.toLocaleString()}</td>
                         <td className="number-mono text-slate-700">${pos.markPrice.toLocaleString()}</td>
@@ -286,15 +285,6 @@ export default function PerpetualsView() {
                           {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
                         </td>
                         <td className="text-right flex items-center justify-end gap-1">
-                          <button onClick={() => {
-                            const amountStr = window.prompt(`Add margin to ${pos.symbol} position (USDC):`);
-                            const amount = parseFloat(amountStr || '');
-                            if (amount && amount > 0) {
-                              adjustPositionMargin(pos.id, amount);
-                            }
-                          }} className="px-2 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded transition-all" title="Add Margin">
-                            + Margin
-                          </button>
                           <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded transition-all" title="Set TP/SL">
                             TP/SL
                           </button>
