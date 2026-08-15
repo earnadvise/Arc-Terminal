@@ -278,7 +278,7 @@ export default function PerpetualsView() {
                         <td className="py-2.5">
                           <div className="font-bold text-slate-900">{pos.symbol}</div>
                           <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                            {pos.side} {pos.leverage}x
+                            {pos.side} {Number(pos.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
                           </div>
                         </td>
                         <td className="number-mono text-slate-900">{pos.size}</td>
@@ -333,7 +333,7 @@ export default function PerpetualsView() {
                       <td className="py-2.5">
                         <div className="font-bold text-slate-900">{order.symbol}</div>
                         <div className={`text-[9px] font-bold ${order.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                          {order.side === 'BUY' ? 'LONG' : 'SHORT'} {order.leverage}x
+                          {order.side === 'BUY' ? 'LONG' : 'SHORT'} {Number(order.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
                         </div>
                       </td>
                       <td className="text-slate-700">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
@@ -622,7 +622,7 @@ export default function PerpetualsView() {
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black tracking-widest ${sharePosition.side === 'LONG' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-[#ef4444] text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`}>{sharePosition.side}</span>
                   <span className="text-xl font-black text-white tracking-wide">{sharePosition.symbol}</span>
-                  <span className="text-xs font-bold text-slate-400 bg-white/10 px-1.5 py-0.5 rounded">{sharePosition.leverage}x</span>
+                  <span className="text-xs font-bold text-slate-400 bg-white/10 px-1.5 py-0.5 rounded">{Number(sharePosition.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x</span>
                 </div>
                 
                 <div className={`text-6xl font-black number-mono mb-2 ${sharePosition.unrealizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'} drop-shadow-lg tracking-tighter`}>
