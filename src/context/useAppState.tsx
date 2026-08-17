@@ -235,47 +235,44 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, [walletAddress]);
 
   // State Lists
-  const [positions, setPositions] = useState<Position[]>(() => {
-    if (typeof window !== 'undefined') {
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+
+  // Load state when wallet changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && walletAddress) {
       try {
-        const saved = localStorage.getItem('arc_terminal_positions');
-        if (saved) return JSON.parse(saved);
+        const savedPos = localStorage.getItem(`arc_terminal_positions_${walletAddress}`);
+        if (savedPos) setPositions(JSON.parse(savedPos));
+        else setPositions([]);
+
+        const savedOrders = localStorage.getItem(`arc_terminal_orders_${walletAddress}`);
+        if (savedOrders) setOpenOrders(JSON.parse(savedOrders));
+        else setOpenOrders([]);
+
+        const savedHist = localStorage.getItem(`arc_terminal_history_${walletAddress}`);
+        if (savedHist) setHistory(JSON.parse(savedHist));
+        else setHistory([]);
       } catch {}
+    } else {
+      setPositions([]);
+      setOpenOrders([]);
+      setHistory([]);
     }
-    return [];
-  });
-  
-  const [openOrders, setOpenOrders] = useState<OpenOrder[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('arc_terminal_orders');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return [];
-  });
-  
-  const [history, setHistory] = useState<HistoryItem[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const saved = localStorage.getItem('arc_terminal_user_history');
-        if (saved) return JSON.parse(saved);
-      } catch {}
-    }
-    return [];
-  });
+  }, [walletAddress]);
 
   useEffect(() => {
-    localStorage.setItem('arc_terminal_positions', JSON.stringify(positions));
-  }, [positions]);
+    if (walletAddress) localStorage.setItem(`arc_terminal_positions_${walletAddress}`, JSON.stringify(positions));
+  }, [positions, walletAddress]);
 
   useEffect(() => {
-    localStorage.setItem('arc_terminal_orders', JSON.stringify(openOrders));
-  }, [openOrders]);
+    if (walletAddress) localStorage.setItem(`arc_terminal_orders_${walletAddress}`, JSON.stringify(openOrders));
+  }, [openOrders, walletAddress]);
 
   useEffect(() => {
-    localStorage.setItem('arc_terminal_user_history', JSON.stringify(history));
-  }, [history]);
+    if (walletAddress) localStorage.setItem(`arc_terminal_history_${walletAddress}`, JSON.stringify(history));
+  }, [history, walletAddress]);
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   
