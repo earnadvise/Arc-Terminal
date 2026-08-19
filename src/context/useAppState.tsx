@@ -1471,7 +1471,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         cancelOrder,
         setTPSL,
         depositFunds,
-        withdrawFunds
+        withdrawFunds,
+        adjustPositionMargin
       }}
     >
       {children}
