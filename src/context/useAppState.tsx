@@ -272,14 +272,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
         const savedHist = localStorage.getItem(`arc_terminal_history_${walletAddress}`);
         if (savedHist) setHistory(JSON.parse(savedHist));
-        else setHistory([]);
-      } catch {}
-    } else {
-      setPositions([]);
-      setOpenOrders([]);
-      setHistory([]);
-    }
-  }, [walletAddress]);
+          else setHistory([]);
+          
+          const savedVaultUSDC = localStorage.getItem(`arc_terminal_vault_${walletAddress}`);
+          if (savedVaultUSDC) {
+             setBalances(prev => ({ ...prev, vaultUSDC: Number(savedVaultUSDC) }));
+          }
+        } catch {}
+        setIsDataLoaded(true);
+      } else {
+        setPositions([]);
+        setOpenOrders([]);
+        setHistory([]);
+        setIsDataLoaded(false);
+      }
+    }, [walletAddress]);
 
   useEffect(() => {
     if (walletAddress && isDataLoaded) localStorage.setItem(`arc_terminal_positions_${walletAddress}`, JSON.stringify(positions));
@@ -291,7 +298,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (walletAddress && isDataLoaded) localStorage.setItem(`arc_terminal_history_${walletAddress}`, JSON.stringify(history));
-  }, [history, walletAddress]);
+    }, [history, walletAddress, isDataLoaded]);
+
+    useEffect(() => {
+      if (walletAddress && isDataLoaded) localStorage.setItem(`arc_terminal_vault_${walletAddress}`, balances.vaultUSDC.toString());
+    }, [balances.vaultUSDC, walletAddress, isDataLoaded]);
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   
