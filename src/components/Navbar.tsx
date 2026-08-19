@@ -55,7 +55,7 @@ export default function Navbar() {
 
           {/* Nav Links */}
           <nav className="flex flex-wrap items-center gap-1">
-            {navItems.map(item => {
+            {mainNavItems.map(item => {
               const isActive = activeTab === item.id;
               return (
                 <button
@@ -83,6 +83,50 @@ export default function Navbar() {
                 </button>
               );
             })}
+            
+            {/* More Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMoreOpen(!isMoreOpen); }}
+                className={`relative px-4 py-1.5 rounded-md text-sm font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 ${
+                  moreNavItems.some(item => activeTab === item.id) ? 'text-slate-900' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                }`}
+              >
+                More <ChevronDown size={14} className={isMoreOpen ? 'rotate-180 transition-transform' : 'transition-transform'} />
+                {moreNavItems.some(item => activeTab === item.id) && (
+                  <motion.div
+                    layoutId="activeNavTab"
+                    className="absolute inset-0 bg-gradient-to-r from-[#3b82f6]/10 to-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded-md -z-10"
+                    transition={{ type: 'spring', stiffness: 380, damping: 30 }}
+                  />
+                )}
+              </button>
+              
+              <AnimatePresence>
+                {isMoreOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden z-50"
+                  >
+                    <div className="flex flex-col py-1">
+                      {moreNavItems.map(item => (
+                        <button
+                          key={item.id}
+                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab(item.id); setIsMoreOpen(false); }}
+                          className={`flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-slate-50 transition-colors ${activeTab === item.id ? 'text-[#8b5cf6] bg-slate-50/50 font-medium' : 'text-slate-700'}`}
+                        >
+                          {item.icon} {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </nav>
         </div>
 
