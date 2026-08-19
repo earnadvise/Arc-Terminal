@@ -81,7 +81,7 @@ function TokenSelector({
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
-            className="absolute top-full mt-2 left-0 w-64 bg-white border border-slate-200 rounded-xl p-1.5 shadow-2xl z-30"
+            className="absolute top-full mt-2 left-0 w-64 bg-white border border-slate-200 rounded-xl p-1.5 shadow-2xl z-50"
           >
             <div className="p-1 mb-1">
               <input 
@@ -356,13 +356,13 @@ export default function SwapView() {
         </AnimatePresence>
 
         {/* Swap Box Container */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-3 relative overflow-hidden">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-3 relative">
 
           {/* Top subtle glow */}
           <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#8b5cf6]/10 rounded-full blur-2xl pointer-events-none" />
 
           {/* YOU PAY PANEL */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 focus-within:border-[#8b5cf6]/40 transition-all">
+          <div className="relative z-20 bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 focus-within:border-[#8b5cf6]/40 transition-all">
             <div className="flex justify-between items-center text-xs">
               <span className="text-slate-500 font-semibold">You Pay</span>
               <div className="flex items-center gap-1.5">
@@ -419,7 +419,7 @@ export default function SwapView() {
           </div>
 
           {/* YOU RECEIVE PANEL */}
-          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+          <div className="relative z-10 bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
             <div className="flex justify-between items-center text-xs">
               <span className="text-slate-500 font-semibold">You Receive (Est.)</span>
               <div className="flex items-center gap-1.5">
