@@ -70,7 +70,7 @@ export default function MarketsView() {
       {/* ── COL 1: MARKETS SIDEBAR ─────────────────────────────────── */}
       <section className="xl:col-span-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 flex flex-col gap-3 shadow-xl" style={{ maxHeight: 820, minHeight: 680 }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wide">Markets</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">Markets</h2>
           <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-[#8a8a9e]">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Live
@@ -84,7 +84,7 @@ export default function MarketsView() {
             placeholder="Search..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs text-slate-900 dark:text-white dark:text-[#0c0c10] placeholder-[#6e6e7f] outline-none transition-colors"
+            className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs text-slate-900 dark:text-white placeholder-[#6e6e7f] outline-none transition-colors"
           />
         </div>
 
@@ -96,7 +96,7 @@ export default function MarketsView() {
               className={`flex-1 py-1 text-[9px] font-bold rounded-md transition-colors ${
                 categoryFilter === cat
                   ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/25'
-                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
+                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
               }`}
             >
               {cat}
@@ -124,7 +124,7 @@ export default function MarketsView() {
                 }`}
               >
                 <div className="col-span-2">
-                  <div className="text-[11px] font-semibold text-slate-900 dark:text-white dark:text-[#0c0c10]">{m.symbol}</div>
+                  <div className="text-[11px] font-semibold text-slate-900 dark:text-white">{m.symbol}</div>
                   <div className="text-[9px] text-slate-400 dark:text-slate-500">{m.name}</div>
                 </div>
                 <div className="text-right text-[10px] number-mono text-slate-800 dark:text-slate-100">
@@ -148,7 +148,7 @@ export default function MarketsView() {
         {/* Pair Header Row */}
         <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl px-4 py-3 flex items-center gap-6 overflow-x-auto shadow-xl">
           <div>
-            <div className="text-base font-black text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-wide">{activePair.symbol}</div>
+            <div className="text-base font-black text-slate-900 dark:text-white tracking-wide">{activePair.symbol}</div>
             <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{activePair.name}</div>
           </div>
           <div className="h-8 w-px bg-slate-100 dark:bg-[#1f1f2e]" />
@@ -168,7 +168,7 @@ export default function MarketsView() {
           ].map(stat => (
             <div key={stat.label} className="shrink-0">
               <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{stat.label}</div>
-              <div className="text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] font-semibold">{stat.value}</div>
+              <div className="text-xs number-mono text-slate-900 dark:text-white font-semibold">{stat.value}</div>
             </div>
           ))}
 
@@ -181,7 +181,7 @@ export default function MarketsView() {
                 className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${
                   timeframe === tf
                     ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/30'
-                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]'
+                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]'
                 }`}
               >
                 {tf}
@@ -210,7 +210,7 @@ export default function MarketsView() {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                   activeBottomTab === tab.id
                     ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20'
-                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
+                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
                 }`}
               >
                 {tab.label}
@@ -236,10 +236,10 @@ export default function MarketsView() {
                     const isGain = pos.unrealizedPnl >= 0;
                     return (
                       <tr key={pos.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30 transition-colors">
-                        <td className="py-2.5 font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{pos.symbol}</td>
+                        <td className="py-2.5 font-bold text-slate-900 dark:text-white">{pos.symbol}</td>
                         <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${pos.side === 'LONG' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{pos.side}</span></td>
                         <td className="number-mono text-slate-700 dark:text-slate-200">{pos.leverage}x</td>
-                        <td className="number-mono text-slate-900 dark:text-white dark:text-[#0c0c10]">{pos.size}</td>
+                        <td className="number-mono text-slate-900 dark:text-white">{pos.size}</td>
                         <td className="number-mono text-slate-700 dark:text-slate-200">${pos.entryPrice.toLocaleString()}</td>
                         <td className="number-mono text-slate-700 dark:text-slate-200">${pos.markPrice.toLocaleString()}</td>
                         <td className="number-mono text-amber-500">${pos.liqPrice.toLocaleString()}</td>
@@ -271,14 +271,14 @@ export default function MarketsView() {
                 <tbody className="divide-y divide-[#13131a]">
                   {openOrders.map(order => (
                     <tr key={order.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30 transition-colors">
-                      <td className="py-2.5 font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{order.symbol}</td>
+                      <td className="py-2.5 font-bold text-slate-900 dark:text-white">{order.symbol}</td>
                       <td><span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${order.side === 'BUY' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'}`}>{order.side === 'BUY' ? 'LONG' : 'SHORT'}</span></td>
                       <td className="text-slate-700 dark:text-slate-200">{order.type}</td>
                       <td className="number-mono text-slate-700 dark:text-slate-200">${order.price.toLocaleString()}</td>
-                      <td className="number-mono text-slate-900 dark:text-white dark:text-[#0c0c10]">{order.amount}</td>
+                      <td className="number-mono text-slate-900 dark:text-white">{order.amount}</td>
                       <td className="number-mono text-slate-700 dark:text-slate-200">{order.leverage}x</td>
                       <td className="text-right">
-                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] bg-slate-100 dark:bg-[#1f1f2e] border border-[#1e1e2c] rounded transition-all">Cancel</button>
+                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white bg-slate-100 dark:bg-[#1f1f2e] border border-[#1e1e2c] rounded transition-all">Cancel</button>
                       </td>
                     </tr>
                   ))}
@@ -301,7 +301,7 @@ export default function MarketsView() {
                   {history.filter(h => h.side !== 'DEPOSIT' && h.side !== 'WITHDRAW').slice(0, 8).map(h => (
                     <tr key={h.id}>
                       <td className="py-2.5 text-slate-400 dark:text-slate-500 number-mono text-[10px]">{h.time}</td>
-                      <td className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{h.pair}</td>
+                      <td className="font-bold text-slate-900 dark:text-white">{h.pair}</td>
                       <td><span className={`text-[9px] font-bold ${h.side === 'LONG' || h.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>{h.side}</span></td>
                       <td className="text-slate-700 dark:text-slate-200">{h.type}</td>
                       <td className="number-mono text-slate-700 dark:text-slate-200">{h.size}</td>
@@ -324,14 +324,14 @@ export default function MarketsView() {
                 <tbody className="divide-y divide-[#13131a]">
                   <tr className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30">
                     <td className="py-2.5 number-mono text-slate-400 dark:text-slate-500 text-[10px]">2026-06-12 08:00</td>
-                    <td className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">BTC-PERP</td>
+                    <td className="font-bold text-slate-900 dark:text-white">BTC-PERP</td>
                     <td className="number-mono text-[#10b981]">0.0100%</td>
                     <td className="number-mono text-[#ef4444]">-$0.25 USDC</td>
                     <td className="text-emerald-500 font-semibold text-[10px]">SETTLED</td>
                   </tr>
                   <tr className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30">
                     <td className="py-2.5 number-mono text-slate-400 dark:text-slate-500 text-[10px]">2026-06-12 04:00</td>
-                    <td className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">ETH-PERP</td>
+                    <td className="font-bold text-slate-900 dark:text-white">ETH-PERP</td>
                     <td className="number-mono text-[#ef4444]">-0.0050%</td>
                     <td className="number-mono text-[#10b981]">+$0.08 USDC</td>
                     <td className="text-emerald-500 font-semibold text-[10px]">SETTLED</td>
@@ -352,7 +352,7 @@ export default function MarketsView() {
               key={t}
               onClick={() => setOrderType(t)}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                orderType === t ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
+                orderType === t ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
               }`}
             >{t}</button>
           ))}
@@ -364,7 +364,7 @@ export default function MarketsView() {
             onClick={() => setTradeSide('LONG')}
             className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
               tradeSide === 'LONG'
-                ? 'bg-[#10b981] text-slate-900 dark:text-white dark:text-[#0c0c10] border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
+                ? 'bg-[#10b981] text-slate-900 dark:text-white border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
                 : 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-[#10b981]'
             }`}
           >Buy / Long</button>
@@ -372,7 +372,7 @@ export default function MarketsView() {
             onClick={() => setTradeSide('SHORT')}
             className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
               tradeSide === 'SHORT'
-                ? 'bg-[#ef4444] text-slate-900 dark:text-white dark:text-[#0c0c10] border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
+                ? 'bg-[#ef4444] text-slate-900 dark:text-white border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
                 : 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-[#ef4444]'
             }`}
           >Sell / Short</button>
@@ -405,7 +405,7 @@ export default function MarketsView() {
             disabled={orderType === 'Market'}
             value={orderType === 'Market' ? activePair.lastPrice : inputPrice}
             onChange={e => setInputPrice(e.target.value)}
-            className={`w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border rounded-lg text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-colors ${
+            className={`w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border rounded-lg text-xs number-mono text-slate-900 dark:text-white outline-none transition-colors ${
               orderType === 'Market' ? 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] cursor-not-allowed' : 'border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50'
             }`}
           />
@@ -422,7 +422,7 @@ export default function MarketsView() {
               type="text"
               value={inputAmount}
               onChange={e => setInputAmount(e.target.value)}
-              className="w-full pl-3 pr-14 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-colors"
+              className="w-full pl-3 pr-14 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 dark:text-white outline-none transition-colors"
             />
             <button
               onClick={() => {
@@ -431,7 +431,7 @@ export default function MarketsView() {
                 const maxSize = maxPositionUSD / parsedPrice;
                 setInputAmount(maxSize.toFixed(4));
               }}
-              className="absolute right-2 px-2 py-0.5 bg-white dark:bg-[#13131a]/5 hover:bg-white dark:bg-[#13131a]/10 border border-white/10 text-[9px] font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] rounded transition-colors cursor-pointer"
+              className="absolute right-2 px-2 py-0.5 bg-white dark:bg-[#13131a]/5 hover:bg-white dark:bg-[#13131a]/10 border border-white/10 text-[9px] font-bold text-slate-900 dark:text-white rounded transition-colors cursor-pointer"
             >
               MAX
             </button>
@@ -462,7 +462,7 @@ export default function MarketsView() {
                 className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${
                   leverage === levVal
                     ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/40 shadow-sm'
-                    : 'bg-slate-50 dark:bg-[#0c0c10] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] hover:border-slate-200 dark:border-[#1f1f2e]'
+                    : 'bg-slate-50 dark:bg-[#0c0c10] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] hover:text-slate-900 dark:text-white hover:border-slate-200 dark:border-[#1f1f2e]'
                 }`}
               >
                 {levVal}x
@@ -490,7 +490,7 @@ export default function MarketsView() {
         {/* Available */}
         <div className="flex justify-between items-center text-[10px] bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] px-3 py-2 rounded-lg mb-3">
           <span className="text-slate-400 dark:text-slate-500">Available Margin:</span>
-          <span className="number-mono font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+          <span className="number-mono font-bold text-slate-900 dark:text-white">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
         </div>
 
         {/* Action */}
@@ -498,7 +498,7 @@ export default function MarketsView() {
           <button
             onClick={handlePlaceOrder}
             disabled={parsedAmount <= 0}
-            className={`w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wider transition-all ${
+            className={`w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider transition-all ${
               parsedAmount <= 0
                 ? 'bg-sky-100 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] cursor-not-allowed'
                 : tradeSide === 'LONG'
@@ -511,7 +511,7 @@ export default function MarketsView() {
         ) : (
           <button
             onClick={() => connectWallet('MetaMask')}
-            className="w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
+            className="w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
           >
             Connect Wallet
           </button>

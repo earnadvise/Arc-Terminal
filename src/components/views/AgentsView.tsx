@@ -316,7 +316,7 @@ export default function AgentsView() {
       const boldPattern = /\*\*(.*?)\*\*/g;
       if (boldPattern.test(line)) {
         const parts = line.split(boldPattern);
-        elements = parts.map((part, idx) => (idx % 2 === 1 ? <strong key={idx} className="font-extrabold text-slate-900 dark:text-white dark:text-[#0c0c10]">{part}</strong> : part));
+        elements = parts.map((part, idx) => (idx % 2 === 1 ? <strong key={idx} className="font-extrabold text-slate-900 dark:text-white">{part}</strong> : part));
       }
       
       return <p key={i} className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">{elements}</p>;
@@ -336,7 +336,7 @@ export default function AgentsView() {
             </div>
             <span className="text-[10px] text-[#01C38E] font-extrabold uppercase tracking-wider">Arc AI active</span>
           </div>
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-tight flex items-center gap-2">
+          <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <Sparkles className="text-[#01C38E]" size={22} />
             Arc AI Terminal
           </h1>
@@ -366,8 +366,8 @@ export default function AgentsView() {
 
                 <div className={`p-3.5 rounded-2xl border ${
                   msg.role === 'user'
-                    ? 'bg-[#0A786A]/10 border-[#0A786A]/20 text-slate-900 dark:text-white dark:text-[#0c0c10] rounded-tr-none'
-                    : 'bg-white dark:bg-[#13131a]/70 border-slate-200 dark:border-[#1f1f2e]/50 text-slate-900 dark:text-white dark:text-[#0c0c10] rounded-tl-none border-l-4 border-l-[#01C38E]'
+                    ? 'bg-[#0A786A]/10 border-[#0A786A]/20 text-slate-900 dark:text-white rounded-tr-none'
+                    : 'bg-white dark:bg-[#13131a]/70 border-slate-200 dark:border-[#1f1f2e]/50 text-slate-900 dark:text-white rounded-tl-none border-l-4 border-l-[#01C38E]'
                 }`}>
                   <div className="space-y-1">{formatText(msg.content)}</div>
 
@@ -385,7 +385,7 @@ export default function AgentsView() {
                       <div className="flex items-center gap-3">
                         <div className="flex-1 bg-slate-50 dark:bg-[#0c0c10] rounded-lg p-2.5 border border-slate-200 dark:border-[#1f1f2e]/40 text-center">
                           <span className="text-[9px] text-slate-500 dark:text-[#8a8a9e] block uppercase font-bold">Sell</span>
-                          <span className="text-xs font-mono text-slate-900 dark:text-white dark:text-[#0c0c10] font-bold">{chatSwapAmount} {chatSwapFromToken}</span>
+                          <span className="text-xs font-mono text-slate-900 dark:text-white font-bold">{chatSwapAmount} {chatSwapFromToken}</span>
                         </div>
                         
                         <ArrowRight size={14} className="text-slate-500 dark:text-[#8a8a9e]" />
@@ -402,7 +402,7 @@ export default function AgentsView() {
                           disabled={!walletConnected}
                           className={`w-full py-2 px-3 rounded-md text-xs font-semibold flex items-center justify-center gap-1.5 transition-all duration-200 ${
                             walletConnected
-                              ? 'bg-gradient-to-r from-[#0A786A] to-[#01C38E] text-slate-900 dark:text-white dark:text-[#0c0c10] hover:brightness-110 shadow-md shadow-[#01c38e]/10 cursor-pointer'
+                              ? 'bg-gradient-to-r from-[#0A786A] to-[#01C38E] text-slate-900 dark:text-white hover:brightness-110 shadow-md shadow-[#01c38e]/10 cursor-pointer'
                               : 'bg-slate-200 text-slate-500 dark:text-[#8a8a9e] cursor-not-allowed border border-slate-300 dark:border-slate-700'
                           }`}
                         >
@@ -413,7 +413,7 @@ export default function AgentsView() {
                         <div className="p-3 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e]/60 rounded-lg space-y-2 text-xs text-slate-600 dark:text-slate-300">
                           <div className="flex items-center gap-2">
                             <RefreshCw size={12} className="animate-spin text-[#01C38E]" />
-                            <span className="capitalize font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">
+                            <span className="capitalize font-bold text-slate-900 dark:text-white">
                               {chatSwapStatus === 'checking' ? 'Checking allowance' : 
                                chatSwapStatus === 'approving' ? 'Approving token' : 
                                chatSwapStatus === 'waitApproval' ? 'Waiting for approval' : 
@@ -442,7 +442,7 @@ export default function AgentsView() {
             {/* Typing Indicator */}
             {isTyping && (
               <div className="flex gap-3 max-w-[85%]">
-                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-tr from-[#0A786A] to-[#01C38E] border border-[#01C38E]/20 text-slate-900 dark:text-white dark:text-[#0c0c10] shrink-0">
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-gradient-to-tr from-[#0A786A] to-[#01C38E] border border-[#01C38E]/20 text-slate-900 dark:text-white shrink-0">
                   <Bot size={16} />
                 </div>
                 <div className="p-3 rounded-2xl bg-white dark:bg-[#13131a]/70 border border-slate-200 dark:border-[#1f1f2e]/50 text-slate-500 dark:text-[#8a8a9e] rounded-tl-none flex items-center gap-1.5">
@@ -466,11 +466,11 @@ export default function AgentsView() {
               placeholder="Ask balances, positions, or execute swap (/swap 10 USDC to EURC)..."
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              className="flex-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#01C38E] focus:outline-none rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white dark:text-[#0c0c10] placeholder-slate-500 transition-colors"
+              className="flex-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#01C38E] focus:outline-none rounded-xl px-4 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-500 transition-colors"
             />
             <button
               type="submit"
-              className="px-4 py-2.5 bg-gradient-to-r from-[#0A786A] to-[#01C38E] text-slate-900 dark:text-white dark:text-[#0c0c10] hover:brightness-115 rounded-xl transition-all duration-200 flex items-center justify-center shrink-0 shadow-lg shadow-[#01c38e]/10 cursor-pointer"
+              className="px-4 py-2.5 bg-gradient-to-r from-[#0A786A] to-[#01C38E] text-slate-900 dark:text-white hover:brightness-115 rounded-xl transition-all duration-200 flex items-center justify-center shrink-0 shadow-lg shadow-[#01c38e]/10 cursor-pointer"
             >
               <Send size={14} />
             </button>
@@ -481,7 +481,7 @@ export default function AgentsView() {
         <div className="lg:col-span-5 flex flex-col gap-6 h-[550px]">
           {/* Terminal Connection Card */}
           <div className="bg-sky-50/40 border border-slate-200 dark:border-[#1f1f2e]/60 rounded-xl p-5 backdrop-blur-md">
-            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white dark:text-[#0c0c10] pb-3 border-b border-slate-200 dark:border-[#1f1f2e]/40 mb-4">
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white pb-3 border-b border-slate-200 dark:border-[#1f1f2e]/40 mb-4">
               <Wallet size={16} className="text-emerald-400" />
               <h3>Terminal Connection</h3>
             </div>

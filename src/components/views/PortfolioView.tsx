@@ -81,7 +81,7 @@ export default function PortfolioView() {
               <span className={`text-lg lg:text-xl font-black tracking-wide number-mono ${
                 card.isPnl 
                   ? card.pnlVal >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'
-                  : 'text-slate-900 dark:text-white dark:text-[#0c0c10]'
+                  : 'text-slate-900 dark:text-white'
               }`}>
                 {card.value}
               </span>
@@ -98,7 +98,7 @@ export default function PortfolioView() {
         {/* Asset Allocation Breakdown */}
         <div className="xl:col-span-2 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-5 shadow-xl flex flex-col justify-between h-[300px]">
           <div className="flex items-center justify-between border-b border-slate-200 dark:border-[#1f1f2e] pb-3 mb-4">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wide flex items-center gap-2">
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
               <Coins size={14} className="text-[#8b5cf6]" />
               Portfolio Asset Allocation
             </h3>
@@ -114,7 +114,7 @@ export default function PortfolioView() {
                 return (
                   <div key={asset.symbol} className="space-y-1">
                     <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-slate-900 dark:text-white dark:text-[#0c0c10] flex items-center gap-2">
+                      <span className="text-slate-900 dark:text-white flex items-center gap-2">
                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: asset.color }} />
                         {asset.name} ({asset.symbol})
                       </span>
@@ -139,7 +139,7 @@ export default function PortfolioView() {
         <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-5 shadow-xl flex flex-col justify-between h-[300px]">
           <div>
             <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1f1f2e] pb-3 mb-4">
-              <h3 className="text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wide flex items-center gap-2">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
                 <ShieldAlert size={14} className="text-[#8b5cf6]" />
                 Margin Health & Usage
               </h3>
@@ -173,11 +173,11 @@ export default function PortfolioView() {
             <div className="space-y-3 text-xs">
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-[#8a8a9e]">Total Collateral Value</span>
-                <span className="number-mono text-slate-900 dark:text-white dark:text-[#0c0c10]">${collateralValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="number-mono text-slate-900 dark:text-white">${collateralValue.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-[#8a8a9e]">Active Margin Locked</span>
-                <span className="number-mono text-slate-900 dark:text-white dark:text-[#0c0c10]">${totalMarginLocked.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                <span className="number-mono text-slate-900 dark:text-white">${totalMarginLocked.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500 dark:text-[#8a8a9e]">Unrealized PnL Buffer</span>
@@ -198,18 +198,18 @@ export default function PortfolioView() {
         <div className="xl:col-span-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-5 shadow-xl">
           <div className="flex items-center gap-2 mb-4 border-b border-slate-200 dark:border-[#1f1f2e] pb-3">
             <Wallet size={16} className="text-[#8b5cf6]" />
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wide">Wallet Balances</h3>
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide">Wallet Balances</h3>
           </div>
 
           <div className="space-y-3">
             {assetDetails.map(asset => (
               <div key={asset.symbol} className="p-3 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e]/60 rounded-xl flex items-center justify-between">
                 <div>
-                  <span className="text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] block">{asset.symbol}</span>
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block">{asset.symbol}</span>
                   <span className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{asset.name}</span>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] block number-mono">
+                  <span className="text-xs font-bold text-slate-900 dark:text-white block number-mono">
                     {asset.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })}
                   </span>
                   <span className="text-[10px] text-slate-500 dark:text-[#8a8a9e] number-mono block">
@@ -224,7 +224,7 @@ export default function PortfolioView() {
         {/* ACTIVE POSITIONS TABLE */}
         <div className="xl:col-span-2 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-5 shadow-xl">
           <div className="flex items-center justify-between mb-4 border-b border-slate-200 dark:border-[#1f1f2e] pb-3">
-            <h3 className="text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wide flex items-center gap-2">
+            <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide flex items-center gap-2">
               <Activity size={14} className="text-[#8b5cf6]" />
               Active Positions
             </h3>
@@ -249,7 +249,7 @@ export default function PortfolioView() {
                 const isGainer = pos.unrealizedPnl >= 0;
                 return (
                   <tr key={pos.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30">
-                    <td className="py-3 font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{pos.symbol}</td>
+                    <td className="py-3 font-bold text-slate-900 dark:text-white">{pos.symbol}</td>
                     <td>
                       <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
                         pos.side === 'LONG' ? 'bg-[#10b981]/15 text-[#10b981]' : 'bg-[#ef4444]/15 text-[#ef4444]'

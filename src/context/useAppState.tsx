@@ -521,7 +521,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 let newPos = [...prevPos];
                 executedOrders.forEach(order => {
                   if (order.isTpSlTrigger) {
-                    newPos = newPos.filter(p => p.symbol !== order.symbol);
+                    // newPos = newPos.filter(p => p.symbol !== order.symbol); // Disabled silent delete
                   } else {
                     const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
                     const markPrice = currentMarket ? currentMarket.lastPrice : order.price;

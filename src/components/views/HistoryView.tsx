@@ -81,7 +81,7 @@ export default function HistoryView() {
 
         {/* Title & Subtitle */}
         <div>
-          <h1 className="text-3xl font-black text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-tight bg-gradient-to-r from-slate-900 via-slate-700 to-[#10b981] bg-clip-text text-transparent">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight bg-gradient-to-r from-slate-900 via-slate-700 to-[#10b981] bg-clip-text text-transparent">
             Transaction History
           </h1>
           <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-1">
@@ -94,7 +94,7 @@ export default function HistoryView() {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#13131a] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] dark:bg-[#0c0c10] border border-slate-300 dark:border-slate-700 hover:border-[#10b981]/40 text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] transition-all cursor-pointer shadow-md disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#13131a] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] dark:bg-[#0c0c10] border border-slate-300 dark:border-slate-700 hover:border-[#10b981]/40 text-xs font-bold text-slate-900 dark:text-white transition-all cursor-pointer shadow-md disabled:opacity-50"
           >
             <RefreshCw size={13} className={`text-[#10b981] ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -133,7 +133,7 @@ export default function HistoryView() {
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                 activeTab === tab
                   ? 'bg-[#10b981] text-black shadow-lg font-black'
-                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
+                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
               }`}
             >
               {tab}
@@ -187,7 +187,7 @@ export default function HistoryView() {
                     </td>
 
                     {/* Details */}
-                    <td className="px-4 font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] text-xs">
+                    <td className="px-4 font-bold text-slate-900 dark:text-white text-xs">
                       {item.details || `${item.size} ${item.pair}`}
                     </td>
 

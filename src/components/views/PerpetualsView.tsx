@@ -110,7 +110,7 @@ export default function PerpetualsView() {
       {/* ── COL 1: MARKETS SIDEBAR ─────────────────────────────────── */}
       <section className="xl:col-span-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 flex flex-col gap-3 shadow-xl" style={{ maxHeight: 820, minHeight: 680 }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wide">Perpetual Markets</h2>
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">Perpetual Markets</h2>
           <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-[#8a8a9e]">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Live
@@ -124,7 +124,7 @@ export default function PerpetualsView() {
             placeholder="Search perpetuals..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs text-slate-900 dark:text-white dark:text-[#0c0c10] placeholder-[#6e6e7f] outline-none transition-colors"
+            className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs text-slate-900 dark:text-white placeholder-[#6e6e7f] outline-none transition-colors"
           />
         </div>
 
@@ -136,7 +136,7 @@ export default function PerpetualsView() {
               className={`flex-1 py-1 text-[9px] font-bold rounded-md transition-colors ${
                 categoryFilter === cat
                   ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/25'
-                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
+                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
               }`}
             >
               {cat}
@@ -164,7 +164,7 @@ export default function PerpetualsView() {
                 }`}
               >
                 <div className="col-span-2">
-                  <div className="text-[11px] font-semibold text-slate-900 dark:text-white dark:text-[#0c0c10]">{m.symbol}</div>
+                  <div className="text-[11px] font-semibold text-slate-900 dark:text-white">{m.symbol}</div>
                   <div className="text-[9px] text-slate-400 dark:text-slate-500">{m.name}</div>
                 </div>
                 <div className="text-right text-[10px] number-mono text-slate-800 dark:text-slate-100">
@@ -188,7 +188,7 @@ export default function PerpetualsView() {
         {/* Pair Header Row */}
         <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl px-4 py-3 flex items-center gap-6 overflow-x-auto shadow-xl">
           <div>
-            <div className="text-base font-black text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-wide">{activePair.symbol}</div>
+            <div className="text-base font-black text-slate-900 dark:text-white tracking-wide">{activePair.symbol}</div>
             <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{activePair.name}</div>
           </div>
           <div className="h-8 w-px bg-slate-100 dark:bg-[#1f1f2e]" />
@@ -208,7 +208,7 @@ export default function PerpetualsView() {
           ].map(stat => (
             <div key={stat.label} className="shrink-0">
               <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{stat.label}</div>
-              <div className="text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] font-semibold">{stat.value}</div>
+              <div className="text-xs number-mono text-slate-900 dark:text-white font-semibold">{stat.value}</div>
             </div>
           ))}
 
@@ -221,7 +221,7 @@ export default function PerpetualsView() {
                 className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${
                   timeframe === tf
                     ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/30'
-                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]'
+                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]'
                 }`}
               >
                 {tf}
@@ -249,7 +249,7 @@ export default function PerpetualsView() {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                   activeBottomTab === tab.id
                     ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20'
-                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
+                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
                 }`}
               >
                 {tab.label}
@@ -276,12 +276,12 @@ export default function PerpetualsView() {
                     return (
                       <tr key={pos.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30 transition-colors">
                         <td className="py-2.5">
-                          <div className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{pos.symbol}</div>
+                          <div className="font-bold text-slate-900 dark:text-white">{pos.symbol}</div>
                           <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                             {pos.side} {Number(pos.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
                           </div>
                         </td>
-                        <td className="number-mono text-slate-900 dark:text-white dark:text-[#0c0c10]">{pos.size}</td>
+                        <td className="number-mono text-slate-900 dark:text-white">{pos.size}</td>
                         <td className="number-mono text-slate-700 dark:text-slate-200">${pos.entryPrice.toLocaleString()}</td>
                         <td className="number-mono text-slate-700 dark:text-slate-200">${pos.markPrice.toLocaleString()}</td>
                         <td className="number-mono text-amber-500">${pos.liqPrice.toLocaleString()}</td>
@@ -331,7 +331,7 @@ export default function PerpetualsView() {
                   {openOrders.map(order => (
                     <tr key={order.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30 transition-colors">
                       <td className="py-2.5">
-                        <div className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{order.symbol}</div>
+                        <div className="font-bold text-slate-900 dark:text-white">{order.symbol}</div>
                         <div className={`text-[9px] font-bold ${order.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                           {order.side === 'BUY' ? 'LONG' : 'SHORT'} {Number(order.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
                         </div>
@@ -347,7 +347,7 @@ export default function PerpetualsView() {
                           <span>${order.price.toLocaleString()}</span>
                         )}
                       </td>
-                      <td className="number-mono text-slate-900 dark:text-white dark:text-[#0c0c10]">{order.amount}</td>
+                      <td className="number-mono text-slate-900 dark:text-white">{order.amount}</td>
                       <td className="text-right flex items-center justify-end gap-1.5 py-1.5 pr-2">
                         {order.type === 'TPSL' && (
                           <button onClick={() => {
@@ -361,7 +361,7 @@ export default function PerpetualsView() {
                             Edit
                           </button>
                         )}
-                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] bg-slate-100 dark:bg-[#1f1f2e] border border-[#1e1e2c] rounded transition-all">Cancel</button>
+                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white bg-slate-100 dark:bg-[#1f1f2e] border border-[#1e1e2c] rounded transition-all">Cancel</button>
                       </td>
                     </tr>
                   ))}
@@ -385,7 +385,7 @@ export default function PerpetualsView() {
                     <tr key={h.id}>
                       <td className="py-2.5 text-slate-400 dark:text-slate-500 number-mono text-[10px]">{h.time}</td>
                       <td>
-                        <div className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{h.pair}</div>
+                        <div className="font-bold text-slate-900 dark:text-white">{h.pair}</div>
                         <div className={`text-[9px] font-bold ${h.side === 'LONG' || h.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                           {h.side}
                         </div>
@@ -416,7 +416,7 @@ export default function PerpetualsView() {
               key={t}
               onClick={() => setOrderType(t)}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                orderType === t ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
+                orderType === t ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
               }`}
             >{t}</button>
           ))}
@@ -428,7 +428,7 @@ export default function PerpetualsView() {
             onClick={() => setTradeSide('LONG')}
             className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
               tradeSide === 'LONG'
-                ? 'bg-[#10b981] text-slate-900 dark:text-white dark:text-[#0c0c10] border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
+                ? 'bg-[#10b981] text-slate-900 dark:text-white border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
                 : 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-[#10b981]'
             }`}
           >Buy / Long</button>
@@ -436,7 +436,7 @@ export default function PerpetualsView() {
             onClick={() => setTradeSide('SHORT')}
             className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
               tradeSide === 'SHORT'
-                ? 'bg-[#ef4444] text-slate-900 dark:text-white dark:text-[#0c0c10] border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
+                ? 'bg-[#ef4444] text-slate-900 dark:text-white border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
                 : 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-[#ef4444]'
             }`}
           >Sell / Short</button>
@@ -469,7 +469,7 @@ export default function PerpetualsView() {
             disabled={orderType === 'Market'}
             value={orderType === 'Market' ? activePair.lastPrice : inputPrice}
             onChange={e => setInputPrice(e.target.value)}
-            className={`w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border rounded-lg text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-colors ${
+            className={`w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border rounded-lg text-xs number-mono text-slate-900 dark:text-white outline-none transition-colors ${
               orderType === 'Market' ? 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] cursor-not-allowed' : 'border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50'
             }`}
           />
@@ -486,7 +486,7 @@ export default function PerpetualsView() {
               type="text"
               value={inputAmount}
               onChange={e => setInputAmount(e.target.value)}
-              className="w-full pl-3 pr-14 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-colors"
+              className="w-full pl-3 pr-14 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 dark:text-white outline-none transition-colors"
             />
             <button
               onClick={() => {
@@ -495,7 +495,7 @@ export default function PerpetualsView() {
                 const maxSize = maxPositionUSD / parsedPrice;
                 setInputAmount(maxSize > 0 ? maxSize.toFixed(4) : '0');
               }}
-              className="absolute right-2 px-2 py-0.5 bg-white dark:bg-[#13131a]/5 hover:bg-white dark:bg-[#13131a]/10 border border-white/10 text-[9px] font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] rounded transition-colors cursor-pointer"
+              className="absolute right-2 px-2 py-0.5 bg-white dark:bg-[#13131a]/5 hover:bg-white dark:bg-[#13131a]/10 border border-white/10 text-[9px] font-bold text-slate-900 dark:text-white rounded transition-colors cursor-pointer"
             >
               MAX
             </button>
@@ -528,7 +528,7 @@ export default function PerpetualsView() {
                 className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${
                   leverage === levVal
                     ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/40 shadow-sm'
-                    : 'bg-slate-50 dark:bg-[#0c0c10] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] hover:border-slate-200 dark:border-[#1f1f2e]'
+                    : 'bg-slate-50 dark:bg-[#0c0c10] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] hover:text-slate-900 dark:text-white hover:border-slate-200 dark:border-[#1f1f2e]'
                 }`}
               >
                 {levVal}x
@@ -557,7 +557,7 @@ export default function PerpetualsView() {
         <div className="flex flex-col gap-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] px-3 py-2 rounded-lg mb-3">
           <div className="flex justify-between items-center text-[10px]">
             <span className="text-slate-400 dark:text-slate-500">Vault Margin:</span>
-            <span className="number-mono font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+            <span className="number-mono font-bold text-slate-900 dark:text-white">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
           </div>
           <div className="flex gap-2">
             <button onClick={() => {
@@ -576,7 +576,7 @@ export default function PerpetualsView() {
           <button
             onClick={handlePlaceOrder}
             disabled={parsedAmount <= 0}
-            className={`w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wider transition-all ${
+            className={`w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider transition-all ${
               parsedAmount <= 0
                 ? 'bg-sky-100 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] cursor-not-allowed'
                 : tradeSide === 'LONG'
@@ -589,7 +589,7 @@ export default function PerpetualsView() {
         ) : (
           <button
             onClick={() => connectWallet('MetaMask')}
-            className="w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
+            className="w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
           >
             Connect Wallet
           </button>
@@ -682,7 +682,7 @@ export default function PerpetualsView() {
                     placeholder="0.00"
                     value={tpPrice}
                     onChange={e => setTpPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-all"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white outline-none transition-all"
                   />
                   {estimatedTPPnl !== null && (
                     <div className={`mt-1.5 text-[10px] font-bold ${estimatedTPPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
@@ -697,7 +697,7 @@ export default function PerpetualsView() {
                     placeholder="0.00"
                     value={slPrice}
                     onChange={e => setSlPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#ef4444]/50 focus:ring-2 focus:ring-[#ef4444]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-all"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#ef4444]/50 focus:ring-2 focus:ring-[#ef4444]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white outline-none transition-all"
                   />
                   {estimatedSLPnl !== null && (
                     <div className={`mt-1.5 text-[10px] font-bold ${estimatedSLPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
@@ -748,7 +748,7 @@ export default function PerpetualsView() {
                       type="text"
                       value={closeSizeInput}
                       onChange={e => setCloseSizeInput(e.target.value)}
-                      className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 focus:ring-2 focus:ring-[#8b5cf6]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-all"
+                      className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 focus:ring-2 focus:ring-[#8b5cf6]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white outline-none transition-all"
                     />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">{closingPosition.symbol.split('-')[0]}</span>
@@ -760,7 +760,7 @@ export default function PerpetualsView() {
                     <button
                       key={fraction}
                       onClick={() => setCloseSizeInput((closingPosition.size * fraction).toFixed(4))}
-                      className="flex-1 py-1.5 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] bg-slate-100 dark:bg-[#1f1f2e] hover:bg-slate-200 rounded-md transition-colors"
+                      className="flex-1 py-1.5 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white bg-slate-100 dark:bg-[#1f1f2e] hover:bg-slate-200 rounded-md transition-colors"
                     >
                       {fraction * 100}%
                     </button>
