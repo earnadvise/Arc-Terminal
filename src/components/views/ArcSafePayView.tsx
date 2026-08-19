@@ -25,8 +25,60 @@ export default function ArcSafePayView() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'IDLE' | 'APPROVING' | 'CREATING'>('IDLE');
   
+
   // Start with an empty array. (Mock data removed so it doesn't show 2 transactions)
   const [payments, setPayments] = useState<Payment[]>([]);
+
+  React.useEffect(() => {
+    async function fetchPayments() {
+      if (!walletConnected || !(window as any).ethereum) return;
+      try {
+        const provider = new ethers.BrowserProvider((window as any).ethereum);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        const arcPayContract = new ethers.Contract(
+          ARC_PAY_ADDRESS,
+          [
+            'function payments(uint256) view returns (address sender, address receiver, address token, uint256 amount, bool isActive)',
+            'event PaymentCreated(uint256 indexed paymentId, address indexed sender, address indexed receiver, address token, uint256 amount)',
+            'event PaymentCancelled(uint256 indexed paymentId, address indexed sender, uint256 amount)',
+            'event PaymentReleased(uint256 indexed paymentId, address indexed receiver, uint256 amount)'
+          ],
+          provider
+        );
+
+        // Fetch all PaymentCreated events where sender is the connected wallet
+        const filter = arcPayContract.filters.PaymentCreated(null, address);
+        const events = await arcPayContract.queryFilter(filter, 0, 'latest');
+        
+        const fetchedPayments: Payment[] = [];
+        
+        for (let i = events.length - 1; i >= 0; i--) {
+          const event = events[i] as any;
+          const paymentId = event.args[0].toString();
+          
+          // Check current status directly from the contract mapping
+          const paymentData = await arcPayContract.payments(paymentId);
+          
+          fetchedPayments.push({
+            id: paymentId,
+            receiver: paymentData.receiver,
+            amount: ethers.formatUnits(paymentData.amount, 6),
+            isActive: paymentData.isActive,
+            status: paymentData.isActive ? 'LOCKED' : 'RELEASED', // Simplification, could be CANCELLED too
+            date: new Date().toISOString() // Or get block timestamp if needed
+          });
+        }
+        
+        setPayments(fetchedPayments);
+      } catch (err) {
+        console.error("Failed to fetch payments:", err);
+      }
+    }
+    
+    fetchPayments();
+  }, [walletConnected]);
+
 
   const handleMax = () => {
     setAmount(balances.USDC ? balances.USDC.toString() : '0');
