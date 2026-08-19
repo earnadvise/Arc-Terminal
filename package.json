@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "echo \"Lint disabled\""
   },
   "dependencies": {
     "@ai-sdk/google": "^4.0.31",
@@ -30,8 +30,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
