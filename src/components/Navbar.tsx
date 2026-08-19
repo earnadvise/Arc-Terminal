@@ -37,7 +37,7 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-slate-200 bg-sky-50/80 backdrop-blur-md px-6 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-[#1f1f2e] bg-sky-50/80 dark:bg-[#0c0c10]/80 backdrop-blur-md px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-8">
           <div
@@ -49,7 +49,7 @@ export default function Navbar() {
               alt="Arc Terminal Logo" 
               className="w-10 h-10 rounded-lg shadow-md shadow-violet-200 group-hover:scale-105 transition-transform duration-200 object-cover" 
             />
-            <span className="text-lg font-bold tracking-wider bg-gradient-to-r from-slate-900 to-slate-500 bg-clip-text text-transparent group-hover:text-slate-900 transition-colors">
+            <span className="text-lg font-bold tracking-wider bg-gradient-to-r from-slate-900 to-slate-500 bg-clip-text text-transparent group-hover:text-slate-900 dark:hover:text-white dark:text-white transition-colors">
               ARC TERMINAL AI
             </span>
           </div>
@@ -69,7 +69,7 @@ export default function Navbar() {
                     setIsDropdownOpen(false); 
                   }}
                   className={`relative px-4 py-1.5 rounded-md text-sm font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 ${
-                    isActive ? 'text-slate-900' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                    isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/50'
                   }`}
                 >
                   {item.icon}
@@ -91,7 +91,7 @@ export default function Navbar() {
                 type="button"
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMoreOpen(!isMoreOpen); }}
                 className={`relative px-4 py-1.5 rounded-md text-sm font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 ${
-                  moreNavItems.some(item => activeTab === item.id) ? 'text-slate-900' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-100/50'
+                  moreNavItems.some(item => activeTab === item.id) ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/50'
                 }`}
               >
                 More <ChevronDown size={14} className={isMoreOpen ? 'rotate-180 transition-transform' : 'transition-transform'} />
@@ -111,14 +111,14 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 5 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute top-full left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-xl overflow-hidden z-50"
+                    className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-lg shadow-xl overflow-hidden z-50"
                   >
                     <div className="flex flex-col py-1">
                       {moreNavItems.map(item => (
                         <button
                           key={item.id}
                           onClick={(e) => { e.preventDefault(); e.stopPropagation(); setActiveTab(item.id); setIsMoreOpen(false); }}
-                          className={`flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-slate-50 transition-colors ${activeTab === item.id ? 'text-[#8b5cf6] bg-slate-50/50 font-medium' : 'text-slate-700'}`}
+                          className={`flex items-center gap-2 px-4 py-2 text-sm text-left hover:bg-slate-50 dark:bg-[#0c0c10] transition-colors ${activeTab === item.id ? 'text-[#8b5cf6] bg-slate-50/50 dark:bg-[#0c0c10]/50 font-medium' : 'text-slate-700 dark:text-slate-200'}`}
                         >
                           {item.icon} {item.label}
                         </button>
@@ -137,7 +137,7 @@ export default function Navbar() {
           {/* Theme Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-[#8b5cf6]/50 text-slate-500 hover:text-slate-900 transition-all duration-200"
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] hover:border-[#8b5cf6]/50 text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white transition-all duration-200"
           >
             {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
@@ -145,14 +145,14 @@ export default function Navbar() {
           {/* Faucet */}
           <button
             onClick={claimFaucet}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#3b82f6]/15 to-[#8b5cf6]/15 border border-[#8b5cf6]/30 hover:border-[#8b5cf6]/70 text-slate-700 hover:text-slate-900 text-xs font-semibold transition-all duration-250"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#3b82f6]/15 to-[#8b5cf6]/15 border border-[#8b5cf6]/30 hover:border-[#8b5cf6]/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white dark:text-white text-xs font-semibold transition-all duration-250"
           >
             <Coins size={14} className="text-[#8b5cf6]" />
             Faucets
           </button>
 
           {/* Testnet badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-[#8b5cf6]">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] text-xs font-semibold text-[#8b5cf6]">
             <Network size={14} className="animate-pulse" />
             <span className="hidden sm:inline">Arc Testnet</span>
           </div>
@@ -162,13 +162,13 @@ export default function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white border border-slate-200 hover:border-[#3b82f6]/50 text-sm font-medium text-slate-900 transition-all duration-200"
+                className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] hover:border-[#3b82f6]/50 text-sm font-medium text-slate-900 dark:text-white transition-all duration-200"
               >
                 <div className="w-2 h-2 rounded-full bg-emerald-500" />
                 <span className="number-mono text-xs">
                   {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : ''}
                 </span>
-                <ChevronDown size={14} className="text-slate-500" />
+                <ChevronDown size={14} className="text-slate-500 dark:text-[#8a8a9e]" />
               </button>
 
               <AnimatePresence>
@@ -177,14 +177,14 @@ export default function Navbar() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
-                    className="absolute right-0 mt-2 w-56 rounded-xl bg-white border border-slate-200 p-3 shadow-2xl z-50"
+                    className="absolute right-0 mt-2 w-56 rounded-xl bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] p-3 shadow-2xl z-50"
                   >
-                    <div className="text-xs text-slate-500 mb-2 px-1">Margin Balance</div>
-                    <div className="number-mono text-lg font-bold text-slate-900 mb-3 px-1">
+                    <div className="text-xs text-slate-500 dark:text-[#8a8a9e] mb-2 px-1">Margin Balance</div>
+                    <div className="number-mono text-lg font-bold text-slate-900 dark:text-white mb-3 px-1">
                       ${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2 })}{' '}
                       <span className="text-xs text-[#8b5cf6]">USDC</span>
                     </div>
-                    <div className="h-[1px] bg-slate-100 mb-2" />
+                    <div className="h-[1px] bg-slate-100 dark:bg-[#1f1f2e] mb-2" />
                     <button
                       type="button"
                       onClick={(e) => { 
@@ -204,7 +204,7 @@ export default function Navbar() {
           ) : (
             <button
               onClick={() => setIsWalletModalOpen(true)}
-              className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 text-sm font-semibold shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all duration-200"
+              className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 dark:text-white text-sm font-semibold shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all duration-200"
             >
               <Wallet size={16} /> Connect Wallet
             </button>
@@ -227,14 +227,14 @@ export default function Navbar() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="relative w-full max-w-md rounded-2xl bg-white border border-slate-200 p-6 shadow-2xl z-10"
+              className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] p-6 shadow-2xl z-10"
             >
               <div className="flex justify-between items-start mb-6">
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">Connect Wallet</h3>
-                  <p className="text-xs text-slate-500 mt-1">Connect to Arc Testnet to trade</p>
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white">Connect Wallet</h3>
+                  <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-1">Connect to Arc Testnet to trade</p>
                 </div>
-                <button onClick={() => setIsWalletModalOpen(false)} className="text-slate-500 hover:text-slate-900">✕</button>
+                <button onClick={() => setIsWalletModalOpen(false)} className="text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white">✕</button>
               </div>
 
               <div className="grid gap-3">
@@ -242,15 +242,15 @@ export default function Navbar() {
                   <button
                     key={wallet}
                     onClick={async () => { await connectWallet(wallet); setIsWalletModalOpen(false); }}
-                    className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200 hover:border-[#8b5cf6]/50 hover:bg-slate-100/50 transition-all duration-200 text-left group"
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] hover:border-[#8b5cf6]/50 hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/50 transition-all duration-200 text-left group"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-lg bg-sky-100 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <span className="text-xs font-bold text-[#8b5cf6]">{wallet.substring(0, 2)}</span>
                       </div>
-                      <span className="text-sm font-semibold text-slate-900 group-hover:text-[#8b5cf6] transition-colors">{wallet}</span>
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-[#8b5cf6] transition-colors">{wallet}</span>
                     </div>
-                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">Detected</span>
+                    <span className="text-xs text-slate-500 dark:text-[#8a8a9e] bg-slate-100 dark:bg-[#1f1f2e] px-2 py-0.5 rounded-md">Detected</span>
                   </button>
                 ))}
               </div>

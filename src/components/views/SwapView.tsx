@@ -79,33 +79,33 @@ function TokenSelector({
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="relative w-full max-w-[420px] bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+            className="relative w-full max-w-[420px] bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
             style={{ maxHeight: '85vh' }}
           >
             {/* Header */}
-            <div className="flex items-start justify-between p-5 pb-4 border-b border-slate-100">
+            <div className="flex items-start justify-between p-5 pb-4 border-b border-slate-100 dark:border-[#1f1f2e]">
               <div>
-                <h2 className="text-lg font-bold text-slate-900">Select a token</h2>
-                <p className="text-xs text-slate-500 mt-0.5">{TOKENS.length} listed tokens</p>
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">Select a token</h2>
+                <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-0.5">{TOKENS.length} listed tokens</p>
               </div>
               <button 
                 onClick={() => setOpen(false)}
-                className="p-1.5 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+                className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e] text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-200 transition-colors cursor-pointer"
               >
                 <X size={18} />
               </button>
             </div>
 
             {/* Search Bar */}
-            <div className="p-4 bg-slate-50/50">
+            <div className="p-4 bg-slate-50/50 dark:bg-[#0c0c10]/50">
               <div className="relative flex items-center">
-                <Search size={16} className="absolute left-3.5 text-slate-400" />
+                <Search size={16} className="absolute left-3.5 text-slate-400 dark:text-slate-500" />
                 <input 
                   type="text" 
                   placeholder="Search name or paste address..." 
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full bg-white text-slate-900 text-sm pl-10 pr-4 py-3 rounded-xl outline-none border border-slate-200 focus:border-[#3b82f6]/50 focus:ring-2 focus:ring-[#3b82f6]/20 transition-all placeholder:text-slate-400"
+                  className="w-full bg-white dark:bg-[#13131a] text-slate-900 dark:text-white text-sm pl-10 pr-4 py-3 rounded-xl outline-none border border-slate-200 dark:border-[#1f1f2e] focus:border-[#3b82f6]/50 focus:ring-2 focus:ring-[#3b82f6]/20 transition-all placeholder:text-slate-400 dark:text-slate-500"
                   autoFocus
                 />
               </div>
@@ -113,7 +113,7 @@ function TokenSelector({
 
             {/* Token List */}
             <div className="flex-1 overflow-y-auto custom-scrollbar px-2 pb-2 bg-slate-50/30">
-              <div className="px-3 py-2.5 flex items-center gap-1.5 text-[11px] font-bold text-slate-400 tracking-wider uppercase mt-1">
+              <div className="px-3 py-2.5 flex items-center gap-1.5 text-[11px] font-bold text-slate-400 dark:text-slate-500 tracking-wider uppercase mt-1">
                 <BadgeCheck size={14} className="text-[#3b82f6]" />
                 Verified Tokens
               </div>
@@ -130,25 +130,25 @@ function TokenSelector({
                         onChange(t.symbol); 
                         setOpen(false); 
                       }}
-                      className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all text-left ${isSelected ? 'bg-[#3b82f6]/5 cursor-default' : 'hover:bg-slate-100 cursor-pointer'}`}
+                      className={`w-full flex items-center justify-between p-3 rounded-2xl transition-all text-left ${isSelected ? 'bg-[#3b82f6]/5 cursor-default' : 'hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e] cursor-pointer'}`}
                     >
                       <div className="flex items-center gap-3.5">
                         <div className="relative">
                           <span
-                            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-slate-900 shadow-sm"
+                            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-slate-900 dark:text-white shadow-sm"
                             style={{ backgroundColor: t.color }}
                           >
                             {t.symbol[0]}
                           </span>
-                          <div className="absolute -bottom-0.5 -right-0.5 bg-white rounded-full p-0.5 shadow-sm">
+                          <div className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-[#13131a] rounded-full p-0.5 shadow-sm">
                             <div className="w-4 h-4 bg-[#3b82f6] rounded-full flex items-center justify-center">
                               <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                             </div>
                           </div>
                         </div>
                         <div className="flex flex-col items-start">
-                          <span className="text-sm font-bold text-slate-900 leading-tight">{t.symbol}</span>
-                          <span className="text-[11px] font-medium text-slate-500 mt-0.5">{t.name}</span>
+                          <span className="text-sm font-bold text-slate-900 dark:text-white leading-tight">{t.symbol}</span>
+                          <span className="text-[11px] font-medium text-slate-500 dark:text-[#8a8a9e] mt-0.5">{t.name}</span>
                         </div>
                       </div>
                       
@@ -172,7 +172,7 @@ function TokenSelector({
                 })}
                 
                 {filteredTokens.length === 0 && (
-                  <div className="py-12 text-center text-slate-400 text-sm font-medium">
+                  <div className="py-12 text-center text-slate-400 dark:text-slate-500 text-sm font-medium">
                     No tokens found matching "{search}"
                   </div>
                 )}
@@ -188,16 +188,16 @@ function TokenSelector({
     <>
       <button
         onClick={() => { setOpen(true); setSearch(''); }}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-white border border-[#232330]/20 hover:border-[#8b5cf6]/40 transition-all cursor-pointer shadow-sm"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#1f1f2e] hover:bg-white dark:hover:bg-[#13131a] dark:bg-[#13131a] border border-[#232330]/20 dark:border-white/10 hover:border-[#8b5cf6]/40 transition-all cursor-pointer shadow-sm"
       >
         <span
-          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 shadow-sm"
+          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 dark:text-white shadow-sm"
           style={{ backgroundColor: token.color }}
         >
           {token.symbol[0]}
         </span>
-        <span className="text-sm font-bold text-slate-900">{token.symbol.substring(0, 8)}</span>
-        <ChevronDown size={14} className="text-slate-500" />
+        <span className="text-sm font-bold text-slate-900 dark:text-white">{token.symbol.substring(0, 8)}</span>
+        <ChevronDown size={14} className="text-slate-500 dark:text-[#8a8a9e]" />
       </button>
 
       {mounted && typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent}
@@ -378,12 +378,12 @@ export default function SwapView() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-extrabold text-slate-900 tracking-wide">Swap</h1>
-            <p className="text-xs text-slate-500 mt-0.5">Instant token swaps on Arc Testnet</p>
+            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-wide">Swap</h1>
+            <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-0.5">Instant token swaps on Arc Testnet</p>
           </div>
           <button
             onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-xl border transition-all ${showSettings ? 'bg-[#8b5cf6]/15 border-[#8b5cf6]/40 text-[#8b5cf6]' : 'bg-white border-slate-200 text-slate-500 hover:text-slate-900'}`}
+            className={`p-2 rounded-xl border transition-all ${showSettings ? 'bg-[#8b5cf6]/15 border-[#8b5cf6]/40 text-[#8b5cf6]' : 'bg-white dark:bg-[#13131a] border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white'}`}
           >
             <Settings size={16} />
           </button>
@@ -398,17 +398,17 @@ export default function SwapView() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
-                <div className="text-xs font-bold text-slate-900 uppercase tracking-wide">Swap Settings</div>
+              <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-2xl p-4 space-y-3">
+                <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide">Swap Settings</div>
                 <div>
-                  <div className="text-[10px] text-slate-500 mb-2">Max Slippage</div>
+                  <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mb-2">Max Slippage</div>
                   <div className="flex gap-2">
                     {['0.1', '0.5', '1.0'].map(s => (
                       <button
                         key={s}
                         onClick={() => setSlippage(s)}
                         className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-                          slippage === s ? 'bg-[#8b5cf6]/20 border-[#8b5cf6]/50 text-[#8b5cf6]' : 'bg-slate-50 border-slate-200 text-slate-500'
+                          slippage === s ? 'bg-[#8b5cf6]/20 border-[#8b5cf6]/50 text-[#8b5cf6]' : 'bg-slate-50 dark:bg-[#0c0c10] border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e]'
                         }`}
                       >
                         {s}%
@@ -418,9 +418,9 @@ export default function SwapView() {
                       <input
                         value={slippage}
                         onChange={e => setSlippage(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 focus:border-[#8b5cf6]/40 rounded-lg px-3 py-1.5 text-xs text-slate-900 number-mono outline-none text-right pr-6"
+                        className="w-full bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/40 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white number-mono outline-none text-right pr-6"
                       />
-                      <span className="absolute right-2.5 top-1.5 text-xs text-slate-500">%</span>
+                      <span className="absolute right-2.5 top-1.5 text-xs text-slate-500 dark:text-[#8a8a9e]">%</span>
                     </div>
                   </div>
                 </div>
@@ -430,18 +430,18 @@ export default function SwapView() {
         </AnimatePresence>
 
         {/* Swap Box Container */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-2xl space-y-3 relative">
+        <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-2xl p-5 shadow-2xl space-y-3 relative">
 
           {/* Top subtle glow */}
           <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#8b5cf6]/10 rounded-full blur-2xl pointer-events-none" />
 
           {/* YOU PAY PANEL */}
-          <div className="relative z-20 bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 focus-within:border-[#8b5cf6]/40 transition-all">
+          <div className="relative z-20 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 space-y-2 focus-within:border-[#8b5cf6]/40 transition-all">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-500 font-semibold">You Pay</span>
+              <span className="text-slate-500 dark:text-[#8a8a9e] font-semibold">You Pay</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-500">Balance:</span>
-                <span className="text-slate-900 font-bold number-mono">
+                <span className="text-slate-500 dark:text-[#8a8a9e]">Balance:</span>
+                <span className="text-slate-900 dark:text-white font-bold number-mono">
                   {fromBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })} {fromToken}
                 </span>
                 {fromBalance > 0 && (
@@ -461,7 +461,7 @@ export default function SwapView() {
                 placeholder="0.0"
                 value={fromAmount}
                 onChange={e => setFromAmount(e.target.value)}
-                className="w-full bg-transparent text-2xl font-black text-slate-900 number-mono outline-none placeholder-[#3a3a4a]"
+                className="w-full bg-transparent dark:text-white text-2xl font-black text-slate-900 dark:text-white number-mono outline-none placeholder-[#3a3a4a]"
               />
               <TokenSelector
                 value={fromToken}
@@ -471,7 +471,7 @@ export default function SwapView() {
             </div>
 
             {parsed > 0 && (
-              <div className="text-[11px] text-slate-500 number-mono">
+              <div className="text-[11px] text-slate-500 dark:text-[#8a8a9e] number-mono">
                 ≈ ${(parsed * fromPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
               </div>
             )}
@@ -486,26 +486,26 @@ export default function SwapView() {
                 setToToken(prev);
                 setFromAmount('');
               }}
-              className="p-2.5 rounded-xl bg-slate-100 hover:bg-[#1c1c28] border border-[#232330] hover:border-[#8b5cf6]/40 text-[#8b5cf6] hover:text-slate-900 transition-all cursor-pointer shadow-lg hover:rotate-180 duration-300"
+              className="p-2.5 rounded-xl bg-slate-100 dark:bg-[#1f1f2e] hover:bg-[#1c1c28] border border-[#232330] hover:border-[#8b5cf6]/40 text-[#8b5cf6] hover:text-slate-900 dark:hover:text-white dark:text-white transition-all cursor-pointer shadow-lg hover:rotate-180 duration-300"
             >
               <ArrowUpDown size={16} />
             </button>
           </div>
 
           {/* YOU RECEIVE PANEL */}
-          <div className="relative z-10 bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2">
+          <div className="relative z-10 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 space-y-2">
             <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-500 font-semibold">You Receive (Est.)</span>
+              <span className="text-slate-500 dark:text-[#8a8a9e] font-semibold">You Receive (Est.)</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-slate-500">Balance:</span>
-                <span className="text-slate-900 font-bold number-mono">
+                <span className="text-slate-500 dark:text-[#8a8a9e]">Balance:</span>
+                <span className="text-slate-900 dark:text-white font-bold number-mono">
                   {((balances as any)[toToken] ?? 0).toLocaleString(undefined, { maximumFractionDigits: 4 })} {toToken}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center justify-between gap-3">
-              <div className="text-2xl font-black text-slate-900 number-mono opacity-90">
+              <div className="text-2xl font-black text-slate-900 dark:text-white number-mono opacity-90">
                 {received > 0 ? received.toLocaleString(undefined, { maximumFractionDigits: 4 }) : '0.0'}
               </div>
               <TokenSelector
@@ -516,7 +516,7 @@ export default function SwapView() {
             </div>
 
             {received > 0 && (
-              <div className="text-[11px] text-slate-500 number-mono">
+              <div className="text-[11px] text-slate-500 dark:text-[#8a8a9e] number-mono">
                 ≈ ${(received * toPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
               </div>
             )}
@@ -527,25 +527,25 @@ export default function SwapView() {
             <motion.div
               initial={{ opacity: 0, y: -4 }}
               animate={{ opacity: 1, y: 0 }}
-              className="p-3 bg-slate-50/50 border border-slate-200 rounded-xl text-xs space-y-1.5"
+              className="p-3 bg-slate-50/50 dark:bg-[#0c0c10]/50 border border-slate-200 dark:border-[#1f1f2e] rounded-xl text-xs space-y-1.5"
             >
-              <div className="flex justify-between text-slate-500">
+              <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
                 <span>Exchange Rate</span>
-                <span className="text-slate-900 number-mono font-semibold">
+                <span className="text-slate-900 dark:text-white number-mono font-semibold">
                   1 {fromToken} = {(fromPrice / toPrice).toFixed(4)} {toToken}
                 </span>
               </div>
-              <div className="flex justify-between text-slate-500">
+              <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
                 <span>Price Impact</span>
                 <span className="text-[#10b981] font-semibold">&lt; 0.01%</span>
               </div>
-              <div className="flex justify-between text-slate-500">
+              <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
                 <span>Max Slippage</span>
-                <span className="text-slate-900 font-semibold">{slippage}%</span>
+                <span className="text-slate-900 dark:text-white font-semibold">{slippage}%</span>
               </div>
-              <div className="flex justify-between text-slate-500">
+              <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
                 <span>Network Fee</span>
-                <span className="text-slate-900 font-semibold">~0.001 ARC</span>
+                <span className="text-slate-900 dark:text-white font-semibold">~0.001 ARC</span>
               </div>
             </motion.div>
           )}
@@ -557,12 +557,12 @@ export default function SwapView() {
               disabled={isSwapping || parsed <= 0 || parsed > fromBalance}
               className={`w-full py-4 rounded-xl font-bold text-sm transition-all shadow-xl cursor-pointer ${
                 isSwapping
-                  ? 'bg-sky-100 text-slate-500 border border-slate-200 cursor-not-allowed'
+                  ? 'bg-sky-100 text-slate-500 dark:text-[#8a8a9e] border border-slate-200 dark:border-[#1f1f2e] cursor-not-allowed'
                   : parsed > fromBalance
                   ? 'bg-red-500/10 border border-red-500/30 text-[#ef4444] cursor-not-allowed'
                   : parsed <= 0
-                  ? 'bg-slate-100 border border-[#232330] text-slate-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 shadow-[0_0_25px_rgba(139,92,246,0.35)]'
+                  ? 'bg-slate-100 dark:bg-[#1f1f2e] border border-[#232330] text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 dark:text-white shadow-[0_0_25px_rgba(139,92,246,0.35)]'
               }`}
             >
               {isSwapping ? (
@@ -589,7 +589,7 @@ export default function SwapView() {
         </div>
 
         {/* Powered by */}
-        <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400">
+        <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500">
           <Zap size={11} className="text-[#8b5cf6]" />
           Powered by Arc Testnet AMM
         </div>
@@ -610,11 +610,11 @@ export default function SwapView() {
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-md rounded-2xl bg-white border border-[#8b5cf6]/40 p-6 shadow-[0_0_50px_rgba(139,92,246,0.25)] z-10 text-center space-y-4"
+              className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#13131a] border border-[#8b5cf6]/40 p-6 shadow-[0_0_50px_rgba(139,92,246,0.25)] z-10 text-center space-y-4"
             >
               <button
                 onClick={() => setTxModalData(null)}
-                className="absolute top-4 right-4 text-slate-500 hover:text-slate-900 transition-colors"
+                className="absolute top-4 right-4 text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white transition-colors"
               >
                 <X size={18} />
               </button>
@@ -624,14 +624,14 @@ export default function SwapView() {
               </div>
 
               <div>
-                <h3 className="text-lg font-extrabold text-slate-900 tracking-wide">Swap Successful</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Swapped <span className="text-slate-900 font-bold">{txModalData.fromAmt} {txModalData.from}</span> → <span className="text-[#10b981] font-bold">{txModalData.toAmt} {txModalData.to}</span>
+                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-wide">Swap Successful</h3>
+                <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-1">
+                  Swapped <span className="text-slate-900 dark:text-white font-bold">{txModalData.fromAmt} {txModalData.from}</span> → <span className="text-[#10b981] font-bold">{txModalData.toAmt} {txModalData.to}</span>
                 </p>
               </div>
 
-              <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl text-left space-y-1">
-                <div className="text-[10px] text-slate-400 uppercase font-bold">Transaction Hash</div>
+              <div className="bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-3 rounded-xl text-left space-y-1">
+                <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold">Transaction Hash</div>
                 <div className="number-mono text-xs text-[#8b5cf6] break-all select-all font-semibold">
                   {txModalData.hash}
                 </div>
@@ -642,13 +642,13 @@ export default function SwapView() {
                   href={`https://testnet.arcscan.app/tx/${txModalData.hash}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 text-xs font-bold transition-all shadow-[0_0_15px_rgba(139,92,246,0.4)]"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 dark:text-white text-xs font-bold transition-all shadow-[0_0_15px_rgba(139,92,246,0.4)]"
                 >
                   View on Arc Explorer <ExternalLink size={14} />
                 </a>
                 <button
                   onClick={() => setTxModalData(null)}
-                  className="px-4 py-3 rounded-xl bg-slate-100 hover:bg-[#1c1c28] text-xs font-semibold text-slate-500 hover:text-slate-900 transition-colors"
+                  className="px-4 py-3 rounded-xl bg-slate-100 dark:bg-[#1f1f2e] hover:bg-[#1c1c28] text-xs font-semibold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white transition-colors"
                 >
                   Close
                 </button>
