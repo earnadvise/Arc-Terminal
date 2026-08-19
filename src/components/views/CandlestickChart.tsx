@@ -263,24 +263,24 @@ export default function CandlestickChart({ data, symbol, timeframe, setTimeframe
   return (
     <div 
       ref={containerRef} 
-      className={`flex flex-col bg-white border border-slate-200 rounded-xl overflow-hidden p-4 shadow-xl ${
+      className={`flex flex-col bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl overflow-hidden p-4 shadow-xl ${
         isFullscreen ? 'h-screen w-screen p-6' : 'h-[460px] w-full'
       }`}
     >
       {/* Chart Header Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 pb-3 mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-[#1f1f2e] pb-3 mb-3">
         {/* Left Side: Pair & Price details */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-base text-slate-900 tracking-wide">{symbol}</span>
-            <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded uppercase">{timeframe}</span>
+            <span className="font-bold text-base text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-wide">{symbol}</span>
+            <span className="text-xs bg-slate-100 dark:bg-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] px-2 py-0.5 rounded uppercase">{timeframe}</span>
           </div>
 
           {selectedCandle && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 number-mono">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 dark:text-[#8a8a9e] number-mono">
               <span>O: <span className={selectedCandle.close >= selectedCandle.open ? 'text-[#10b981]' : 'text-[#ef4444]'}>${selectedCandle.open.toLocaleString(undefined, { minimumFractionDigits: symbol.startsWith('jpy') ? 6 : 2 })}</span></span>
-              <span>H: <span className="text-slate-900">${selectedCandle.high.toLocaleString(undefined, { minimumFractionDigits: symbol.startsWith('jpy') ? 6 : 2 })}</span></span>
-              <span>L: <span className="text-slate-900">${selectedCandle.low.toLocaleString(undefined, { minimumFractionDigits: symbol.startsWith('jpy') ? 6 : 2 })}</span></span>
+              <span>H: <span className="text-slate-900 dark:text-white dark:text-[#0c0c10]">${selectedCandle.high.toLocaleString(undefined, { minimumFractionDigits: symbol.startsWith('jpy') ? 6 : 2 })}</span></span>
+              <span>L: <span className="text-slate-900 dark:text-white dark:text-[#0c0c10]">${selectedCandle.low.toLocaleString(undefined, { minimumFractionDigits: symbol.startsWith('jpy') ? 6 : 2 })}</span></span>
               <span>C: <span className={selectedCandle.close >= selectedCandle.open ? 'text-[#10b981]' : 'text-[#ef4444]'}>${selectedCandle.close.toLocaleString(undefined, { minimumFractionDigits: symbol.startsWith('jpy') ? 6 : 2 })}</span></span>
               <span>V: <span className="text-[#3b82f6]">{selectedCandle.volume.toLocaleString()}</span></span>
             </div>
@@ -290,7 +290,7 @@ export default function CandlestickChart({ data, symbol, timeframe, setTimeframe
         {/* Right Side: Options selectors */}
         <div className="flex items-center gap-3">
           {/* Timeframes */}
-          <div className="flex items-center bg-slate-50 border border-slate-200 rounded-lg p-0.5">
+          <div className="flex items-center bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] rounded-lg p-0.5">
             {['1m', '5m', '15m', '1h', '4h', '1D'].map(t => (
               <button
                 key={t}
@@ -298,7 +298,7 @@ export default function CandlestickChart({ data, symbol, timeframe, setTimeframe
                 className={`px-2 py-1 text-xs font-semibold rounded-md transition-colors ${
                   timeframe === t 
                     ? 'bg-gradient-to-r from-[#3b82f6]/20 to-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/35' 
-                    : 'text-slate-500 hover:text-slate-900'
+                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
                 }`}
               >
                 {t}
@@ -306,7 +306,7 @@ export default function CandlestickChart({ data, symbol, timeframe, setTimeframe
             ))}
           </div>
 
-          <div className="h-4 w-[1px] bg-slate-100" />
+          <div className="h-4 w-[1px] bg-slate-100 dark:bg-[#1f1f2e]" />
 
           {/* Indicators Button */}
           <button
@@ -314,7 +314,7 @@ export default function CandlestickChart({ data, symbol, timeframe, setTimeframe
             className={`p-1.5 rounded-lg border transition-all ${
               showIndicators 
                 ? 'bg-[#8b5cf6]/10 border-[#8b5cf6]/40 text-[#8b5cf6]' 
-                : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900'
+                : 'bg-slate-50 dark:bg-[#0c0c10] border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
             }`}
             title="SMA Indicator (7 period)"
           >
@@ -323,7 +323,7 @@ export default function CandlestickChart({ data, symbol, timeframe, setTimeframe
 
           {/* Drawing Tools Toggle */}
           <button
-            className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-900 transition-all"
+            className="p-1.5 rounded-lg bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] transition-all"
             title="Drawings / Grid Options"
           >
             <BarChart2 size={14} />
@@ -331,7 +331,7 @@ export default function CandlestickChart({ data, symbol, timeframe, setTimeframe
 
           {/* Settings */}
           <button
-            className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-900 transition-all"
+            className="p-1.5 rounded-lg bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] transition-all"
             title="Chart Settings"
           >
             <Settings size={14} />
@@ -340,7 +340,7 @@ export default function CandlestickChart({ data, symbol, timeframe, setTimeframe
           {/* Fullscreen */}
           <button
             onClick={toggleFullscreen}
-            className="p-1.5 rounded-lg bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-900 transition-all"
+            className="p-1.5 rounded-lg bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] transition-all"
             title="Fullscreen Toggle"
           >
             <Maximize2 size={14} />

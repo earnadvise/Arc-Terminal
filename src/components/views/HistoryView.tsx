@@ -74,17 +74,17 @@ export default function HistoryView() {
       {/* Header Section */}
       <div className="space-y-4">
         {/* Top Badge */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white border border-slate-300 text-xs text-[#10b981] font-semibold">
+        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white dark:bg-[#13131a] border border-slate-300 dark:border-slate-700 text-xs text-[#10b981] font-semibold">
           <History size={13} className="text-[#10b981]" />
           Transaction Explorer
         </div>
 
         {/* Title & Subtitle */}
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight bg-gradient-to-r from-slate-900 via-slate-700 to-[#10b981] bg-clip-text text-transparent">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-tight bg-gradient-to-r from-slate-900 via-slate-700 to-[#10b981] bg-clip-text text-transparent">
             Transaction History
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-1">
             Track all your live swaps, vault, and perpetuals transactions on Arc Testnet
           </p>
         </div>
@@ -94,7 +94,7 @@ export default function HistoryView() {
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 hover:border-[#10b981]/40 text-xs font-bold text-slate-900 transition-all cursor-pointer shadow-md disabled:opacity-50"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white dark:bg-[#13131a] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] dark:bg-[#0c0c10] border border-slate-300 dark:border-slate-700 hover:border-[#10b981]/40 text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] transition-all cursor-pointer shadow-md disabled:opacity-50"
           >
             <RefreshCw size={13} className={`text-[#10b981] ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
@@ -125,7 +125,7 @@ export default function HistoryView() {
         </div>
 
         {/* Category Tabs: All, Swap, Vault, Perpetuals */}
-        <div className="flex bg-slate-50 border border-slate-200 p-1 rounded-xl w-fit text-xs font-bold gap-1 mt-4">
+        <div className="flex bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-1 rounded-xl w-fit text-xs font-bold gap-1 mt-4">
           {(['All', 'Swap', 'Vault', 'Perpetuals'] as const).map(tab => (
             <button
               key={tab}
@@ -133,7 +133,7 @@ export default function HistoryView() {
               className={`px-4 py-2 rounded-lg transition-all cursor-pointer ${
                 activeTab === tab
                   ? 'bg-[#10b981] text-black shadow-lg font-black'
-                  : 'text-slate-500 hover:text-slate-900'
+                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
               }`}
             >
               {tab}
@@ -143,11 +143,11 @@ export default function HistoryView() {
       </div>
 
       {/* Transactions Table Container */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 lg:p-6 shadow-2xl overflow-hidden">
+      <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-2xl p-4 lg:p-6 shadow-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="text-slate-400 border-b border-slate-200 pb-3 font-bold uppercase text-[10px] tracking-wider">
+              <tr className="text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-[#1f1f2e] pb-3 font-bold uppercase text-[10px] tracking-wider">
                 <th className="py-3 px-4">Type</th>
                 <th className="px-4">Details</th>
                 <th className="px-4">Status</th>
@@ -163,7 +163,7 @@ export default function HistoryView() {
                 const isLong = item.side === 'LONG' || item.side === 'BUY';
                 
                 return (
-                  <tr key={item.id} className="hover:bg-slate-100/40 transition-colors">
+                  <tr key={item.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/40 transition-colors">
                     {/* Type Badge */}
                     <td className="py-4 px-4 font-bold">
                       <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[11px] font-bold ${
@@ -187,7 +187,7 @@ export default function HistoryView() {
                     </td>
 
                     {/* Details */}
-                    <td className="px-4 font-bold text-slate-900 text-xs">
+                    <td className="px-4 font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] text-xs">
                       {item.details || `${item.size} ${item.pair}`}
                     </td>
 
@@ -206,12 +206,12 @@ export default function HistoryView() {
                           {item.realizedPnl >= 0 ? '+' : ''}${item.realizedPnl.toFixed(2)}
                         </span>
                       ) : (
-                        <span className="text-slate-400">-</span>
+                        <span className="text-slate-400 dark:text-slate-500">-</span>
                       )}
                     </td>
 
                     {/* Relative Time */}
-                    <td className="px-4 text-slate-500 number-mono text-xs">
+                    <td className="px-4 text-slate-500 dark:text-[#8a8a9e] number-mono text-xs">
                       {formatTime(item.time, item.timestamp)}
                     </td>
 
@@ -237,7 +237,7 @@ export default function HistoryView() {
               {filteredHistory.length === 0 && (
                 <tr>
                   <td colSpan={5} className="text-center py-16">
-                    <div className="flex flex-col items-center justify-center gap-3 text-slate-400">
+                    <div className="flex flex-col items-center justify-center gap-3 text-slate-400 dark:text-slate-500">
                       <History size={32} className="text-[#3e3e4f]" />
                       <p className="text-xs font-semibold">No transaction history recorded yet.</p>
                       <p className="text-[11px] text-[#4e4e5f]">

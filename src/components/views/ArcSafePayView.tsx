@@ -154,31 +154,31 @@ export default function ArcSafePayView() {
             <ShieldCheck className="w-8 h-8 text-[#3b82f6]" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 tracking-tight">SafePay</h1>
-            <p className="text-slate-500 text-sm mt-1">Manual escrow. Lock your funds, and release them only when you are ready.</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-tight">SafePay</h1>
+            <p className="text-slate-500 dark:text-[#8a8a9e] text-sm mt-1">Manual escrow. Lock your funds, and release them only when you are ready.</p>
           </div>
         </div>
 
         {/* Creation Bar */}
-        <div className="bg-white border border-[#1c1c28] rounded-2xl p-6 shadow-lg">
-          <h2 className="text-sm font-semibold text-slate-900 mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-[#13131a] border border-[#1c1c28] rounded-2xl p-6 shadow-lg">
+          <h2 className="text-sm font-semibold text-slate-900 dark:text-white dark:text-[#0c0c10] mb-4 flex items-center gap-2">
             <Lock size={16} className="text-[#3b82f6]"/> New Escrow Payment
           </h2>
           <div className="flex flex-col md:flex-row gap-4 items-end">
             <div className="flex-1 w-full">
-              <label className="block text-xs font-medium text-slate-400 mb-1.5 ml-1">Receiver Address</label>
+              <label className="block text-xs font-medium text-slate-400 dark:text-slate-500 mb-1.5 ml-1">Receiver Address</label>
               <input
                 type="text"
                 placeholder="0x..."
                 value={receiver}
                 onChange={(e) => setReceiver(e.target.value)}
-                className="w-full bg-slate-100 border border-[#1c1c28] rounded-xl px-4 py-3 text-slate-900 placeholder-[#6e6e7f] focus:outline-none focus:border-[#3b82f6] transition-colors number-mono text-sm"
+                className="w-full bg-slate-100 dark:bg-[#1f1f2e] border border-[#1c1c28] rounded-xl px-4 py-3 text-slate-900 dark:text-white dark:text-[#0c0c10] placeholder-[#6e6e7f] focus:outline-none focus:border-[#3b82f6] transition-colors number-mono text-sm"
               />
             </div>
             <div className="w-full md:w-64">
               <div className="flex justify-between items-center mb-1.5 ml-1 mr-1">
-                <label className="block text-xs font-medium text-slate-400">Amount (USDC)</label>
-                <span className="text-xs text-slate-500">Bal: {balances.USDC ? balances.USDC.toFixed(2) : '0.00'}</span>
+                <label className="block text-xs font-medium text-slate-400 dark:text-slate-500">Amount (USDC)</label>
+                <span className="text-xs text-slate-500 dark:text-[#8a8a9e]">Bal: {balances.USDC ? balances.USDC.toFixed(2) : '0.00'}</span>
               </div>
               <div className="relative">
                 <input
@@ -186,11 +186,11 @@ export default function ArcSafePayView() {
                   placeholder="0.00"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full bg-slate-100 border border-[#1c1c28] rounded-xl pl-4 pr-16 py-3 text-slate-900 placeholder-[#6e6e7f] focus:outline-none focus:border-[#3b82f6] transition-colors number-mono text-sm"
+                  className="w-full bg-slate-100 dark:bg-[#1f1f2e] border border-[#1c1c28] rounded-xl pl-4 pr-16 py-3 text-slate-900 dark:text-white dark:text-[#0c0c10] placeholder-[#6e6e7f] focus:outline-none focus:border-[#3b82f6] transition-colors number-mono text-sm"
                 />
                 <button
                   onClick={handleMax}
-                  className="absolute right-2 top-2 bottom-2 px-2 rounded-lg bg-[#1c1c28] text-slate-500 text-xs font-semibold hover:text-slate-900 transition-colors"
+                  className="absolute right-2 top-2 bottom-2 px-2 rounded-lg bg-[#1c1c28] text-slate-500 dark:text-[#8a8a9e] text-xs font-semibold hover:text-slate-900 dark:text-white dark:text-[#0c0c10] transition-colors"
                 >
                   MAX
                 </button>
@@ -201,8 +201,8 @@ export default function ArcSafePayView() {
               disabled={isProcessing || !walletConnected}
               className={`w-full md:w-auto px-8 py-3 rounded-xl flex items-center justify-center gap-2 text-sm font-bold transition-all ${
                 isProcessing || !walletConnected
-                  ? 'bg-[#1c1c28] text-slate-400 cursor-not-allowed'
-                  : 'bg-[#3b82f6] hover:bg-[#2563eb] text-slate-900 shadow-lg shadow-[#3b82f6]/20'
+                  ? 'bg-[#1c1c28] text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  : 'bg-[#3b82f6] hover:bg-[#2563eb] text-slate-900 dark:text-white dark:text-[#0c0c10] shadow-lg shadow-[#3b82f6]/20'
               }`}
             >
               {isProcessing ? <RefreshCw className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
@@ -212,15 +212,15 @@ export default function ArcSafePayView() {
         </div>
 
         {/* Data Table */}
-        <div className="bg-white border border-[#1c1c28] rounded-2xl overflow-hidden shadow-lg">
-          <div className="p-5 border-b border-[#1c1c28] flex justify-between items-center bg-slate-100/50">
-            <h2 className="text-sm font-semibold text-slate-900">Your SafePay Escrows</h2>
+        <div className="bg-white dark:bg-[#13131a] border border-[#1c1c28] rounded-2xl overflow-hidden shadow-lg">
+          <div className="p-5 border-b border-[#1c1c28] flex justify-between items-center bg-slate-100 dark:bg-[#1f1f2e]/50">
+            <h2 className="text-sm font-semibold text-slate-900 dark:text-white dark:text-[#0c0c10]">Your SafePay Escrows</h2>
           </div>
           
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-[#1c1c28] text-slate-400 text-xs uppercase tracking-wider bg-white">
+                <tr className="border-b border-[#1c1c28] text-slate-400 dark:text-slate-500 text-xs uppercase tracking-wider bg-white dark:bg-[#13131a]">
                   <th className="px-6 py-4 font-semibold">Status</th>
                   <th className="px-6 py-4 font-semibold">Date</th>
                   <th className="px-6 py-4 font-semibold">Receiver</th>
@@ -231,13 +231,13 @@ export default function ArcSafePayView() {
               <tbody className="divide-y divide-[#1c1c28]">
                 {payments.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-slate-400 text-sm">
+                    <td colSpan={5} className="px-6 py-12 text-center text-slate-400 dark:text-slate-500 text-sm">
                       No SafePay transactions found.
                     </td>
                   </tr>
                 ) : (
                   payments.map(payment => (
-                    <tr key={payment.id} className="hover:bg-slate-100/50 transition-colors">
+                    <tr key={payment.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/50 transition-colors">
                       <td className="px-6 py-4">
                         {payment.status === 'LOCKED' && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-semibold">
@@ -255,18 +255,18 @@ export default function ArcSafePayView() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-4 text-sm text-slate-500">
+                      <td className="px-6 py-4 text-sm text-slate-500 dark:text-[#8a8a9e]">
                         {new Date(payment.date).toLocaleDateString()} {new Date(payment.date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-slate-900 number-mono bg-[#1c1c28] px-2 py-1 rounded-md">
+                          <span className="text-sm text-slate-900 dark:text-white dark:text-[#0c0c10] number-mono bg-[#1c1c28] px-2 py-1 rounded-md">
                             {payment.receiver.slice(0, 6)}...{payment.receiver.slice(-4)}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="text-sm font-semibold text-slate-900 number-mono">
+                        <span className="text-sm font-semibold text-slate-900 dark:text-white dark:text-[#0c0c10] number-mono">
                           {payment.amount}
                         </span>
                       </td>
@@ -287,7 +287,7 @@ export default function ArcSafePayView() {
                             </button>
                           </div>
                         ) : (
-                          <span className="text-xs text-slate-400 font-semibold">Settled</span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold">Settled</span>
                         )}
                       </td>
                     </tr>

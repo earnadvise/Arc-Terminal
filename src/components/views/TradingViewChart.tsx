@@ -83,7 +83,7 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
     <div className={isFullscreen ? "fixed inset-0 z-[100] bg-[#ffffff] p-4 flex flex-col" : "w-full h-full relative"}>
       <button 
         onClick={() => setIsFullscreen(!isFullscreen)}
-        className="absolute top-2 right-2 z-10 bg-white hover:bg-slate-100 text-slate-700 p-2 rounded-lg shadow-lg border border-slate-200 transition-colors"
+        className="absolute top-2 right-2 z-10 bg-white dark:bg-[#13131a] hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e] text-slate-700 dark:text-slate-200 p-2 rounded-lg shadow-lg border border-slate-200 dark:border-[#1f1f2e] transition-colors"
         title={isFullscreen ? "Exit Fullscreen" : "Maximize Chart"}
       >
         {isFullscreen ? (

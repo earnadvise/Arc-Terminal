@@ -229,7 +229,7 @@ export default function BridgeView() {
       ) : (
         <Circle className="w-5 h-5 text-slate-300" />
       )}
-      <span className={`text-sm font-semibold ${isActive ? 'text-blue-600' : isDone ? 'text-slate-600' : 'text-slate-400'}`}>
+      <span className={`text-sm font-semibold ${isActive ? 'text-blue-600' : isDone ? 'text-slate-600 dark:text-slate-300' : 'text-slate-400 dark:text-slate-500'}`}>
         {title}
       </span>
     </div>
@@ -241,7 +241,7 @@ export default function BridgeView() {
       <div className="absolute inset-0 bg-[#f7f5ff] -z-10 overflow-hidden">
         <div className="absolute top-[0%] left-[10%] w-[60%] h-[60%] bg-[#e3dcff] blur-[100px] rounded-full opacity-60 mix-blend-multiply" />
         <div className="absolute bottom-[0%] right-[10%] w-[50%] h-[50%] bg-[#f0ebff] blur-[100px] rounded-full opacity-80 mix-blend-multiply" />
-        <div className="absolute top-[20%] right-[30%] w-[40%] h-[40%] bg-white blur-[80px] rounded-full opacity-90" />
+        <div className="absolute top-[20%] right-[30%] w-[40%] h-[40%] bg-white dark:bg-[#13131a] blur-[80px] rounded-full opacity-90" />
       </div>
 
       <div className="w-full max-w-[900px] flex gap-8 items-start justify-center">
@@ -249,11 +249,11 @@ export default function BridgeView() {
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="w-full max-w-[420px] bg-white/70 backdrop-blur-xl rounded-[32px] p-5 shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-white"
+          className="w-full max-w-[420px] bg-white dark:bg-[#13131a]/70 backdrop-blur-xl rounded-[32px] p-5 shadow-[0_8px_40px_rgba(0,0,0,0.06)] border border-white"
         >
           {/* Header */}
           <div className="flex justify-center items-center mb-6">
-            <h2 className="text-[16px] font-bold text-slate-800 tracking-tight">Bridge USDC</h2>
+            <h2 className="text-[16px] font-bold text-slate-800 dark:text-slate-100 tracking-tight">Bridge USDC</h2>
           </div>
 
           <AnimatePresence mode="wait">
@@ -267,11 +267,11 @@ export default function BridgeView() {
                 className="space-y-3"
               >
                 {/* FROM CARD */}
-                <div className="bg-white/80 rounded-[24px] p-4 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-10 transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]">
+                <div className="bg-white dark:bg-[#13131a]/80 rounded-[24px] p-4 border border-slate-100 dark:border-[#1f1f2e] shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-10 transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-[13px] font-semibold text-slate-500">From</span>
+                    <span className="text-[13px] font-semibold text-slate-500 dark:text-[#8a8a9e]">From</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-[12px] font-medium text-slate-400">
+                      <span className="text-[12px] font-medium text-slate-400 dark:text-slate-500">
                         Balance: {(currentBalance || 0).toFixed(4)}
                       </span>
                       <button 
@@ -284,7 +284,7 @@ export default function BridgeView() {
                   </div>
 
                   <div className="flex flex-col gap-3">
-                    <div className="relative rounded-[16px] bg-slate-50 border border-slate-100 hover:border-blue-100 transition-colors">
+                    <div className="relative rounded-[16px] bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] hover:border-blue-100 transition-colors">
                       <select
                         value={fromNet}
                         onChange={(e) => {
@@ -292,7 +292,7 @@ export default function BridgeView() {
                           if (val === toNet) setToNet(fromNet);
                           setFromNet(val);
                         }}
-                        className="w-full bg-transparent text-[15px] font-bold text-slate-800 outline-none cursor-pointer appearance-none px-4 py-3.5 relative z-10"
+                        className="w-full bg-transparent text-[15px] font-bold text-slate-800 dark:text-slate-100 outline-none cursor-pointer appearance-none px-4 py-3.5 relative z-10"
                       >
                         <option value="Arc Testnet">Arc Testnet</option>
                         <option value="Arbitrum Sepolia">Arbitrum Sepolia</option>
@@ -302,22 +302,22 @@ export default function BridgeView() {
                         <option value="Avalanche Fuji">Avalanche Fuji</option>
                         <option value="Polygon Amoy">Polygon Amoy</option>
                       </select>
-                      <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
+                      <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none z-0" />
                     </div>
                     
                     <div className="flex items-center justify-between mt-1">
-                      <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-100 rounded-full px-3 py-1.5 shrink-0">
+                      <div className="flex items-center gap-2.5 bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] rounded-full px-3 py-1.5 shrink-0">
                         <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
                           <span className="text-blue-600 text-[11px] font-bold">$</span>
                         </div>
-                        <span className="font-bold text-slate-700 text-[15px]">USDC</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-200 text-[15px]">USDC</span>
                       </div>
                       <input
                         type="number"
                         placeholder="0.00"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="w-full min-w-0 flex-1 bg-transparent border-none px-2 py-1 text-4xl font-semibold text-right text-slate-800 outline-none placeholder:text-slate-200 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
+                        className="w-full min-w-0 flex-1 bg-transparent border-none px-2 py-1 text-4xl font-semibold text-right text-slate-800 dark:text-slate-100 outline-none placeholder:text-slate-200 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
                       />
                     </div>
                   </div>
@@ -327,20 +327,20 @@ export default function BridgeView() {
                 <div className="flex justify-center -my-6 relative z-20 pointer-events-none">
                   <button
                     onClick={reverseDirection}
-                    className="w-10 h-10 rounded-xl bg-white border border-slate-100 shadow-md flex items-center justify-center text-slate-400 hover:text-blue-500 hover:scale-105 pointer-events-auto transition-all active:scale-95"
+                    className="w-10 h-10 rounded-xl bg-white dark:bg-[#13131a] border border-slate-100 dark:border-[#1f1f2e] shadow-md flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-blue-500 hover:scale-105 pointer-events-auto transition-all active:scale-95"
                   >
                     <ArrowDownUp size={16} />
                   </button>
                 </div>
 
                 {/* TO CARD */}
-                <div className="bg-white/80 rounded-[24px] p-4 border border-slate-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-10 transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]">
+                <div className="bg-white dark:bg-[#13131a]/80 rounded-[24px] p-4 border border-slate-100 dark:border-[#1f1f2e] shadow-[0_2px_10px_rgba(0,0,0,0.02)] relative z-10 transition-shadow hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-[13px] font-semibold text-slate-500">To</span>
+                    <span className="text-[13px] font-semibold text-slate-500 dark:text-[#8a8a9e]">To</span>
                   </div>
 
                   <div className="flex flex-col gap-3">
-                    <div className="relative rounded-[16px] bg-slate-50 border border-slate-100 hover:border-blue-100 transition-colors">
+                    <div className="relative rounded-[16px] bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] hover:border-blue-100 transition-colors">
                       <select
                         value={toNet}
                         onChange={(e) => {
@@ -348,7 +348,7 @@ export default function BridgeView() {
                           if (val === fromNet) setFromNet(toNet);
                           setToNet(val);
                         }}
-                        className="w-full bg-transparent text-[15px] font-bold text-slate-800 outline-none cursor-pointer appearance-none px-4 py-3.5 relative z-10"
+                        className="w-full bg-transparent text-[15px] font-bold text-slate-800 dark:text-slate-100 outline-none cursor-pointer appearance-none px-4 py-3.5 relative z-10"
                       >
                         <option value="Arc Testnet">Arc Testnet</option>
                         <option value="Arbitrum Sepolia">Arbitrum Sepolia</option>
@@ -358,22 +358,22 @@ export default function BridgeView() {
                         <option value="Avalanche Fuji">Avalanche Fuji</option>
                         <option value="Polygon Amoy">Polygon Amoy</option>
                       </select>
-                      <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none z-0" />
+                      <ChevronDown size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 pointer-events-none z-0" />
                     </div>
                     
                     <div className="flex items-center justify-between mt-1">
-                      <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-100 rounded-full px-3 py-1.5 shrink-0 opacity-80">
+                      <div className="flex items-center gap-2.5 bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] rounded-full px-3 py-1.5 shrink-0 opacity-80">
                         <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
                           <span className="text-blue-600 text-[11px] font-bold">$</span>
                         </div>
-                        <span className="font-bold text-slate-700 text-[15px]">USDC</span>
+                        <span className="font-bold text-slate-700 dark:text-slate-200 text-[15px]">USDC</span>
                       </div>
                       <input 
                         type="text" 
                         readOnly 
                         placeholder="0.00" 
                         value={amount} 
-                        className="w-full min-w-0 flex-1 bg-transparent border-none px-2 py-1 text-4xl font-semibold text-right text-slate-800 outline-none placeholder:text-slate-200" 
+                        className="w-full min-w-0 flex-1 bg-transparent border-none px-2 py-1 text-4xl font-semibold text-right text-slate-800 dark:text-slate-100 outline-none placeholder:text-slate-200" 
                       />
                     </div>
                   </div>
@@ -392,8 +392,8 @@ export default function BridgeView() {
                      disabled={!walletConnected || !amount || parseFloat(amount) <= 0}
                      className={`w-full py-4 rounded-[20px] font-bold text-[16px] transition-all flex items-center justify-center gap-2 ${
                        !walletConnected || !amount || parseFloat(amount) <= 0
-                         ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                         : 'bg-blue-600 text-white shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0'
+                         ? 'bg-slate-100 dark:bg-[#1f1f2e] text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-[#1f1f2e]'
+                         : 'bg-blue-600 text-white dark:text-[#0c0c10] shadow-lg shadow-blue-500/30 hover:bg-blue-700 hover:shadow-blue-500/40 hover:-translate-y-0.5 active:translate-y-0'
                      }`}
                    >
                      {!walletConnected ? (
@@ -411,7 +411,7 @@ export default function BridgeView() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 transition={{ duration: 0.2 }}
-                className="bg-white rounded-[24px] p-6 border border-slate-100 shadow-[0_2px_20px_rgba(0,0,0,0.04)]"
+                className="bg-white dark:bg-[#13131a] rounded-[24px] p-6 border border-slate-100 dark:border-[#1f1f2e] shadow-[0_2px_20px_rgba(0,0,0,0.04)]"
               >
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -421,10 +421,10 @@ export default function BridgeView() {
                        <RefreshCw className="w-8 h-8 text-blue-500 animate-spin" />
                      )}
                   </div>
-                  <h3 className="text-lg font-bold text-slate-800">
+                  <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100">
                     {step === 'SUCCESS' ? 'Bridge Complete!' : 'Bridging in Progress'}
                   </h3>
-                  <p className="text-slate-500 text-sm font-medium mt-1">
+                  <p className="text-slate-500 dark:text-[#8a8a9e] text-sm font-medium mt-1">
                     {amount} USDC from {fromNet} to {toNet}
                   </p>
                 </div>
@@ -439,10 +439,10 @@ export default function BridgeView() {
                 {step === 'SUCCESS' && (
                   <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-4">
                     {completedSteps && (
-                      <div className="flex flex-col gap-2 pt-4 border-t border-slate-100">
+                      <div className="flex flex-col gap-2 pt-4 border-t border-slate-100 dark:border-[#1f1f2e]">
                         {completedSteps.filter(s => s.name === 'burn' && s.txHash).map((s, idx) => (
                           <div key={idx} className="flex justify-between items-center text-xs">
-                            <span className="text-slate-500 font-medium capitalize">Transaction Hash</span>
+                            <span className="text-slate-500 dark:text-[#8a8a9e] font-medium capitalize">Transaction Hash</span>
                             <a 
                               href={s.explorerUrl || `https://testnet.arcscan.app/tx/${s.txHash}`} 
                               target="_blank" 
@@ -459,7 +459,7 @@ export default function BridgeView() {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       onClick={resetState}
-                      className="w-full mt-6 py-3.5 rounded-[16px] font-bold text-[15px] bg-slate-100 text-slate-700 hover:bg-slate-200 transition-colors"
+                      className="w-full mt-6 py-3.5 rounded-[16px] font-bold text-[15px] bg-slate-100 dark:bg-[#1f1f2e] text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition-colors"
                     >
                       Done
                     </motion.button>

@@ -391,7 +391,7 @@ export default function VaultView() {
           <motion.h1 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-2"
+            className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-tight mb-2"
           >
             Yield Vaults
           </motion.h1>
@@ -399,14 +399,14 @@ export default function VaultView() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
-            className="text-sm text-slate-500"
+            className="text-sm text-slate-500 dark:text-[#8a8a9e]"
           >
             Deposit stablecoins to earn auto-compounding yield.
           </motion.p>
         </div>
 
         {/* Vault Selector - Segmented Control */}
-        <div className="flex bg-white/80 p-1 rounded-2xl border border-slate-300 backdrop-blur-xl">
+        <div className="flex bg-white dark:bg-[#13131a]/80 p-1 rounded-2xl border border-slate-300 dark:border-slate-700 backdrop-blur-xl">
           {(['USDC', 'EURC'] as const).map(key => {
             const v = VAULTS[key];
             const isSelected = selectedVaultKey === key;
@@ -415,7 +415,7 @@ export default function VaultView() {
                 key={key}
                 onClick={() => { setSelectedVaultKey(key); setAmount(''); }}
                 className={`relative px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all z-10 ${
-                  isSelected ? 'text-slate-900' : 'text-slate-400 hover:text-slate-900'
+                  isSelected ? 'text-slate-900 dark:text-white dark:text-[#0c0c10]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
                 }`}
               >
                 {isSelected && (
@@ -427,7 +427,7 @@ export default function VaultView() {
                   />
                 )}
                 <span
-                  className="relative z-10 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-slate-900 shadow-lg"
+                  className="relative z-10 w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-slate-900 dark:text-white dark:text-[#0c0c10] shadow-lg"
                   style={{ backgroundColor: v.color, boxShadow: isSelected ? `0 0 10px ${v.color}80` : 'none' }}
                 >
                   {v.symbol.slice(0, 2)}
@@ -442,16 +442,16 @@ export default function VaultView() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 min-h-0 flex-1 relative z-10">
         
         {/* Left Column: Action card */}
-        <div className="lg:col-span-7 bg-white/80 border border-slate-300 rounded-3xl p-6 md:p-8 backdrop-blur-2xl flex flex-col shadow-2xl relative overflow-hidden">
+        <div className="lg:col-span-7 bg-white dark:bg-[#13131a]/80 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 md:p-8 backdrop-blur-2xl flex flex-col shadow-2xl relative overflow-hidden">
           {/* Subtle top edge highlight */}
           <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
           {/* Action Tabs */}
-          <div className="flex gap-6 border-b border-slate-300 pb-4 mb-6">
+          <div className="flex gap-6 border-b border-slate-300 dark:border-slate-700 pb-4 mb-6">
             <button
               onClick={() => { setActiveTab('deposit'); setAmount(''); }}
               className={`text-lg font-bold transition-all relative ${
-                activeTab === 'deposit' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-500'
+                activeTab === 'deposit' ? 'text-slate-900 dark:text-white dark:text-[#0c0c10]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:text-[#8a8a9e]'
               }`}
             >
               Deposit
@@ -462,7 +462,7 @@ export default function VaultView() {
             <button
               onClick={() => { setActiveTab('withdraw'); setAmount(''); }}
               className={`text-lg font-bold transition-all relative ${
-                activeTab === 'withdraw' ? 'text-slate-900' : 'text-slate-400 hover:text-slate-500'
+                activeTab === 'withdraw' ? 'text-slate-900 dark:text-white dark:text-[#0c0c10]' : 'text-slate-400 dark:text-slate-500 hover:text-slate-500 dark:text-[#8a8a9e]'
               }`}
             >
               Withdraw
@@ -473,11 +473,11 @@ export default function VaultView() {
           </div>
 
           <div className="flex flex-col flex-1">
-            <div className="flex justify-between items-center text-sm text-slate-500 font-medium mb-3">
+            <div className="flex justify-between items-center text-sm text-slate-500 dark:text-[#8a8a9e] font-medium mb-3">
               <span>Amount</span>
-              <span className="flex items-center gap-1.5 cursor-pointer hover:text-slate-900 transition-colors" onClick={() => setAmount(maxBalance.toString())}>
+              <span className="flex items-center gap-1.5 cursor-pointer hover:text-slate-900 dark:text-white dark:text-[#0c0c10] transition-colors" onClick={() => setAmount(maxBalance.toString())}>
                 {activeTab === 'deposit' ? 'Wallet' : 'Vault'}:{' '}
-                <span className="text-slate-900 font-semibold">
+                <span className="text-slate-900 dark:text-white dark:text-[#0c0c10] font-semibold">
                   {!vaultDataLoaded && walletConnected ? '---' : maxBalance.toFixed(activeTab === 'deposit' ? 2 : 4)}
                 </span>
                 <span className="text-xs">{activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
@@ -485,25 +485,25 @@ export default function VaultView() {
             </div>
 
             {/* Premium Massive Input */}
-            <div className="flex items-center bg-slate-100/50 border border-slate-300 focus-within:border-slate-400 rounded-2xl px-6 py-5 transition-all">
+            <div className="flex items-center bg-slate-100 dark:bg-[#1f1f2e]/50 border border-slate-300 dark:border-slate-700 focus-within:border-slate-400 rounded-2xl px-6 py-5 transition-all">
               <input
                 type="number"
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 disabled={isProcessing}
-                className="bg-transparent border-none text-slate-900 text-4xl md:text-5xl font-black w-full focus:outline-none number-mono tracking-tight"
+                className="bg-transparent border-none text-slate-900 dark:text-white dark:text-[#0c0c10] text-4xl md:text-5xl font-black w-full focus:outline-none number-mono tracking-tight"
                 style={{ caretColor: vault.color }}
               />
               <div className="flex flex-col items-end gap-2 shrink-0">
-                <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-slate-300">
+                <div className="flex items-center gap-2 bg-white dark:bg-[#13131a] px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700">
                   <span
-                    className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-slate-900 shadow-lg"
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black text-slate-900 dark:text-white dark:text-[#0c0c10] shadow-lg"
                     style={{ backgroundColor: vault.color }}
                   >
                     {activeTab === 'deposit' ? vault.symbol.slice(0, 2) : vault.shareSymbol.slice(0, 3)}
                   </span>
-                  <span className="text-sm font-bold text-slate-900">{activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
                 </div>
                 <button
                   onClick={() => setAmount(maxBalance.toString())}
@@ -524,12 +524,12 @@ export default function VaultView() {
                   exit={{ opacity: 0, height: 0, marginTop: 0 }}
                   className="overflow-hidden"
                 >
-                  <div className="p-5 bg-slate-50 border border-slate-300 rounded-2xl space-y-3">
-                    <div className="flex justify-between text-sm text-slate-500">
+                  <div className="p-5 bg-slate-50 dark:bg-[#0c0c10] border border-slate-300 dark:border-slate-700 rounded-2xl space-y-3">
+                    <div className="flex justify-between text-sm text-slate-500 dark:text-[#8a8a9e]">
                       <span>You {activeTab === 'deposit' ? 'deposit' : 'redeem'}</span>
-                      <span className="text-slate-900 font-bold">{parsedAmount.toFixed(2)} {activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
+                      <span className="text-slate-900 dark:text-white dark:text-[#0c0c10] font-bold">{parsedAmount.toFixed(2)} {activeTab === 'deposit' ? vault.symbol : vault.shareSymbol}</span>
                     </div>
-                    <div className="flex justify-between text-sm text-slate-500 items-center">
+                    <div className="flex justify-between text-sm text-slate-500 dark:text-[#8a8a9e] items-center">
                       <span>You receive</span>
                       <div className="flex items-center gap-2">
                         <span className="font-black text-lg" style={{ color: activeTab === 'deposit' ? '#01C38E' : '#8b5cf6' }}>
@@ -547,7 +547,7 @@ export default function VaultView() {
                 <button
                   onClick={activeTab === 'deposit' ? handleDeposit : handleWithdraw}
                   disabled={isProcessing || parsedAmount <= 0}
-                  className="w-full py-4 rounded-2xl text-slate-900 font-bold text-lg tracking-wide transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 rounded-2xl text-slate-900 dark:text-white dark:text-[#0c0c10] font-bold text-lg tracking-wide transition-all flex items-center justify-center gap-3 relative overflow-hidden group disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ 
                     backgroundColor: activeTab === 'deposit' ? '#01C38E' : '#8b5cf6',
                     boxShadow: parsedAmount > 0 && !isProcessing ? `0 0 30px ${activeTab === 'deposit' ? '#01C38E' : '#8b5cf6'}40` : 'none'
@@ -574,13 +574,13 @@ export default function VaultView() {
                   )}
                 </button>
               ) : (
-                <div className="py-6 bg-slate-50 border border-slate-300 rounded-2xl flex flex-col items-center justify-center text-center gap-3 backdrop-blur-sm">
+                <div className="py-6 bg-slate-50 dark:bg-[#0c0c10] border border-slate-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center text-center gap-3 backdrop-blur-sm">
                   <div className="p-3 rounded-full bg-slate-200">
-                    <Lock size={20} className="text-slate-500" />
+                    <Lock size={20} className="text-slate-500 dark:text-[#8a8a9e]" />
                   </div>
                   <div>
-                    <div className="text-sm font-bold text-slate-900 mb-1">Wallet Not Connected</div>
-                    <div className="text-xs text-slate-400">Connect your wallet to start earning yield.</div>
+                    <div className="text-sm font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] mb-1">Wallet Not Connected</div>
+                    <div className="text-xs text-slate-400 dark:text-slate-500">Connect your wallet to start earning yield.</div>
                   </div>
                 </div>
               )}
@@ -592,35 +592,35 @@ export default function VaultView() {
         <div className="lg:col-span-5 flex flex-col gap-6 min-h-0">
           
           {/* My Position Card */}
-          <div className="bg-white/80 border border-slate-300 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden group">
+          <div className="bg-white dark:bg-[#13131a]/80 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden group">
             <div className="absolute top-0 right-0 p-32 bg-slate-200 rounded-full blur-[80px] -mr-16 -mt-16 pointer-events-none" />
             <div className="flex items-center justify-between mb-4 relative z-10">
-              <span className="text-slate-500 text-sm font-semibold">Your Position</span>
-              <Coins size={20} className="text-slate-500" />
+              <span className="text-slate-500 dark:text-[#8a8a9e] text-sm font-semibold">Your Position</span>
+              <Coins size={20} className="text-slate-500 dark:text-[#8a8a9e]" />
             </div>
-            <div className="text-4xl font-black text-slate-900 number-mono mb-2 relative z-10">
+            <div className="text-4xl font-black text-slate-900 dark:text-white dark:text-[#0c0c10] number-mono mb-2 relative z-10">
               ${(userValue[selectedVaultKey] || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <div className="flex justify-between items-center text-xs text-slate-400 relative z-10 font-medium">
+            <div className="flex justify-between items-center text-xs text-slate-400 dark:text-slate-500 relative z-10 font-medium">
               <span>{userShares[selectedVaultKey].toLocaleString(undefined, { maximumFractionDigits: 4 })} {vault.shareSymbol}</span>
             </div>
           </div>
 
           {/* TVL Stat */}
-          <div className="bg-white/80 border border-slate-300 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden">
+          <div className="bg-white dark:bg-[#13131a]/80 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-slate-500 text-sm font-semibold">Total Value Locked</span>
-              <Landmark size={20} className="text-slate-500" />
+              <span className="text-slate-500 dark:text-[#8a8a9e] text-sm font-semibold">Total Value Locked</span>
+              <Landmark size={20} className="text-slate-500 dark:text-[#8a8a9e]" />
             </div>
-            <div className="text-3xl font-black text-slate-900 number-mono mb-1">
+            <div className="text-3xl font-black text-slate-900 dark:text-white dark:text-[#0c0c10] number-mono mb-1">
               ${vaultTVL[selectedVaultKey].toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
           </div>
 
           {/* APY Stat */}
-          <div className="bg-white/80 border border-slate-300 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden">
+          <div className="bg-white dark:bg-[#13131a]/80 border border-slate-300 dark:border-slate-700 rounded-3xl p-6 backdrop-blur-2xl flex flex-col justify-center relative overflow-hidden">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-slate-500 text-sm font-semibold">Current APY</span>
+              <span className="text-slate-500 dark:text-[#8a8a9e] text-sm font-semibold">Current APY</span>
               <div className="px-2 py-1 rounded-md text-[10px] font-bold" style={{ backgroundColor: `${vault.color}20`, color: vault.color }}>
                 AUTO-COMPOUNDING
               </div>

@@ -108,27 +108,27 @@ export default function PerpetualsView() {
     <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 xl:grid-cols-4 gap-4 select-none">
 
       {/* ── COL 1: MARKETS SIDEBAR ─────────────────────────────────── */}
-      <section className="xl:col-span-1 bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-3 shadow-xl" style={{ maxHeight: 820, minHeight: 680 }}>
+      <section className="xl:col-span-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 flex flex-col gap-3 shadow-xl" style={{ maxHeight: 820, minHeight: 680 }}>
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wide">Perpetual Markets</h2>
-          <div className="flex items-center gap-1.5 text-[10px] text-slate-500">
+          <h2 className="text-sm font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wide">Perpetual Markets</h2>
+          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-[#8a8a9e]">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Live
           </div>
         </div>
 
         <div className="relative">
-          <Search className="absolute left-3 top-2.5 text-slate-400" size={13} />
+          <Search className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500" size={13} />
           <input
             type="text"
             placeholder="Search perpetuals..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 focus:border-[#8b5cf6]/50 rounded-lg text-xs text-slate-900 placeholder-[#6e6e7f] outline-none transition-colors"
+            className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs text-slate-900 dark:text-white dark:text-[#0c0c10] placeholder-[#6e6e7f] outline-none transition-colors"
           />
         </div>
 
-        <div className="flex bg-slate-50 border border-slate-200 p-0.5 rounded-lg">
+        <div className="flex bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-0.5 rounded-lg">
           {(['All', 'Crypto', 'Commodities', 'Forex'] as const).map(cat => (
             <button
               key={cat}
@@ -136,7 +136,7 @@ export default function PerpetualsView() {
               className={`flex-1 py-1 text-[9px] font-bold rounded-md transition-colors ${
                 categoryFilter === cat
                   ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/25'
-                  : 'text-slate-500 hover:text-slate-900'
+                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
               }`}
             >
               {cat}
@@ -145,7 +145,7 @@ export default function PerpetualsView() {
         </div>
 
         <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5">
-          <div className="grid grid-cols-4 text-[9px] font-bold text-slate-400 uppercase pb-2 border-b border-slate-200">
+          <div className="grid grid-cols-4 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase pb-2 border-b border-slate-200 dark:border-[#1f1f2e]">
             <span className="col-span-2">Symbol</span>
             <span className="text-right">Price</span>
             <span className="text-right">24h %</span>
@@ -160,14 +160,14 @@ export default function PerpetualsView() {
                 className={`grid grid-cols-4 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${
                   isSelected
                     ? 'bg-gradient-to-r from-[#3b82f6]/10 to-[#8b5cf6]/10 border border-[#8b5cf6]/30'
-                    : 'border border-transparent hover:bg-slate-100/55'
+                    : 'border border-transparent hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/55'
                 }`}
               >
                 <div className="col-span-2">
-                  <div className="text-[11px] font-semibold text-slate-900">{m.symbol}</div>
-                  <div className="text-[9px] text-slate-400">{m.name}</div>
+                  <div className="text-[11px] font-semibold text-slate-900 dark:text-white dark:text-[#0c0c10]">{m.symbol}</div>
+                  <div className="text-[9px] text-slate-400 dark:text-slate-500">{m.name}</div>
                 </div>
-                <div className="text-right text-[10px] number-mono text-slate-800">
+                <div className="text-right text-[10px] number-mono text-slate-800 dark:text-slate-100">
                   {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                 </div>
                 <div className={`text-right text-[10px] font-semibold number-mono ${isGainer ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
@@ -177,7 +177,7 @@ export default function PerpetualsView() {
             );
           })}
           {filteredPairs.length === 0 && (
-            <div className="text-center text-xs text-slate-400 py-8">No results.</div>
+            <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-8">No results.</div>
           )}
         </div>
       </section>
@@ -186,12 +186,12 @@ export default function PerpetualsView() {
       <section className="xl:col-span-2 flex flex-col gap-4">
 
         {/* Pair Header Row */}
-        <div className="bg-white border border-slate-200 rounded-xl px-4 py-3 flex items-center gap-6 overflow-x-auto shadow-xl">
+        <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl px-4 py-3 flex items-center gap-6 overflow-x-auto shadow-xl">
           <div>
-            <div className="text-base font-black text-slate-900 tracking-wide">{activePair.symbol}</div>
-            <div className="text-[9px] text-slate-400 uppercase">{activePair.name}</div>
+            <div className="text-base font-black text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-wide">{activePair.symbol}</div>
+            <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{activePair.name}</div>
           </div>
-          <div className="h-8 w-px bg-slate-100" />
+          <div className="h-8 w-px bg-slate-100 dark:bg-[#1f1f2e]" />
           <div>
             <div className={`text-lg font-black number-mono ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
               {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
@@ -207,8 +207,8 @@ export default function PerpetualsView() {
             { label: 'Open Interest', value: `$${(activePair.openInterest / 1e6).toFixed(2)}M` },
           ].map(stat => (
             <div key={stat.label} className="shrink-0">
-              <div className="text-[9px] text-slate-400 uppercase">{stat.label}</div>
-              <div className="text-xs number-mono text-slate-900 font-semibold">{stat.value}</div>
+              <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{stat.label}</div>
+              <div className="text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] font-semibold">{stat.value}</div>
             </div>
           ))}
 
@@ -221,7 +221,7 @@ export default function PerpetualsView() {
                 className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${
                   timeframe === tf
                     ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/30'
-                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]'
                 }`}
               >
                 {tf}
@@ -231,12 +231,12 @@ export default function PerpetualsView() {
         </div>
 
         {/* TradingView Chart */}
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-xl" style={{ height: 460 }}>
+        <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl overflow-hidden shadow-xl" style={{ height: 460 }}>
           <TradingViewChart symbol={activePair.symbol} timeframe={timeframe} />
         </div>
 
         {/* Bottom Positions / Orders Table */}
-        <div className="bg-white border border-slate-200 rounded-xl p-4 flex flex-col overflow-hidden shadow-xl" style={{ minHeight: 200 }}>
+        <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 flex flex-col overflow-hidden shadow-xl" style={{ minHeight: 200 }}>
           <div className="flex items-center gap-1 mb-3 self-start">
             {[
               { id: 'Positions',     label: 'Positions',     count: positions.length },
@@ -249,7 +249,7 @@ export default function PerpetualsView() {
                 className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
                   activeBottomTab === tab.id
                     ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20'
-                    : 'text-slate-500 hover:text-slate-900'
+                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
                 }`}
               >
                 {tab.label}
@@ -264,7 +264,7 @@ export default function PerpetualsView() {
             {activeBottomTab === 'Positions' && (
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
+                  <tr className="text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-[#1f1f2e] font-bold uppercase text-[10px]">
                     <th className="py-2">Market</th>
                     <th>Size</th><th>Entry</th><th>Mark</th>
                     <th>Liq</th><th>PnL</th><th className="text-right">Action</th>
@@ -274,22 +274,22 @@ export default function PerpetualsView() {
                   {positions.map(pos => {
                     const isGain = pos.unrealizedPnl >= 0;
                     return (
-                      <tr key={pos.id} className="hover:bg-slate-100/30 transition-colors">
+                      <tr key={pos.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30 transition-colors">
                         <td className="py-2.5">
-                          <div className="font-bold text-slate-900">{pos.symbol}</div>
+                          <div className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{pos.symbol}</div>
                           <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                             {pos.side} {Number(pos.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
                           </div>
                         </td>
-                        <td className="number-mono text-slate-900">{pos.size}</td>
-                        <td className="number-mono text-slate-700">${pos.entryPrice.toLocaleString()}</td>
-                        <td className="number-mono text-slate-700">${pos.markPrice.toLocaleString()}</td>
+                        <td className="number-mono text-slate-900 dark:text-white dark:text-[#0c0c10]">{pos.size}</td>
+                        <td className="number-mono text-slate-700 dark:text-slate-200">${pos.entryPrice.toLocaleString()}</td>
+                        <td className="number-mono text-slate-700 dark:text-slate-200">${pos.markPrice.toLocaleString()}</td>
                         <td className="number-mono text-amber-500">${pos.liqPrice.toLocaleString()}</td>
                         <td className={`number-mono font-bold ${isGain ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                           {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
                         </td>
                         <td className="text-right flex items-center justify-end gap-1">
-                          <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 rounded transition-all" title="Set TP/SL">
+                          <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e] border border-slate-200 dark:border-[#1f1f2e] rounded transition-all" title="Set TP/SL">
                             TP/SL
                           </button>
                           <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
@@ -312,7 +312,7 @@ export default function PerpetualsView() {
                     );
                   })}
                   {positions.length === 0 && (
-                    <tr><td colSpan={9} className="text-center text-slate-400 py-6 text-xs">No active positions.</td></tr>
+                    <tr><td colSpan={9} className="text-center text-slate-400 dark:text-slate-500 py-6 text-xs">No active positions.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -321,7 +321,7 @@ export default function PerpetualsView() {
             {activeBottomTab === 'OpenOrders' && (
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
+                  <tr className="text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-[#1f1f2e] font-bold uppercase text-[10px]">
                     <th className="py-2">Market</th><th>Type</th>
                     <th>Price</th><th>Amount</th>
                     <th className="text-right">Action</th>
@@ -329,15 +329,15 @@ export default function PerpetualsView() {
                 </thead>
                 <tbody className="divide-y divide-[#13131a]">
                   {openOrders.map(order => (
-                    <tr key={order.id} className="hover:bg-slate-100/30 transition-colors">
+                    <tr key={order.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30 transition-colors">
                       <td className="py-2.5">
-                        <div className="font-bold text-slate-900">{order.symbol}</div>
+                        <div className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{order.symbol}</div>
                         <div className={`text-[9px] font-bold ${order.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                           {order.side === 'BUY' ? 'LONG' : 'SHORT'} {Number(order.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
                         </div>
                       </td>
-                      <td className="text-slate-700">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
-                      <td className="number-mono text-slate-700">
+                      <td className="text-slate-700 dark:text-slate-200">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
+                      <td className="number-mono text-slate-700 dark:text-slate-200">
                         {order.type === 'TPSL' ? (
                           <div className="flex flex-col text-[9px] leading-tight gap-0.5">
                             {order.tpPrice ? <span>TP: ${order.tpPrice.toLocaleString()}</span> : null}
@@ -347,7 +347,7 @@ export default function PerpetualsView() {
                           <span>${order.price.toLocaleString()}</span>
                         )}
                       </td>
-                      <td className="number-mono text-slate-900">{order.amount}</td>
+                      <td className="number-mono text-slate-900 dark:text-white dark:text-[#0c0c10]">{order.amount}</td>
                       <td className="text-right flex items-center justify-end gap-1.5 py-1.5 pr-2">
                         {order.type === 'TPSL' && (
                           <button onClick={() => {
@@ -361,12 +361,12 @@ export default function PerpetualsView() {
                             Edit
                           </button>
                         )}
-                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-slate-500 hover:text-slate-900 bg-slate-100 border border-[#1e1e2c] rounded transition-all">Cancel</button>
+                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] bg-slate-100 dark:bg-[#1f1f2e] border border-[#1e1e2c] rounded transition-all">Cancel</button>
                       </td>
                     </tr>
                   ))}
                   {openOrders.length === 0 && (
-                    <tr><td colSpan={7} className="text-center text-slate-400 py-6">No open orders.</td></tr>
+                    <tr><td colSpan={7} className="text-center text-slate-400 dark:text-slate-500 py-6">No open orders.</td></tr>
                   )}
                 </tbody>
               </table>
@@ -375,7 +375,7 @@ export default function PerpetualsView() {
             {activeBottomTab === 'TradeHistory' && (
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">
+                  <tr className="text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-[#1f1f2e] font-bold uppercase text-[10px]">
                     <th className="py-2">Time</th><th>Market</th>
                     <th>Type</th><th>Size</th><th>Price</th><th>Fee</th><th>PnL</th><th>Status</th>
                   </tr>
@@ -383,18 +383,18 @@ export default function PerpetualsView() {
                 <tbody className="divide-y divide-[#13131a]">
                   {history.filter(h => h.side !== 'DEPOSIT' && h.side !== 'WITHDRAW').slice(0, 8).map(h => (
                     <tr key={h.id}>
-                      <td className="py-2.5 text-slate-400 number-mono text-[10px]">{h.time}</td>
+                      <td className="py-2.5 text-slate-400 dark:text-slate-500 number-mono text-[10px]">{h.time}</td>
                       <td>
-                        <div className="font-bold text-slate-900">{h.pair}</div>
+                        <div className="font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">{h.pair}</div>
                         <div className={`text-[9px] font-bold ${h.side === 'LONG' || h.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                           {h.side}
                         </div>
                       </td>
-                      <td className="text-slate-700">{h.type}</td>
-                      <td className="number-mono text-slate-700">{h.size}</td>
-                      <td className="number-mono text-slate-700">{h.price}</td>
-                      <td className="number-mono text-slate-400">{h.fee}</td>
-                      <td className={`number-mono font-bold ${!h.realizedPnl ? 'text-slate-500' : h.realizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                      <td className="text-slate-700 dark:text-slate-200">{h.type}</td>
+                      <td className="number-mono text-slate-700 dark:text-slate-200">{h.size}</td>
+                      <td className="number-mono text-slate-700 dark:text-slate-200">{h.price}</td>
+                      <td className="number-mono text-slate-400 dark:text-slate-500">{h.fee}</td>
+                      <td className={`number-mono font-bold ${!h.realizedPnl ? 'text-slate-500 dark:text-[#8a8a9e]' : h.realizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                         {h.realizedPnl !== undefined ? (h.realizedPnl >= 0 ? '+' : '') + '$' + h.realizedPnl.toFixed(2) : '-'}
                       </td>
                       <td><span className="text-emerald-500 font-semibold text-[10px]">{h.status}</span></td>
@@ -408,15 +408,15 @@ export default function PerpetualsView() {
       </section>
 
       {/* ── COL 4: ORDER ENTRY ──────────────────────────────────────── */}
-      <section className="xl:col-span-1 bg-white border border-slate-200 rounded-xl p-4 flex flex-col shadow-xl" style={{ maxHeight: 820 }}>
+      <section className="xl:col-span-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 flex flex-col shadow-xl" style={{ maxHeight: 820 }}>
         {/* Order Type */}
-        <div className="flex bg-slate-50 border border-slate-200 p-0.5 rounded-lg mb-4">
+        <div className="flex bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-0.5 rounded-lg mb-4">
           {(['Market', 'Limit'] as const).map(t => (
             <button
               key={t}
               onClick={() => setOrderType(t)}
               className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                orderType === t ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-slate-500 hover:text-slate-900'
+                orderType === t ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10]'
               }`}
             >{t}</button>
           ))}
@@ -428,30 +428,30 @@ export default function PerpetualsView() {
             onClick={() => setTradeSide('LONG')}
             className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
               tradeSide === 'LONG'
-                ? 'bg-[#10b981] text-slate-900 border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
-                : 'border-slate-200 text-slate-500 hover:text-[#10b981]'
+                ? 'bg-[#10b981] text-slate-900 dark:text-white dark:text-[#0c0c10] border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
+                : 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-[#10b981]'
             }`}
           >Buy / Long</button>
           <button
             onClick={() => setTradeSide('SHORT')}
             className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
               tradeSide === 'SHORT'
-                ? 'bg-[#ef4444] text-slate-900 border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
-                : 'border-slate-200 text-slate-500 hover:text-[#ef4444]'
+                ? 'bg-[#ef4444] text-slate-900 dark:text-white dark:text-[#0c0c10] border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
+                : 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-[#ef4444]'
             }`}
           >Sell / Short</button>
         </div>
 
         {/* Margin Mode */}
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs text-slate-500">Margin Mode</span>
-          <div className="flex bg-slate-50 border border-slate-200 p-0.5 rounded-md text-[10px]">
+          <span className="text-xs text-slate-500 dark:text-[#8a8a9e]">Margin Mode</span>
+          <div className="flex bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-0.5 rounded-md text-[10px]">
             {['CROSS', 'ISOLATED'].map(mode => (
               <button
                 key={mode}
                 onClick={() => setMarginMode(mode as any)}
                 className={`px-2 py-0.5 font-bold rounded transition-colors ${
-                  marginMode === mode ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/15' : 'text-slate-400 hover:text-slate-700'
+                  marginMode === mode ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/15' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:text-slate-200'
                 }`}
               >{mode}</button>
             ))}
@@ -461,16 +461,16 @@ export default function PerpetualsView() {
         {/* Price */}
         <div className="mb-3">
           <div className="flex justify-between mb-1">
-            <span className="text-xs text-slate-500">Price {orderType === 'Market' && <span className="text-amber-500 text-[10px] font-bold bg-amber-500/10 px-1 rounded ml-1">MARKET</span>}</span>
-            <span className="text-[10px] text-slate-400 uppercase">USDC</span>
+            <span className="text-xs text-slate-500 dark:text-[#8a8a9e]">Price {orderType === 'Market' && <span className="text-amber-500 text-[10px] font-bold bg-amber-500/10 px-1 rounded ml-1">MARKET</span>}</span>
+            <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase">USDC</span>
           </div>
           <input
             type="text"
             disabled={orderType === 'Market'}
             value={orderType === 'Market' ? activePair.lastPrice : inputPrice}
             onChange={e => setInputPrice(e.target.value)}
-            className={`w-full px-3 py-2 bg-slate-50 border rounded-lg text-xs number-mono text-slate-900 outline-none transition-colors ${
-              orderType === 'Market' ? 'border-slate-200 text-slate-500 cursor-not-allowed' : 'border-slate-200 focus:border-[#8b5cf6]/50'
+            className={`w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border rounded-lg text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-colors ${
+              orderType === 'Market' ? 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] cursor-not-allowed' : 'border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50'
             }`}
           />
         </div>
@@ -478,15 +478,15 @@ export default function PerpetualsView() {
         {/* Amount */}
         <div className="mb-3">
           <div className="flex justify-between mb-1">
-            <span className="text-xs text-slate-500">Amount</span>
-            <span className="text-[10px] text-slate-500 number-mono uppercase">{activePair.symbol.split('-')[0]}</span>
+            <span className="text-xs text-slate-500 dark:text-[#8a8a9e]">Amount</span>
+            <span className="text-[10px] text-slate-500 dark:text-[#8a8a9e] number-mono uppercase">{activePair.symbol.split('-')[0]}</span>
           </div>
           <div className="relative flex items-center">
             <input
               type="text"
               value={inputAmount}
               onChange={e => setInputAmount(e.target.value)}
-              className="w-full pl-3 pr-14 py-2 bg-slate-50 border border-slate-200 focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 outline-none transition-colors"
+              className="w-full pl-3 pr-14 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-colors"
             />
             <button
               onClick={() => {
@@ -495,7 +495,7 @@ export default function PerpetualsView() {
                 const maxSize = maxPositionUSD / parsedPrice;
                 setInputAmount(maxSize > 0 ? maxSize.toFixed(4) : '0');
               }}
-              className="absolute right-2 px-2 py-0.5 bg-white/5 hover:bg-white/10 border border-white/10 text-[9px] font-bold text-slate-900 rounded transition-colors cursor-pointer"
+              className="absolute right-2 px-2 py-0.5 bg-white dark:bg-[#13131a]/5 hover:bg-white dark:bg-[#13131a]/10 border border-white/10 text-[9px] font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] rounded transition-colors cursor-pointer"
             >
               MAX
             </button>
@@ -507,15 +507,15 @@ export default function PerpetualsView() {
         {/* Leverage Slider (Capped at 20x Max) */}
         <div className="mb-5">
           <div className="flex justify-between mb-1">
-            <span className="text-xs text-slate-500 flex items-center gap-1"><Scale size={12} /> Leverage (Max 20x)</span>
+            <span className="text-xs text-slate-500 dark:text-[#8a8a9e] flex items-center gap-1"><Scale size={12} /> Leverage (Max 20x)</span>
             <span className="text-xs font-bold text-[#8b5cf6] number-mono">{leverage}x</span>
           </div>
           <input
             type="range" min="1" max="20" value={leverage}
             onChange={e => setLeverage(parseInt(e.target.value))}
-            className="w-full h-1 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-[#8b5cf6]"
+            className="w-full h-1 bg-slate-100 dark:bg-[#1f1f2e] rounded-lg appearance-none cursor-pointer accent-[#8b5cf6]"
           />
-          <div className="flex justify-between text-[9px] text-slate-400 font-bold mt-1 mb-2">
+          <div className="flex justify-between text-[9px] text-slate-400 dark:text-slate-500 font-bold mt-1 mb-2">
             <span>1x</span><span>5x</span><span>10x</span><span>15x</span><span>20x</span>
           </div>
 
@@ -528,7 +528,7 @@ export default function PerpetualsView() {
                 className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${
                   leverage === levVal
                     ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/40 shadow-sm'
-                    : 'bg-slate-50 text-slate-400 border border-slate-200 hover:text-slate-900 hover:border-slate-200'
+                    : 'bg-slate-50 dark:bg-[#0c0c10] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] hover:border-slate-200 dark:border-[#1f1f2e]'
                 }`}
               >
                 {levVal}x
@@ -538,7 +538,7 @@ export default function PerpetualsView() {
         </div>
 
         {/* Summary */}
-        <div className="space-y-1.5 text-xs text-slate-500 border-t border-slate-200 pt-3 mb-3">
+        <div className="space-y-1.5 text-xs text-slate-500 dark:text-[#8a8a9e] border-t border-slate-200 dark:border-[#1f1f2e] pt-3 mb-3">
           {[
             ['Position Value', `$${positionSize.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
             ['Required Margin', `$${marginRequired.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
@@ -548,16 +548,16 @@ export default function PerpetualsView() {
           ].map(([label, value]) => (
             <div key={label} className="flex justify-between">
               <span>{label}</span>
-              <span className={`number-mono ${label === 'Required Margin' ? 'text-[#01C38E] font-bold' : label === 'Effective Leverage' ? 'text-[#8b5cf6] font-bold' : 'text-slate-700'}`}>{value}</span>
+              <span className={`number-mono ${label === 'Required Margin' ? 'text-[#01C38E] font-bold' : label === 'Effective Leverage' ? 'text-[#8b5cf6] font-bold' : 'text-slate-700 dark:text-slate-200'}`}>{value}</span>
             </div>
           ))}
         </div>
 
         {/* Available */}
-        <div className="flex flex-col gap-2 bg-slate-50 border border-slate-200 px-3 py-2 rounded-lg mb-3">
+        <div className="flex flex-col gap-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] px-3 py-2 rounded-lg mb-3">
           <div className="flex justify-between items-center text-[10px]">
-            <span className="text-slate-400">Vault Margin:</span>
-            <span className="number-mono font-bold text-slate-900">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+            <span className="text-slate-400 dark:text-slate-500">Vault Margin:</span>
+            <span className="number-mono font-bold text-slate-900 dark:text-white dark:text-[#0c0c10]">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
           </div>
           <div className="flex gap-2">
             <button onClick={() => {
@@ -576,9 +576,9 @@ export default function PerpetualsView() {
           <button
             onClick={handlePlaceOrder}
             disabled={parsedAmount <= 0}
-            className={`w-full py-3 rounded-lg text-xs font-bold text-slate-900 uppercase tracking-wider transition-all ${
+            className={`w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] uppercase tracking-wider transition-all ${
               parsedAmount <= 0
-                ? 'bg-sky-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                ? 'bg-sky-100 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] cursor-not-allowed'
                 : tradeSide === 'LONG'
                 ? 'bg-[#10b981] hover:bg-[#12cf92] shadow-[0_0_15px_rgba(16,185,129,0.25)]'
                 : 'bg-[#ef4444] hover:bg-[#fa5555] shadow-[0_0_15px_rgba(239,68,68,0.25)]'
@@ -589,7 +589,7 @@ export default function PerpetualsView() {
         ) : (
           <button
             onClick={() => connectWallet('MetaMask')}
-            className="w-full py-3 rounded-lg text-xs font-bold text-slate-900 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
+            className="w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
           >
             Connect Wallet
           </button>
@@ -608,21 +608,21 @@ export default function PerpetualsView() {
             >
               {/* Premium Glow Effects */}
               <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b ${sharePosition.unrealizedPnl >= 0 ? 'from-[#10b981]/15' : 'from-[#ef4444]/15'} to-transparent opacity-70 pointer-events-none`} />
-              <div className="absolute -top-24 -right-24 w-48 h-48 bg-white/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-white/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-white dark:bg-[#13131a]/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-white dark:bg-[#13131a]/5 rounded-full blur-3xl pointer-events-none" />
               
               <div className="p-8 text-center relative z-10">
                 <div className="flex items-center justify-center gap-2 mb-6 opacity-80">
                   <div className="w-6 h-6 rounded bg-gradient-to-tr from-[#34d399] to-[#059669] flex items-center justify-center shadow-lg shadow-[#10b981]/30">
-                    <span className="text-white text-[10px] font-black">A</span>
+                    <span className="text-white dark:text-[#0c0c10] text-[10px] font-black">A</span>
                   </div>
-                  <div className="text-[11px] font-black text-white tracking-[0.2em] uppercase">Arc Terminal AI</div>
+                  <div className="text-[11px] font-black text-white dark:text-[#0c0c10] tracking-[0.2em] uppercase">Arc Terminal AI</div>
                 </div>
                 
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black tracking-widest ${sharePosition.side === 'LONG' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-[#ef4444] text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`}>{sharePosition.side}</span>
-                  <span className="text-xl font-black text-white tracking-wide">{sharePosition.symbol}</span>
-                  <span className="text-xs font-bold text-slate-400 bg-white/10 px-1.5 py-0.5 rounded">{Number(sharePosition.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x</span>
+                  <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black tracking-widest ${sharePosition.side === 'LONG' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-[#ef4444] text-white dark:text-[#0c0c10] shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`}>{sharePosition.side}</span>
+                  <span className="text-xl font-black text-white dark:text-[#0c0c10] tracking-wide">{sharePosition.symbol}</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-[#13131a]/10 px-1.5 py-0.5 rounded">{Number(sharePosition.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x</span>
                 </div>
                 
                 <div className={`text-6xl font-black number-mono mb-2 ${sharePosition.unrealizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'} drop-shadow-lg tracking-tighter`}>
@@ -634,12 +634,12 @@ export default function PerpetualsView() {
 
                 <div className="grid grid-cols-2 gap-4 text-left bg-[#111827]/80 backdrop-blur-md rounded-2xl p-4 border border-white/10 shadow-inner">
                   <div>
-                    <div className="text-[9px] text-slate-500 font-bold tracking-widest uppercase mb-0.5">Entry Price</div>
-                    <div className="text-sm font-black text-white number-mono">${sharePosition.entryPrice.toLocaleString()}</div>
+                    <div className="text-[9px] text-slate-500 dark:text-[#8a8a9e] font-bold tracking-widest uppercase mb-0.5">Entry Price</div>
+                    <div className="text-sm font-black text-white dark:text-[#0c0c10] number-mono">${sharePosition.entryPrice.toLocaleString()}</div>
                   </div>
                   <div>
-                    <div className="text-[9px] text-slate-500 font-bold tracking-widest uppercase mb-0.5">Mark Price</div>
-                    <div className="text-sm font-black text-white number-mono">${sharePosition.markPrice.toLocaleString()}</div>
+                    <div className="text-[9px] text-slate-500 dark:text-[#8a8a9e] font-bold tracking-widest uppercase mb-0.5">Mark Price</div>
+                    <div className="text-sm font-black text-white dark:text-[#0c0c10] number-mono">${sharePosition.markPrice.toLocaleString()}</div>
                   </div>
                 </div>
               </div>
@@ -647,12 +647,12 @@ export default function PerpetualsView() {
 
             {/* Actions (Not part of the downloaded image) */}
             <div className="w-full flex gap-3">
-              <button onClick={() => setSharePosition(null)} className="flex-1 py-3 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md">Close</button>
+              <button onClick={() => setSharePosition(null)} className="flex-1 py-3 rounded-xl text-xs font-bold text-white dark:text-[#0c0c10] bg-white dark:bg-[#13131a]/10 hover:bg-white dark:bg-[#13131a]/20 transition-colors backdrop-blur-md">Close</button>
               <button onClick={() => {
                 navigator.clipboard.writeText(`I'm ${sharePosition.side} ${sharePosition.symbol} with ${sharePosition.leverage}x leverage on Arc Terminal AI! PnL: ${sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%`);
                 alert('Copied to clipboard!');
-              }} className="flex-1 py-3 rounded-xl text-xs font-bold text-white bg-white/10 hover:bg-white/20 transition-colors backdrop-blur-md border border-white/5">Copy Text</button>
-              <button onClick={handleDownloadImage} className="flex-[2] py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(139,92,246,0.3)] border border-white/10">Download Image</button>
+              }} className="flex-1 py-3 rounded-xl text-xs font-bold text-white dark:text-[#0c0c10] bg-white dark:bg-[#13131a]/10 hover:bg-white dark:bg-[#13131a]/20 transition-colors backdrop-blur-md border border-white/5">Copy Text</button>
+              <button onClick={handleDownloadImage} className="flex-[2] py-3 rounded-xl text-xs font-bold text-white dark:text-[#0c0c10] bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(139,92,246,0.3)] border border-white/10">Download Image</button>
             </div>
             
           </div>
@@ -661,28 +661,28 @@ export default function PerpetualsView() {
       {/* TP / SL Modal */}
       {tpSlPosition && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-slate-800">Set TP / SL</h3>
-              <button onClick={() => setTpSlPosition(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <div className="p-5 border-b border-slate-100 dark:border-[#1f1f2e] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100">Set TP / SL</h3>
+              <button onClick={() => setTpSlPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
             <div className="p-5">
               <div className="flex items-center gap-2 mb-4">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${tpSlPosition.side === 'LONG' ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>{tpSlPosition.side}</span>
-                <span className="font-black text-slate-800">{tpSlPosition.symbol}</span>
-                <span className="text-xs font-bold text-slate-500">{tpSlPosition.leverage}x</span>
+                <span className="font-black text-slate-800 dark:text-slate-100">{tpSlPosition.symbol}</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">{tpSlPosition.leverage}x</span>
               </div>
               <div className="space-y-4">
                 <div>
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Take Profit Price</label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-1">Take Profit Price</label>
                   <input
                     type="text"
                     placeholder="0.00"
                     value={tpPrice}
                     onChange={e => setTpPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 rounded-lg text-sm font-bold number-mono text-slate-900 outline-none transition-all"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-all"
                   />
                   {estimatedTPPnl !== null && (
                     <div className={`mt-1.5 text-[10px] font-bold ${estimatedTPPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
@@ -691,13 +691,13 @@ export default function PerpetualsView() {
                   )}
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Stop Loss Price</label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-1">Stop Loss Price</label>
                   <input
                     type="text"
                     placeholder="0.00"
                     value={slPrice}
                     onChange={e => setSlPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 focus:border-[#ef4444]/50 focus:ring-2 focus:ring-[#ef4444]/20 rounded-lg text-sm font-bold number-mono text-slate-900 outline-none transition-all"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#ef4444]/50 focus:ring-2 focus:ring-[#ef4444]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-all"
                   />
                   {estimatedSLPnl !== null && (
                     <div className={`mt-1.5 text-[10px] font-bold ${estimatedSLPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
@@ -707,8 +707,8 @@ export default function PerpetualsView() {
                 </div>
               </div>
             </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-              <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">Cancel</button>
+            <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1f1f2e] flex gap-3">
+              <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] dark:bg-[#0c0c10] transition-colors">Cancel</button>
               <button onClick={() => {
                 if (tpPrice || slPrice) {
                   const tp = tpPrice ? parseFloat(tpPrice) : 0;
@@ -718,7 +718,7 @@ export default function PerpetualsView() {
                 setTpPrice('');
                 setSlPrice('');
                 setTpSlPosition(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors shadow-lg shadow-[#8b5cf6]/30">Confirm</button>
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white dark:text-[#0c0c10] bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors shadow-lg shadow-[#8b5cf6]/30">Confirm</button>
             </div>
           </div>
         </div>
@@ -727,31 +727,31 @@ export default function PerpetualsView() {
       {/* Partial Close Modal */}
       {closingPosition && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white border border-slate-200 rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            <div className="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-              <h3 className="font-bold text-slate-800">Close Position</h3>
-              <button onClick={() => setClosingPosition(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
+          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <div className="p-5 border-b border-slate-100 dark:border-[#1f1f2e] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100">Close Position</h3>
+              <button onClick={() => setClosingPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
             <div className="p-5">
               <div className="flex items-center gap-2 mb-4">
                 <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${closingPosition.side === 'LONG' ? 'bg-[#10b981]/20 text-[#10b981]' : 'bg-[#ef4444]/20 text-[#ef4444]'}`}>{closingPosition.side}</span>
-                <span className="font-black text-slate-800">{closingPosition.symbol}</span>
-                <span className="text-xs font-bold text-slate-500">Total Size: {closingPosition.size}</span>
+                <span className="font-black text-slate-800 dark:text-slate-100">{closingPosition.symbol}</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Total Size: {closingPosition.size}</span>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block mb-1">Amount to Close</label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-1">Amount to Close</label>
                   <div className="relative">
                     <input
                       type="text"
                       value={closeSizeInput}
                       onChange={e => setCloseSizeInput(e.target.value)}
-                      className="w-full pl-3 pr-16 py-2 bg-slate-50 border border-slate-200 focus:border-[#8b5cf6]/50 focus:ring-2 focus:ring-[#8b5cf6]/20 rounded-lg text-sm font-bold number-mono text-slate-900 outline-none transition-all"
+                      className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 focus:ring-2 focus:ring-[#8b5cf6]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white dark:text-[#0c0c10] outline-none transition-all"
                     />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                       <span className="text-[10px] text-slate-400 font-bold">{closingPosition.symbol.split('-')[0]}</span>
+                       <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">{closingPosition.symbol.split('-')[0]}</span>
                     </div>
                   </div>
                 </div>
@@ -760,7 +760,7 @@ export default function PerpetualsView() {
                     <button
                       key={fraction}
                       onClick={() => setCloseSizeInput((closingPosition.size * fraction).toFixed(4))}
-                      className="flex-1 py-1.5 text-[10px] font-bold text-slate-500 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors"
+                      className="flex-1 py-1.5 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white dark:text-[#0c0c10] bg-slate-100 dark:bg-[#1f1f2e] hover:bg-slate-200 rounded-md transition-colors"
                     >
                       {fraction * 100}%
                     </button>
@@ -773,7 +773,7 @@ export default function PerpetualsView() {
                      const fraction = Math.min(inputVal / closingPosition.size, 1);
                      const estPnl = closingPosition.unrealizedPnl * fraction;
                      return (
-                        <div className="pt-2 text-xs font-bold text-slate-600 flex justify-between">
+                        <div className="pt-2 text-xs font-bold text-slate-600 dark:text-slate-300 flex justify-between">
                           <span>Est. Realized PnL:</span>
                           <span className={estPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}>
                              {estPnl >= 0 ? '+' : ''}${estPnl.toFixed(2)}
@@ -786,15 +786,15 @@ export default function PerpetualsView() {
 
               </div>
             </div>
-            <div className="p-4 bg-slate-50 border-t border-slate-100 flex gap-3">
-              <button onClick={() => setClosingPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">Cancel</button>
+            <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1f1f2e] flex gap-3">
+              <button onClick={() => setClosingPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] dark:bg-[#0c0c10] transition-colors">Cancel</button>
               <button onClick={() => {
                 const amt = parseFloat(closeSizeInput);
                 if (!isNaN(amt) && amt > 0) {
                   closePosition(closingPosition.id, amt);
                 }
                 setClosingPosition(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#ef4444] hover:bg-[#dc2626] transition-colors shadow-lg shadow-[#ef4444]/30">Confirm Close</button>
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white dark:text-[#0c0c10] bg-[#ef4444] hover:bg-[#dc2626] transition-colors shadow-lg shadow-[#ef4444]/30">Confirm Close</button>
             </div>
           </div>
         </div>
