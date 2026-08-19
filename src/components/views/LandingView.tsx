@@ -54,7 +54,7 @@ export default function LandingView() {
   ];
 
   return (
-    <div className="flex-1 bg-white relative overflow-hidden flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 select-none">
+    <div className="flex-1 bg-white dark:bg-[#13131a] relative overflow-hidden flex flex-col justify-center py-10 px-4 sm:px-6 lg:px-8 select-none">
       
       {/* Decorative ambient background glows - Made extremely subtle */}
       <div className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full bg-slate-100 blur-3xl -z-10 pointer-events-none" />
@@ -73,21 +73,21 @@ export default function LandingView() {
               Agentic Perp DEX Live on Arc Testnet
             </div>
             
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1] uppercase">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 dark:text-white dark:text-[#0c0c10] tracking-tight leading-[1.1] uppercase">
               The Next Generation <br className="hidden sm:inline" />
               <span className="bg-gradient-to-r from-[#01C38E] via-[#0A786A] to-[#0052FF] bg-clip-text text-transparent">
                 Trading Interface
               </span>
             </h1>
             
-            <p className="text-slate-500 text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-semibold">
+            <p className="text-slate-500 dark:text-[#8a8a9e] text-sm sm:text-base max-w-xl mx-auto lg:mx-0 leading-relaxed font-semibold">
               Execute leveraged orders, optimize yields, and deploy custom Arc Vaults in a unified trading terminal designed for active traders and AI agents.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
               <button
                 onClick={() => setActiveTab('Perpetuals')}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-full shadow-md transition-all cursor-pointer group"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 dark:bg-white hover:bg-slate-800 text-white dark:text-[#0c0c10] font-semibold rounded-full shadow-md transition-all cursor-pointer group"
               >
                 Launch Terminal
                 <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
@@ -97,19 +97,19 @@ export default function LandingView() {
 
           {/* Hero Visual Block */}
           <div className="lg:col-span-5 relative hidden lg:block">
-            <div className="relative bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col gap-6 overflow-hidden">
-              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 rounded-full blur-2xl -z-10" />
+            <div className="relative bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-3xl p-6 shadow-sm flex flex-col gap-6 overflow-hidden">
+              <div className="absolute top-0 right-0 w-24 h-24 bg-slate-50 dark:bg-[#0c0c10] rounded-full blur-2xl -z-10" />
               
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-[#1f1f2e] pb-4">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-[#0052FF]" />
-                  <span className="text-xs font-semibold text-slate-700 tracking-wider">BTC Market Price</span>
+                  <span className="text-xs font-semibold text-slate-700 dark:text-slate-200 tracking-wider">BTC Market Price</span>
                 </div>
                 <span className="text-[10px] text-slate-400 font-medium">1m Realtime Feed</span>
               </div>
               
               {/* Mock mini candlestick visual */}
-              <div className="h-28 flex items-end justify-between gap-1 border-b border-slate-200/40 pb-2">
+              <div className="h-28 flex items-end justify-between gap-1 border-b border-slate-200 dark:border-[#1f1f2e]/40 pb-2">
                 {miniCandles.map((candle, idx) => (
                   <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full">
                     {/* Wick */}
@@ -123,12 +123,12 @@ export default function LandingView() {
 
               {/* Quick stats on visual panel */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl text-center">
-                  <div className="text-[10px] text-slate-500 font-medium">BTC LAST PRICE</div>
-                  <div className="text-lg font-bold text-slate-900 number-mono mt-0.5">${btcPrice}</div>
+                <div className="p-3 bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] rounded-xl text-center">
+                  <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] font-medium">BTC LAST PRICE</div>
+                  <div className="text-lg font-bold text-slate-900 dark:text-white dark:text-[#0c0c10] number-mono mt-0.5">${btcPrice}</div>
                 </div>
-                <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl text-center">
-                  <div className="text-[10px] text-slate-500 font-medium">24h CHANGE</div>
+                <div className="p-3 bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] rounded-xl text-center">
+                  <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] font-medium">24h CHANGE</div>
                   <div className={`text-lg font-bold number-mono mt-0.5 ${isGainer ? 'text-[#01C38E]' : 'text-red-500'}`}>
                     {isGainer ? '+' : ''}{btcChange.toFixed(2)}%
                   </div>
