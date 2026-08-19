@@ -53,7 +53,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-100 to-sky-300">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-sky-100 to-sky-300 dark:from-[#030304] dark:to-[#030304]">
       <Navbar />
 
       <div className="flex-1 flex flex-col">
@@ -82,17 +82,17 @@ export default function Home() {
               initial={{ opacity: 0, x: 50, scale: 0.95 }}
               animate={{ opacity: 1, x: 0, scale: 1 }}
               exit={{ opacity: 0, x: 50, scale: 0.95 }}
-              className={`p-4 rounded-xl border flex gap-3 shadow-2xl backdrop-blur-md pointer-events-auto bg-white/90 border-sky-100`}
+              className={`p-4 rounded-xl border flex gap-3 shadow-2xl backdrop-blur-md pointer-events-auto bg-white/90 dark:bg-[#13131a]/90 border-sky-100 dark:border-[#1f1f2e]`}
             >
               <div className="shrink-0 mt-0.5">{iconFor(n.type)}</div>
               <div className="flex-1">
                 <div className="flex justify-between items-start">
-                  <h4 className="text-xs font-bold text-slate-900">{n.title}</h4>
-                  <button onClick={() => dismissNotification(n.id)} className="text-slate-400 hover:text-slate-600 transition-colors">
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white">{n.title}</h4>
+                  <button onClick={() => dismissNotification(n.id)} className="text-slate-400 dark:text-[#6e6e7f] hover:text-slate-600 transition-colors">
                     <X size={14} />
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-500 mt-1 leading-normal">{n.message}</p>
+                <p className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mt-1 leading-normal">{n.message}</p>
                 {n.txHash && (
                   <a
                     href={n.explorerUrl ? `${n.explorerUrl}/tx/${n.txHash}` : `https://testnet.arcscan.app/tx/${n.txHash}`}
@@ -103,7 +103,7 @@ export default function Home() {
                     View on Explorer ↗
                   </a>
                 )}
-                <span className="text-[8px] text-slate-400 number-mono mt-1.5 block">{n.time}</span>
+                <span className="text-[8px] text-slate-400 dark:text-[#6e6e7f] number-mono mt-1.5 block">{n.time}</span>
               </div>
             </motion.div>
           ))}
