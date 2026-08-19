@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, memo, useState } from 'react';
+import { useAppState } from '@/context/useAppState';
 
 // Maps our internal pair symbols to TradingView symbols
 const TV_SYMBOL_MAP: Record<string, string> = {
@@ -25,6 +26,7 @@ interface Props {
 function TradingViewChart({ symbol, timeframe = '60' }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const { isDarkMode } = useAppState();
 
   // Map timeframe string to TradingView interval
   const tvInterval = (() => {
@@ -57,11 +59,11 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
       symbol:            tvSymbol,
       interval:          tvInterval,
       timezone:          'Etc/UTC',
-      theme:             'light',
+      theme:             isDarkMode ? 'dark' : 'light',
       style:             '1',
       locale:            'en',
-      backgroundColor:   '#ffffff',
-      gridColor:         'rgba(0,0,0,0.04)',
+      backgroundColor:   isDarkMode ? '#13131a' : '#ffffff',
+      gridColor:         isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
       hide_top_toolbar:  false,
       hide_legend:       false,
       hide_side_toolbar: false,
@@ -77,10 +79,10 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
     return () => {
       container.innerHTML = '';
     };
-  }, [tvSymbol, tvInterval]);
+  }, [tvSymbol, tvInterval, isDarkMode]);
 
   return (
-    <div className={isFullscreen ? "fixed inset-0 z-[100] bg-[#ffffff] p-4 flex flex-col" : "w-full h-full relative"}>
+    <div className={isFullscreen ? "fixed inset-0 z-[100] bg-white dark:bg-[#13131a] p-4 flex flex-col" : "w-full h-full relative"}>
       <button 
         onClick={() => setIsFullscreen(!isFullscreen)}
         className="absolute top-2 right-2 z-10 bg-white dark:bg-[#13131a] hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e] text-slate-700 dark:text-slate-200 p-2 rounded-lg shadow-lg border border-slate-200 dark:border-[#1f1f2e] transition-colors"
