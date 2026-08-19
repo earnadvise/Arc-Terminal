@@ -22,13 +22,19 @@ interface TokenMeta {
   name: string;
   decimals: number;
   color: string;
+  address?: string;
 }
 
 const TOKENS: TokenMeta[] = [
-  { symbol: 'USDC', name: 'USD Coin',   decimals: 6,  color: '#8b5cf6' },
-  { symbol: 'EURC', name: 'Euro Coin',  decimals: 6,  color: '#3b82f6' },
-  { symbol: 'USDT', name: 'Tether USD', decimals: 18, color: '#10b981' },
-  { symbol: 'ARC',  name: 'Arc Native', decimals: 18, color: '#ec4899' },
+  { symbol: 'USDC', name: 'USD Coin',   decimals: 6,  color: '#8b5cf6', address: '0x3600000000000000000000000000000000000000' },
+  { symbol: 'EURC', name: 'Euro Coin',  decimals: 6,  color: '#3b82f6', address: '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a' },
+  { symbol: 'USDT', name: 'Tether USD', decimals: 18, color: '#10b981', address: '0x175CdB1D338945f0D851A741ccF787D343E57952' },
+  { symbol: 'ARC',  name: 'Arc Native', decimals: 18, color: '#ec4899', address: '0xARC0000000000000000000000000000000000000' },
+  { symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, color: '#627EEA', address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2' },
+  { symbol: 'WBTC', name: 'Wrapped Bitcoin', decimals: 8, color: '#F7931A', address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599' },
+  { symbol: 'LINK', name: 'Chainlink', decimals: 18, color: '#2A5ADA', address: '0x514910771AF9Ca656af840dff83E8264EcF986CA' },
+  { symbol: 'UNI',  name: 'Uniswap', decimals: 18, color: '#FF007A', address: '0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984' },
+  { symbol: 'ARB',  name: 'Arbitrum', decimals: 18, color: '#28A0F0', address: '0x912CE59144191C1204E64559FE8253a0e49E6548' },
 ];
 
 function TokenSelector({
@@ -41,12 +47,22 @@ function TokenSelector({
   exclude: string;
 }) {
   const [open, setOpen] = useState(false);
-  const token = TOKENS.find(t => t.symbol === value)!;
+  const [search, setSearch] = useState('');
+  
+  // Fallback for custom tokens
+  const token = TOKENS.find(t => t.symbol === value) || { symbol: value, name: 'Custom Token', decimals: 18, color: '#64748b' };
+
+  const filteredTokens = TOKENS.filter(t => 
+    t.symbol !== exclude && 
+    (t.symbol.toLowerCase().includes(search.toLowerCase()) || 
+     t.name.toLowerCase().includes(search.toLowerCase()) || 
+     (t.address && t.address.toLowerCase().includes(search.toLowerCase())))
+  );
 
   return (
     <div className="relative">
       <button
-        onClick={() => setOpen(!open)}
+        onClick={() => { setOpen(!open); setSearch(''); }}
         className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-[#1c1c28] border border-[#232330] hover:border-[#8b5cf6]/40 transition-all cursor-pointer"
       >
         <span
@@ -55,7 +71,7 @@ function TokenSelector({
         >
           {token.symbol[0]}
         </span>
-        <span className="text-sm font-bold text-slate-900">{token.symbol}</span>
+        <span className="text-sm font-bold text-slate-900">{token.symbol.substring(0, 8)}</span>
         <ChevronDown size={14} className="text-slate-500" />
       </button>
 
@@ -65,26 +81,49 @@ function TokenSelector({
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 6 }}
-            className="absolute top-full mt-2 left-0 w-52 bg-white border border-slate-200 rounded-xl p-1.5 shadow-2xl z-30"
+            className="absolute top-full mt-2 left-0 w-64 bg-white border border-slate-200 rounded-xl p-1.5 shadow-2xl z-30"
           >
-            {TOKENS.filter(t => t.symbol !== exclude).map(t => (
-              <button
-                key={t.symbol}
-                onClick={() => { onChange(t.symbol); setOpen(false); }}
-                className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-100 transition-all text-left cursor-pointer"
-              >
-                <span
-                  className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-900 shrink-0"
-                  style={{ backgroundColor: t.color }}
+            <div className="p-1 mb-1">
+              <input 
+                type="text" 
+                placeholder="Search name or paste address" 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-slate-100 text-slate-900 text-xs px-3 py-2 rounded-lg outline-none border border-transparent focus:border-purple-400 transition-colors"
+                autoFocus
+              />
+            </div>
+            <div className="max-h-60 overflow-y-auto custom-scrollbar">
+              {filteredTokens.length > 0 ? filteredTokens.map(t => (
+                <button
+                  key={t.symbol}
+                  onClick={() => { onChange(t.symbol); setOpen(false); }}
+                  className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-100 transition-all text-left cursor-pointer"
                 >
-                  {t.symbol[0]}
-                </span>
-                <div>
-                  <div className="text-xs font-bold text-slate-900">{t.symbol}</div>
-                  <div className="text-[10px] text-slate-500">{t.name}</div>
+                  <span
+                    className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-slate-900 shrink-0"
+                    style={{ backgroundColor: t.color }}
+                  >
+                    {t.symbol[0]}
+                  </span>
+                  <div>
+                    <div className="text-xs font-bold text-slate-900">{t.symbol}</div>
+                    <div className="text-[10px] text-slate-500">{t.name}</div>
+                  </div>
+                </button>
+              )) : (
+                <div className="p-3 text-center text-xs text-slate-500">
+                  {search.startsWith('0x') && search.length === 42 ? (
+                    <button 
+                      onClick={() => { onChange(search); setOpen(false); }}
+                      className="text-purple-600 hover:text-purple-700 font-bold"
+                    >
+                      Import custom token
+                    </button>
+                  ) : 'No tokens found'}
                 </div>
-              </button>
-            ))}
+              )}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -143,14 +182,23 @@ export default function SwapView() {
 
     if (eth && walletAddress) {
       try {
-        const fromTokenData = ARC_TOKENS[fromToken as keyof typeof ARC_TOKENS];
-        const toTokenData   = ARC_TOKENS[toToken   as keyof typeof ARC_TOKENS];
+        // Handle known tokens from ARC_TOKENS, fallback to TOKENS array, and fallback to raw address for custom imports
+        const getAddrAndDec = (sym: string) => {
+          if (ARC_TOKENS[sym as keyof typeof ARC_TOKENS]) return { addr: ARC_TOKENS[sym as keyof typeof ARC_TOKENS].address, dec: ARC_TOKENS[sym as keyof typeof ARC_TOKENS].decimals };
+          const fromList = TOKENS.find(t => t.symbol === sym);
+          if (fromList && fromList.address) return { addr: fromList.address, dec: fromList.decimals };
+          if (sym.startsWith('0x') && sym.length === 42) return { addr: sym, dec: 18 }; // Default 18 for custom
+          return null;
+        };
 
-        if (fromTokenData && toTokenData) {
-          const fromAddress = fromTokenData.address;
-          const toAddress = toTokenData.address;
+        const fromData = getAddrAndDec(fromToken);
+        const toData = getAddrAndDec(toToken);
+
+        if (fromData && toData) {
+          const fromAddress = fromData.addr;
+          const toAddress = toData.addr;
           const fee = getPoolFee(fromToken, toToken);
-          const fromDecimals = fromTokenData.decimals;
+          const fromDecimals = fromData.dec;
           const amountInWei  = toWei(parsed, fromDecimals);
 
           // Check router allowance
