@@ -18,16 +18,20 @@ export default function Navbar() {
 
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
 
-  const navItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
+  const mainNavItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
     { id: 'Home',       label: 'Home',       icon: <HomeIcon size={15} /> },
     { id: 'Perpetuals', label: 'Perpetuals', icon: <Activity size={15} /> },
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
-    { id: 'Vault',      label: 'Vault',      icon: <VaultIcon size={15} /> },
     { id: 'Bridge',     label: 'Bridge',     icon: <Network size={15} /> },
-    { id: 'SafePay',    label: 'SafePay', icon: <Bot size={15} /> },
-    { id: 'Agents',     label: 'Arc AI',  icon: <Bot size={15} /> },
     { id: 'History',    label: 'History',    icon: <HistIcon size={15} /> },
+  ];
+
+  const moreNavItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'SafePay',    label: 'SafePay',    icon: <Bot size={15} /> },
+    { id: 'Agents',     label: 'Arc AI',     icon: <Bot size={15} /> },
+    { id: 'Vault',      label: 'Vault',      icon: <VaultIcon size={15} /> },
   ];
 
   return (
