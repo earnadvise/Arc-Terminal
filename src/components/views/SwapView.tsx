@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAppState } from '@/context/useAppState';
-import { ArrowUpDown, ChevronDown, Settings, Info, Zap, CircleAlert, RefreshCw, ExternalLink, CheckCircle2, X } from 'lucide-react';
+import { ArrowUpDown, ChevronDown, Settings, Info, Zap, CircleAlert, RefreshCw, ExternalLink, CheckCircle2, X, Search, Star, BadgeCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import {
