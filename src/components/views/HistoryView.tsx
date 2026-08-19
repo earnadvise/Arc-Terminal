@@ -49,7 +49,7 @@ export default function HistoryView() {
           `"${item.time}"`,
           `"${item.category || ''}"`,
           `"${item.side}"`,
-          `"${item.size || item.amount || ''}"`,
+          `"${item.size || (item as any).amount || ''}"`,
           `"${item.price || ''}"`,
           `"${item.status}"`,
           `"${item.txHash || ''}"`

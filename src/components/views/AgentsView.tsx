@@ -137,9 +137,8 @@ export default function AgentsView() {
         tokenIn.address,
         tokenOut.address,
         getPoolFee(chatSwapFromToken, chatSwapToToken),
-        fromAddress,
         amountInWei,
-        minOutput,
+        minOutput
       );
 
       const txHash: string = await eth.request({

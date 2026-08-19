@@ -208,7 +208,7 @@ export default function BridgeView() {
             addNotification('success', 'Bridge Complete', 'USDC successfully bridged across chains!');
             setTimeout(() => resetState(), 10000);
         } else {
-            throw new Error(result.error?.message || "Bridge failed to complete.");
+            throw new Error((result as any).error?.message || "Bridge failed to complete.");
         }
 
     } catch (err: any) {

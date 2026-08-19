@@ -314,7 +314,7 @@ export default function MarketsView() {
               </table>
             )}
 
-            {activeBottomTab === 'FundingHistory' && (
+            {(activeBottomTab as any) === 'FundingHistory' && (
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="text-slate-400 border-b border-slate-200 font-bold uppercase text-[10px]">

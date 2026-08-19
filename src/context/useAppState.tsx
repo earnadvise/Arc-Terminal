@@ -550,10 +550,9 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                         margin: Number(margin.toFixed(2)),
                         leverage: order.leverage,
                         marginMode: order.marginMode,
-                        marginRatio: (1 / order.leverage) * 100,
+                        
                         unrealizedPnl: 0,
-                        tpPrice: order.tpPrice,
-                        slPrice: order.slPrice,
+
                       });
                     }
                   }
@@ -1007,7 +1006,6 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               activePair.symbol,
               side === 'LONG',
               amount,
-              activePair.lastPrice, // entryPrice
               price, // targetPrice
               leverage
             );
