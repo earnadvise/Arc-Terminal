@@ -263,8 +263,13 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined' && walletAddress) {
       try {
         const savedPos = localStorage.getItem(`arc_terminal_positions_${walletAddress}`);
-        if (savedPos) setPositions(JSON.parse(savedPos));
-        else setPositions([]);
+          if (savedPos) {
+             try {
+                 const parsedPos = JSON.parse(savedPos);
+                 if (Array.isArray(parsedPos)) setPositions(parsedPos.filter(p => p && !isNaN(p.size) && !isNaN(p.margin)));
+                 else setPositions([]);
+             } catch { setPositions([]); }
+          } else setPositions([]);
 
         const savedOrders = localStorage.getItem(`arc_terminal_orders_${walletAddress}`);
         if (savedOrders) setOpenOrders(JSON.parse(savedOrders));
@@ -276,7 +281,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           
           const savedVaultUSDC = localStorage.getItem(`arc_terminal_vault_${walletAddress}`);
           if (savedVaultUSDC) {
-             setBalances(prev => ({ ...prev, vaultUSDC: Number(savedVaultUSDC) }));
+             const parsedVault = Number(savedVaultUSDC);
+             if (!isNaN(parsedVault) && parsedVault >= 0 && parsedVault < 10000000) {
+                 setBalances(prev => ({ ...prev, vaultUSDC: parsedVault }));
+             } else {
+                 localStorage.removeItem(`arc_terminal_vault_${walletAddress}`);
+             }
           }
         } catch {}
         setIsDataLoaded(true);
