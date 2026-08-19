@@ -256,6 +256,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [positions, setPositions] = useState<Position[]>([]);
   const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
+    const [isDataLoaded, setIsDataLoaded] = useState(false);
 
   // Load state when wallet changes
   useEffect(() => {
@@ -281,15 +282,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   }, [walletAddress]);
 
   useEffect(() => {
-    if (walletAddress) localStorage.setItem(`arc_terminal_positions_${walletAddress}`, JSON.stringify(positions));
+    if (walletAddress && isDataLoaded) localStorage.setItem(`arc_terminal_positions_${walletAddress}`, JSON.stringify(positions));
   }, [positions, walletAddress]);
 
   useEffect(() => {
-    if (walletAddress) localStorage.setItem(`arc_terminal_orders_${walletAddress}`, JSON.stringify(openOrders));
+    if (walletAddress && isDataLoaded) localStorage.setItem(`arc_terminal_orders_${walletAddress}`, JSON.stringify(openOrders));
   }, [openOrders, walletAddress]);
 
   useEffect(() => {
-    if (walletAddress) localStorage.setItem(`arc_terminal_history_${walletAddress}`, JSON.stringify(history));
+    if (walletAddress && isDataLoaded) localStorage.setItem(`arc_terminal_history_${walletAddress}`, JSON.stringify(history));
   }, [history, walletAddress]);
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
