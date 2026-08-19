@@ -6,14 +6,15 @@ import {
   Wallet, Coins, ChevronDown, LogOut, ShieldAlert,
   Home as HomeIcon, Activity, Compass, History as HistIcon,
   ArrowLeftRight, Network, Vault as VaultIcon, Bot, Link as LinkIcon, DollarSign
-} from 'lucide-react';
+, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function Navbar() {
   const {
     activeTab, setActiveTab,
     walletConnected, walletAddress, walletType,
-    balances, connectWallet, disconnectWallet, claimFaucet
+    balances, connectWallet, disconnectWallet, claimFaucet,
+    isDarkMode, toggleDarkMode
   } = useAppState();
 
   const [isWalletModalOpen, setIsWalletModalOpen] = useState(false);
@@ -132,6 +133,15 @@ export default function Navbar() {
 
         {/* Right Controls */}
         <div className="flex items-center gap-3">
+          
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleDarkMode}
+            className="flex items-center justify-center w-8 h-8 rounded-lg bg-white border border-slate-200 hover:border-[#8b5cf6]/50 text-slate-500 hover:text-slate-900 transition-all duration-200"
+          >
+            {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+
           {/* Faucet */}
           <button
             onClick={claimFaucet}

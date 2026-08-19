@@ -192,11 +192,15 @@ interface AppContextType {
   withdrawFunds: (amount: number) => Promise<void>;
   addHistoryItem: (item: Omit<HistoryItem, 'id' | 'time'>) => void;
   clearHistory: () => void;
+  isDarkMode: boolean;
+  toggleDarkMode: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
   // Unified Balance Kit
   const { balances: unifiedBalances, spend } = useUnifiedBalance();
 
@@ -1464,6 +1468,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         dismissNotification,
         addHistoryItem,
         clearHistory,
+        isDarkMode,
+        toggleDarkMode,
         placeOrder,
         closePosition,
         cancelOrder,
