@@ -615,14 +615,14 @@ export default function PerpetualsView() {
               <div className="p-8 text-center relative z-10">
                 <div className="flex items-center justify-center gap-2 mb-6 opacity-80">
                   <div className="w-6 h-6 rounded bg-gradient-to-tr from-[#34d399] to-[#059669] flex items-center justify-center shadow-lg shadow-[#10b981]/30">
-                    <span className="text-white dark:text-[#0c0c10] text-[10px] font-black">A</span>
+                    <span className="text-white text-[10px] font-black">A</span>
                   </div>
-                  <div className="text-[11px] font-black text-white dark:text-[#0c0c10] tracking-[0.2em] uppercase">Arc Terminal AI</div>
+                  <div className="text-[11px] font-black text-white tracking-[0.2em] uppercase">Arc Terminal AI</div>
                 </div>
                 
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black tracking-widest ${sharePosition.side === 'LONG' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-[#ef4444] text-white dark:text-[#0c0c10] shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`}>{sharePosition.side}</span>
-                  <span className="text-xl font-black text-white dark:text-[#0c0c10] tracking-wide">{sharePosition.symbol}</span>
+                  <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black tracking-widest ${sharePosition.side === 'LONG' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-[#ef4444] text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`}>{sharePosition.side}</span>
+                  <span className="text-xl font-black text-white tracking-wide">{sharePosition.symbol}</span>
                   <span className="text-xs font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-[#13131a]/10 px-1.5 py-0.5 rounded">{Number(sharePosition.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x</span>
                 </div>
                 
@@ -636,11 +636,11 @@ export default function PerpetualsView() {
                 <div className="grid grid-cols-2 gap-4 text-left bg-[#111827]/80 backdrop-blur-md rounded-2xl p-4 border border-white/10 shadow-inner">
                   <div>
                     <div className="text-[9px] text-slate-500 dark:text-[#8a8a9e] font-bold tracking-widest uppercase mb-0.5">Entry Price</div>
-                    <div className="text-sm font-black text-white dark:text-[#0c0c10] number-mono">${sharePosition.entryPrice.toLocaleString()}</div>
+                    <div className="text-sm font-black text-white number-mono">${sharePosition.entryPrice.toLocaleString()}</div>
                   </div>
                   <div>
                     <div className="text-[9px] text-slate-500 dark:text-[#8a8a9e] font-bold tracking-widest uppercase mb-0.5">Mark Price</div>
-                    <div className="text-sm font-black text-white dark:text-[#0c0c10] number-mono">${sharePosition.markPrice.toLocaleString()}</div>
+                    <div className="text-sm font-black text-white number-mono">${sharePosition.markPrice.toLocaleString()}</div>
                   </div>
                 </div>
               </div>
@@ -653,7 +653,7 @@ export default function PerpetualsView() {
                 navigator.clipboard.writeText(`I'm ${sharePosition.side} ${sharePosition.symbol} with ${sharePosition.leverage}x leverage on Arc Terminal AI! PnL: ${sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%`);
                 alert('Copied to clipboard!');
               }} className="flex-1 py-3 rounded-xl text-xs font-bold text-slate-900 bg-white hover:bg-slate-200 transition-colors backdrop-blur-md">Copy Text</button>
-              <button onClick={handleDownloadImage} className="flex-[2] py-3 rounded-xl text-xs font-bold text-white dark:text-[#0c0c10] bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(139,92,246,0.3)] border border-white/10">Download Image</button>
+              <button onClick={handleDownloadImage} className="flex-[2] py-3 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(139,92,246,0.3)] border border-white/10">Download Image</button>
             </div>
             
           </div>
@@ -719,7 +719,7 @@ export default function PerpetualsView() {
                 setTpPrice('');
                 setSlPrice('');
                 setTpSlPosition(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white dark:text-[#0c0c10] bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors shadow-lg shadow-[#8b5cf6]/30">Confirm</button>
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors shadow-lg shadow-[#8b5cf6]/30">Confirm</button>
             </div>
           </div>
         </div>
@@ -795,7 +795,7 @@ export default function PerpetualsView() {
                   closePosition(closingPosition.id, amt);
                 }
                 setClosingPosition(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white dark:text-[#0c0c10] bg-[#ef4444] hover:bg-[#dc2626] transition-colors shadow-lg shadow-[#ef4444]/30">Confirm Close</button>
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-[#ef4444] hover:bg-[#dc2626] transition-colors shadow-lg shadow-[#ef4444]/30">Confirm Close</button>
             </div>
           </div>
         </div>
