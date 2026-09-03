@@ -109,6 +109,20 @@ export default function PerpetualsView() {
 
   return (
     <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] h-screen bg-slate-50 dark:bg-[#0b0c10] text-slate-900 dark:text-white">
+      {/* --- TICKER TAPE (Top Coin Movement) --- */}
+      <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[32px] px-2 gap-6 text-[11px] font-bold">
+        {markets.slice(0, 8).map((m) => {
+          const isUp = m.change24h >= 0;
+          return (
+            <div key={m.symbol} className="flex items-center gap-2 cursor-pointer hover:opacity-70 whitespace-nowrap" onClick={() => setActivePairBySymbol(m.symbol)}>
+              <span className="text-slate-700 dark:text-slate-300">{m.symbol}</span>
+              <span className="number-mono">${m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+              <span className={isUp ? 'text-[#10b981]' : 'text-[#ef4444]'}>{isUp ? '+' : ''}{m.change24h}%</span>
+            </div>
+          );
+        })}
+      </div>
+
       {/* --- TOP HEADER (Binance Style) --- */}
       <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] flex items-center justify-between px-4 py-2 shrink-0">
         <div className="flex items-center gap-6">
@@ -206,7 +220,7 @@ export default function PerpetualsView() {
         {/* LEFT COLUMN: Chart + Positions */}
         <div className="flex-[3.5] flex flex-col gap-1 min-w-0">
           {/* Chart Section */}
-          <div className="flex-[2] bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] min-h-0 flex flex-col">
+          <div className="flex-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] min-h-[400px] flex flex-col">
             <div className="flex items-center gap-2 p-2 border-b border-slate-200 dark:border-[#1f1f2e]">
               <div className="flex items-center gap-4 text-xs font-bold px-2">
                 <button className="text-[#8b5cf6] border-b-2 border-[#8b5cf6] pb-1">Chart</button>
@@ -225,13 +239,13 @@ export default function PerpetualsView() {
                 ))}
               </div>
             </div>
-            <div className="flex-1 min-h-0 relative">
+            <div className="flex-1 w-full h-full relative" id="tv_chart_container">
               <TradingViewChart symbol={activePair.symbol} timeframe={timeframe} />
             </div>
           </div>
 
           {/* Positions Section */}
-          <div className="flex-[1] bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] flex flex-col min-h-[220px]">
+          <div className="h-[240px] shrink-0 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] flex flex-col">
             <div className="flex items-center gap-4 px-4 pt-2 border-b border-slate-200 dark:border-[#1f1f2e]">
               {[
                 { id: 'Positions',     label: 'Positions',     count: positions.length },
@@ -346,7 +360,6 @@ export default function PerpetualsView() {
                <span className={`text-lg font-black ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                  {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                </span>
-               <span className="text-xs text-slate-500 dark:text-[#8a8a9e] line-through">{(activePair.lastPrice * 1.0005).toFixed(2)}</span>
             </div>
 
             {/* Bids (Green) */}
