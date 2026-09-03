@@ -760,10 +760,72 @@ export default function PerpetualsView() {
                 </table>
               )}
               {activeBottomTab === 'OpenOrders' && (
-                <div className="p-4 text-slate-500 dark:text-[#8a8a9e] text-xs text-center mt-4">No open orders</div>
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="sticky top-0 bg-white dark:bg-[#13131a] z-10">
+                    <tr className="text-slate-500 dark:text-[#8a8a9e] font-bold uppercase text-[10px]">
+                      <th className="py-2 pl-4 font-medium">Market</th>
+                      <th className="font-medium">Type</th>
+                      <th className="font-medium">Price</th>
+                      <th className="font-medium">Amount</th>
+                      <th className="font-medium text-right pr-4">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f2e]">
+                    {openOrders.map(order => (
+                      <tr key={order.id} className="hover:bg-slate-200 dark:hover:bg-[#1f1f2e]/50 transition-colors">
+                        <td className="py-2 pl-4">
+                          <div className="font-bold text-slate-900 dark:text-white">{order.symbol}</div>
+                          <div className={`text-[9px] font-bold ${order.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                            {order.side === 'BUY' ? 'LONG' : 'SHORT'} {Number(order.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
+                          </div>
+                        </td>
+                        <td className="text-slate-700 dark:text-slate-300">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
+                        <td className="number-mono text-slate-700 dark:text-slate-300">
+                          {order.type === 'TPSL' ? (
+                            <div className="flex flex-col text-[9px] leading-tight gap-0.5">
+                              {order.tpPrice ? <span>TP: ${order.tpPrice.toLocaleString()}</span> : null}
+                              {order.slPrice ? <span>SL: ${order.slPrice.toLocaleString()}</span> : null}
+                            </div>
+                          ) : (
+                            <span>${order.price.toLocaleString()}</span>
+                          )}
+                        </td>
+                        <td className="number-mono text-slate-900 dark:text-white">{order.amount}</td>
+                        <td className="text-right pr-4 py-1.5 flex items-center justify-end">
+                          <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] font-bold text-[#ef4444] border border-[#ef4444]/30 bg-[#ef4444]/10 rounded hover:bg-[#ef4444]/20 transition-all">Cancel</button>
+                        </td>
+                      </tr>
+                    ))}
+                    {openOrders.length === 0 && <tr><td colSpan={5} className="text-center text-slate-500 dark:text-[#8a8a9e] py-8 text-xs">No open orders</td></tr>}
+                  </tbody>
+                </table>
               )}
               {activeBottomTab === 'TradeHistory' && (
-                <div className="p-4 text-slate-500 dark:text-[#8a8a9e] text-xs text-center mt-4">No trade history</div>
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="sticky top-0 bg-white dark:bg-[#13131a] z-10">
+                    <tr className="text-slate-500 dark:text-[#8a8a9e] font-bold uppercase text-[10px]">
+                      <th className="py-2 pl-4 font-medium">Time</th>
+                      <th className="font-medium">Market</th>
+                      <th className="font-medium">Action</th>
+                      <th className="font-medium">Price</th>
+                      <th className="font-medium text-right pr-4">PnL</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f2e]">
+                    {history.map(item => (
+                      <tr key={item.id} className="hover:bg-slate-200 dark:hover:bg-[#1f1f2e]/50 transition-colors">
+                        <td className="py-2 pl-4 text-slate-500 dark:text-[#8a8a9e]">{new Date(item.timestamp).toLocaleString()}</td>
+                        <td className="font-bold text-slate-900 dark:text-white">{item.symbol}</td>
+                        <td className={`font-bold ${item.action.includes('Buy') || item.action.includes('Long') ? 'text-[#10b981]' : item.action.includes('Sell') || item.action.includes('Short') ? 'text-[#ef4444]' : 'text-slate-500 dark:text-[#8a8a9e]'}`}>{item.action}</td>
+                        <td className="number-mono text-slate-700 dark:text-slate-300">{item.price ? `$${item.price.toLocaleString()}` : '-'}</td>
+                        <td className={`text-right pr-4 font-bold number-mono ${item.realizedPnl && item.realizedPnl > 0 ? 'text-[#10b981]' : item.realizedPnl && item.realizedPnl < 0 ? 'text-[#ef4444]' : 'text-slate-500 dark:text-[#8a8a9e]'}`}>
+                          {item.realizedPnl ? `${item.realizedPnl > 0 ? '+' : ''}$${item.realizedPnl.toFixed(2)}` : '-'}
+                        </td>
+                      </tr>
+                    ))}
+                    {history.length === 0 && <tr><td colSpan={5} className="text-center text-slate-500 dark:text-[#8a8a9e] py-8 text-xs">No trade history</td></tr>}
+                  </tbody>
+                </table>
               )}
             </div>
           </div>
