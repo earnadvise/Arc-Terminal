@@ -377,17 +377,36 @@ export default function PerpetualsView() {
               >{m}</button>
             ))}
             <div className="w-px bg-slate-200 dark:bg-[#1f1f2e] mx-1 my-1" />
-            <button 
-              onClick={() => {
-                const val = window.prompt('Enter leverage (1 to 100):', leverage.toString());
-                const num = parseInt(val || '');
-                if (!isNaN(num) && num >= 1 && num <= 100) setLeverage(num);
-              }}
-              className="flex-1 py-1 text-xs font-bold rounded-sm text-slate-900 dark:text-white bg-slate-200 dark:bg-[#1f1f2e] hover:bg-[#2a2a35] transition-colors flex items-center justify-center gap-1"
-              title="Change Leverage"
-            >
-              {leverage}x <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-            </button>
+            <div className="relative flex-1 flex">
+              <button 
+                onClick={() => setShowLeverageDropdown(!showLeverageDropdown)}
+                className="w-full py-1 text-xs font-bold rounded-sm text-slate-900 dark:text-white bg-slate-200 dark:bg-[#1f1f2e] hover:bg-slate-300 dark:hover:bg-[#2a2a35] transition-colors flex items-center justify-center gap-1"
+                title="Change Leverage"
+              >
+                {leverage}x <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+              </button>
+              {showLeverageDropdown && (
+                <div className="absolute top-full right-0 mt-2 w-[220px] bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-[#1f1f2e] rounded-lg shadow-2xl z-[100] p-4">
+                  <div className="flex justify-between text-xs font-bold mb-3 text-slate-900 dark:text-white">
+                    <span>Leverage</span>
+                    <span className="text-[#8b5cf6]">{leverage}x</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="1" max="100"
+                    value={leverage}
+                    onChange={(e) => setLeverage(parseInt(e.target.value))}
+                    className="w-full accent-[#8b5cf6] mb-4"
+                  />
+                  <button 
+                    onClick={() => setShowLeverageDropdown(false)}
+                    className="w-full py-1.5 bg-[#8b5cf6] text-white text-xs font-bold rounded hover:bg-[#7c3aed]"
+                  >
+                    Confirm
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex gap-4 border-b border-slate-200 dark:border-[#1f1f2e] mb-4">
