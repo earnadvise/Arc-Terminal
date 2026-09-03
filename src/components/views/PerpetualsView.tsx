@@ -103,499 +103,407 @@ export default function PerpetualsView() {
       estimatedSLPnl = (tpSlPosition.side === 'LONG' ? sl - tpSlPosition.entryPrice : tpSlPosition.entryPrice - sl) * tpSlPosition.size;
     }
   }
+  const [showMarketDropdown, setShowMarketDropdown] = useState(false);
 
   return (
-    <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 grid grid-cols-1 xl:grid-cols-4 gap-4 select-none">
-
-      {/* ── COL 1: MARKETS SIDEBAR ─────────────────────────────────── */}
-      <section className="xl:col-span-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 flex flex-col gap-3 shadow-xl" style={{ maxHeight: 820, minHeight: 680 }}>
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wide">Perpetual Markets</h2>
-          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-[#8a8a9e]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-            Live
-          </div>
-        </div>
-
-        <div className="relative">
-          <Search className="absolute left-3 top-2.5 text-slate-400 dark:text-slate-500" size={13} />
-          <input
-            type="text"
-            placeholder="Search perpetuals..."
-            value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
-            className="w-full pl-8 pr-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs text-slate-900 dark:text-white placeholder-[#6e6e7f] outline-none transition-colors"
-          />
-        </div>
-
-        <div className="flex bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-0.5 rounded-lg">
-          {(['All', 'Crypto', 'Commodities', 'Forex'] as const).map(cat => (
-            <button
-              key={cat}
-              onClick={() => setCategoryFilter(cat)}
-              className={`flex-1 py-1 text-[9px] font-bold rounded-md transition-colors ${
-                categoryFilter === cat
-                  ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/25'
-                  : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
-              }`}
+    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] h-screen bg-[#0b0c10] text-white">
+      {/* --- TOP HEADER (Binance Style) --- */}
+      <div className="bg-[#13131a] border border-[#1f1f2e] flex items-center justify-between px-4 py-2 shrink-0">
+        <div className="flex items-center gap-6">
+          {/* Market Dropdown Toggle */}
+          <div className="relative">
+            <button 
+              onClick={() => setShowMarketDropdown(!showMarketDropdown)}
+              className="flex items-center gap-2 text-xl font-black text-white hover:text-[#8b5cf6] transition-colors"
             >
-              {cat}
+              {activePair.symbol}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
             </button>
-          ))}
-        </div>
-
-        <div className="flex-1 overflow-y-auto pr-0.5 space-y-0.5">
-          <div className="grid grid-cols-4 text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase pb-2 border-b border-slate-200 dark:border-[#1f1f2e]">
-            <span className="col-span-2">Symbol</span>
-            <span className="text-right">Price</span>
-            <span className="text-right">24h %</span>
-          </div>
-          {filteredPairs.map(m => {
-            const isSelected = m.symbol === activePair.symbol;
-            const isGainer = m.change24h >= 0;
-            return (
-              <div
-                key={m.symbol}
-                onClick={() => setActivePairBySymbol(m.symbol)}
-                className={`grid grid-cols-4 items-center p-2 rounded-lg cursor-pointer transition-all duration-150 ${
-                  isSelected
-                    ? 'bg-gradient-to-r from-[#3b82f6]/10 to-[#8b5cf6]/10 border border-[#8b5cf6]/30'
-                    : 'border border-transparent hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/55'
-                }`}
-              >
-                <div className="col-span-2">
-                  <div className="text-[11px] font-semibold text-slate-900 dark:text-white">{m.symbol}</div>
-                  <div className="text-[9px] text-slate-400 dark:text-slate-500">{m.name}</div>
+            <div className="text-[10px] text-[#8a8a9e] mt-0.5">{activePair.name}</div>
+            
+            {/* Dropdown Menu */}
+            {showMarketDropdown && (
+              <div className="absolute top-full left-0 mt-2 w-[350px] bg-[#1a1a24] border border-[#1f1f2e] rounded-lg shadow-2xl z-50 overflow-hidden">
+                <div className="p-2 border-b border-[#1f1f2e]">
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2 text-[#8a8a9e]" size={14} />
+                    <input
+                      type="text"
+                      placeholder="Search..."
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 bg-[#13131a] border border-[#1f1f2e] rounded focus:border-[#8b5cf6] text-xs text-white outline-none"
+                    />
+                  </div>
+                  <div className="flex gap-1 mt-2">
+                    {(['All', 'Crypto', 'Commodities', 'Forex'] as const).map(cat => (
+                      <button
+                        key={cat}
+                        onClick={() => setCategoryFilter(cat)}
+                        className={`flex-1 py-1 text-[10px] font-bold rounded ${
+                          categoryFilter === cat ? 'bg-[#8b5cf6]/20 text-[#8b5cf6]' : 'text-[#8a8a9e] hover:text-white hover:bg-[#1f1f2e]'
+                        }`}
+                      >{cat}</button>
+                    ))}
+                  </div>
                 </div>
-                <div className="text-right text-[10px] number-mono text-slate-800 dark:text-slate-100">
-                  {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
-                </div>
-                <div className={`text-right text-[10px] font-semibold number-mono ${isGainer ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                  {isGainer ? '+' : ''}{m.change24h}%
+                <div className="max-h-[300px] overflow-y-auto">
+                  {filteredPairs.map(m => (
+                    <div
+                      key={m.symbol}
+                      onClick={() => { setActivePairBySymbol(m.symbol); setShowMarketDropdown(false); }}
+                      className="flex items-center justify-between p-2 hover:bg-[#1f1f2e] cursor-pointer border-b border-[#1f1f2e]/50"
+                    >
+                      <div>
+                        <div className="text-xs font-bold text-white">{m.symbol}</div>
+                        <div className="text-[10px] text-[#8a8a9e]">{m.name}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs number-mono text-white">{m.lastPrice.toLocaleString()}</div>
+                        <div className={`text-[10px] font-bold ${m.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                          {m.change24h >= 0 ? '+' : ''}{m.change24h}%
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
-            );
-          })}
-          {filteredPairs.length === 0 && (
-            <div className="text-center text-xs text-slate-400 dark:text-slate-500 py-8">No results.</div>
-          )}
-        </div>
-      </section>
-
-      {/* ── COL 2+3: CHART AREA ─────────────────────────────────────── */}
-      <section className="xl:col-span-2 flex flex-col gap-4">
-
-        {/* Pair Header Row */}
-        <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl px-4 py-3 flex items-center gap-6 overflow-x-auto shadow-xl">
-          <div>
-            <div className="text-base font-black text-slate-900 dark:text-white tracking-wide">{activePair.symbol}</div>
-            <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{activePair.name}</div>
+            )}
           </div>
-          <div className="h-8 w-px bg-slate-100 dark:bg-[#1f1f2e]" />
-          <div>
-            <div className={`text-lg font-black number-mono ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-              {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+          
+          <div className="h-8 w-px bg-[#1f1f2e]" />
+          
+          <div className="flex gap-8">
+            <div>
+              <div className={`text-base font-black number-mono ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+              </div>
+              <div className="text-[10px] text-[#8a8a9e] uppercase">Last Price</div>
             </div>
-            <div className={`text-[9px] number-mono font-semibold ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-              {activePair.change24h >= 0 ? '+' : ''}{activePair.change24h}%
-            </div>
-          </div>
-          {[
-            { label: '24h High', value: activePair.high24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
-            { label: '24h Low',  value: activePair.low24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
-            { label: '24h Vol',  value: `$${(activePair.volume24h / 1e6).toFixed(2)}M` },
-            { label: 'Open Interest', value: `$${(activePair.openInterest / 1e6).toFixed(2)}M` },
-          ].map(stat => (
-            <div key={stat.label} className="shrink-0">
-              <div className="text-[9px] text-slate-400 dark:text-slate-500 uppercase">{stat.label}</div>
-              <div className="text-xs number-mono text-slate-900 dark:text-white font-semibold">{stat.value}</div>
-            </div>
-          ))}
-
-          {/* Timeframe selector */}
-          <div className="ml-auto flex items-center gap-1">
-            {['1m', '5m', '15m', '1h', '4h', '1D'].map(tf => (
-              <button
-                key={tf}
-                onClick={() => setTimeframe(tf)}
-                className={`px-2 py-1 text-[10px] font-bold rounded transition-all ${
-                  timeframe === tf
-                    ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/30'
-                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]'
-                }`}
-              >
-                {tf}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* TradingView Chart */}
-        <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl overflow-hidden shadow-xl" style={{ height: 460 }}>
-          <TradingViewChart symbol={activePair.symbol} timeframe={timeframe} />
-        </div>
-
-        {/* Bottom Positions / Orders Table */}
-        <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 flex flex-col overflow-hidden shadow-xl" style={{ minHeight: 200 }}>
-          <div className="flex items-center gap-1 mb-3 self-start">
             {[
-              { id: 'Positions',     label: 'Positions',     count: positions.length },
-              { id: 'OpenOrders',    label: 'Open Orders',   count: openOrders.length },
-              { id: 'TradeHistory',  label: 'Trade History', count: null },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveBottomTab(tab.id as any)}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                  activeBottomTab === tab.id
-                    ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20'
-                    : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
-                }`}
-              >
-                {tab.label}
-                {tab.count !== null && tab.count > 0 && (
-                  <span className="ml-1 px-1.5 py-0.5 text-[9px] bg-[#8b5cf6]/20 text-[#8b5cf6] rounded-full">{tab.count}</span>
-                )}
-              </button>
-            ))}
-          </div>
-
-          <div className="overflow-auto">
-            {activeBottomTab === 'Positions' && (
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-[#1f1f2e] font-bold uppercase text-[10px]">
-                    <th className="py-2">Market</th>
-                    <th>Size</th><th>Entry</th><th>Mark</th>
-                    <th>Liq</th><th>PnL</th><th className="text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#13131a]">
-                  {positions.map(pos => {
-                    const isGain = pos.unrealizedPnl >= 0;
-                    return (
-                      <tr key={pos.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30 transition-colors">
-                        <td className="py-2.5">
-                          <div className="font-bold text-slate-900 dark:text-white">{pos.symbol}</div>
-                          <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                            {pos.side} {Number(pos.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
-                          </div>
-                        </td>
-                        <td className="number-mono text-slate-900 dark:text-white">{pos.size}</td>
-                        <td className="number-mono text-slate-700 dark:text-slate-200">${pos.entryPrice.toLocaleString()}</td>
-                        <td className="number-mono text-slate-700 dark:text-slate-200">${pos.markPrice.toLocaleString()}</td>
-                        <td className="number-mono text-amber-500">${pos.liqPrice.toLocaleString()}</td>
-                        <td className={`number-mono font-bold ${isGain ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                          {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
-                        </td>
-                        <td className="text-right flex items-center justify-end gap-1">
-                          <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-800 dark:text-slate-100 hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e] border border-slate-200 dark:border-[#1f1f2e] rounded transition-all" title="Set TP/SL">
-                            TP/SL
-                          </button>
-                          <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
-                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                          </button>
-                          <button onClick={async () => {
-                            await closePosition(pos.id);
-                            // Wait for blockchain to mine the close transaction
-                            await new Promise(r => setTimeout(r, 8000));
-                            await placeOrder(pos.side === 'LONG' ? 'SHORT' : 'LONG', 'MARKET', pos.markPrice, pos.size, pos.symbol, false, true);
-                          }} className="px-2 py-1 text-[10px] font-semibold text-amber-500 hover:bg-amber-500/10 border border-amber-500/30 rounded transition-all" title="Reverse Position">
-                            Reverse
-                          </button>
-                          <button onClick={() => {
-                            setClosingPosition(pos);
-                            setCloseSizeInput(pos.size.toString());
-                          }} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                  {positions.length === 0 && (
-                    <tr><td colSpan={9} className="text-center text-slate-400 dark:text-slate-500 py-6 text-xs">No active positions.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-
-            {activeBottomTab === 'OpenOrders' && (
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-[#1f1f2e] font-bold uppercase text-[10px]">
-                    <th className="py-2">Market</th><th>Type</th>
-                    <th>Price</th><th>Amount</th>
-                    <th className="text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#13131a]">
-                  {openOrders.map(order => (
-                    <tr key={order.id} className="hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/30 transition-colors">
-                      <td className="py-2.5">
-                        <div className="font-bold text-slate-900 dark:text-white">{order.symbol}</div>
-                        <div className={`text-[9px] font-bold ${order.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                          {order.side === 'BUY' ? 'LONG' : 'SHORT'} {Number(order.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
-                        </div>
-                      </td>
-                      <td className="text-slate-700 dark:text-slate-200">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
-                      <td className="number-mono text-slate-700 dark:text-slate-200">
-                        {order.type === 'TPSL' ? (
-                          <div className="flex flex-col text-[9px] leading-tight gap-0.5">
-                            {order.tpPrice ? <span>TP: ${order.tpPrice.toLocaleString()}</span> : null}
-                            {order.slPrice ? <span>SL: ${order.slPrice.toLocaleString()}</span> : null}
-                          </div>
-                        ) : (
-                          <span>${order.price.toLocaleString()}</span>
-                        )}
-                      </td>
-                      <td className="number-mono text-slate-900 dark:text-white">{order.amount}</td>
-                      <td className="text-right flex items-center justify-end gap-1.5 py-1.5 pr-2">
-                        {order.type === 'TPSL' && (
-                          <button onClick={() => {
-                            const pos = positions.find(p => p.symbol === order.symbol);
-                            if (pos) {
-                              setTpPrice(order.tpPrice ? order.tpPrice.toString() : '');
-                              setSlPrice(order.slPrice ? order.slPrice.toString() : '');
-                              setTpSlPosition(pos);
-                            }
-                          }} className="px-2 py-1 text-[10px] text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-all">
-                            Edit
-                          </button>
-                        )}
-                        <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white bg-slate-100 dark:bg-[#1f1f2e] border border-[#1e1e2c] rounded transition-all">Cancel</button>
-                      </td>
-                    </tr>
-                  ))}
-                  {openOrders.length === 0 && (
-                    <tr><td colSpan={7} className="text-center text-slate-400 dark:text-slate-500 py-6">No open orders.</td></tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-
-            {activeBottomTab === 'TradeHistory' && (
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="text-slate-400 dark:text-slate-500 border-b border-slate-200 dark:border-[#1f1f2e] font-bold uppercase text-[10px]">
-                    <th className="py-2">Time</th><th>Market</th>
-                    <th>Type</th><th>Size</th><th>Price</th><th>Fee</th><th>PnL</th><th>Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#13131a]">
-                  {history.filter(h => h.side !== 'DEPOSIT' && h.side !== 'WITHDRAW').slice(0, 8).map(h => (
-                    <tr key={h.id}>
-                      <td className="py-2.5 text-slate-400 dark:text-slate-500 number-mono text-[10px]">{h.time}</td>
-                      <td>
-                        <div className="font-bold text-slate-900 dark:text-white">{h.pair}</div>
-                        <div className={`text-[9px] font-bold ${h.side === 'LONG' || h.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                          {h.side}
-                        </div>
-                      </td>
-                      <td className="text-slate-700 dark:text-slate-200">{h.type}</td>
-                      <td className="number-mono text-slate-700 dark:text-slate-200">{h.size}</td>
-                      <td className="number-mono text-slate-700 dark:text-slate-200">{h.price}</td>
-                      <td className="number-mono text-slate-400 dark:text-slate-500">{h.fee}</td>
-                      <td className={`number-mono font-bold ${!h.realizedPnl ? 'text-slate-500 dark:text-[#8a8a9e]' : h.realizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                        {h.realizedPnl !== undefined ? (h.realizedPnl >= 0 ? '+' : '') + '$' + h.realizedPnl.toFixed(2) : '-'}
-                      </td>
-                      <td><span className="text-emerald-500 font-semibold text-[10px]">{h.status}</span></td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* ── COL 4: ORDER ENTRY ──────────────────────────────────────── */}
-      <section className="xl:col-span-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 flex flex-col shadow-xl" style={{ maxHeight: 820 }}>
-        {/* Order Type */}
-        <div className="flex bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-0.5 rounded-lg mb-4">
-          {(['Market', 'Limit'] as const).map(t => (
-            <button
-              key={t}
-              onClick={() => setOrderType(t)}
-              className={`flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                orderType === t ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/20' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
-              }`}
-            >{t}</button>
-          ))}
-        </div>
-
-        {/* Long / Short */}
-        <div className="grid grid-cols-2 gap-2 mb-4">
-          <button
-            onClick={() => setTradeSide('LONG')}
-            className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
-              tradeSide === 'LONG'
-                ? 'bg-[#10b981] text-slate-900 dark:text-white border-transparent shadow-[0_0_15px_rgba(16,185,129,0.35)]'
-                : 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-[#10b981]'
-            }`}
-          >Buy / Long</button>
-          <button
-            onClick={() => setTradeSide('SHORT')}
-            className={`py-2 text-xs font-bold rounded-lg border uppercase tracking-wider transition-all ${
-              tradeSide === 'SHORT'
-                ? 'bg-[#ef4444] text-slate-900 dark:text-white border-transparent shadow-[0_0_15px_rgba(239,68,68,0.35)]'
-                : 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-[#ef4444]'
-            }`}
-          >Sell / Short</button>
-        </div>
-
-        {/* Margin Mode */}
-        <div className="flex items-center justify-between mb-3">
-          <span className="text-xs text-slate-500 dark:text-[#8a8a9e]">Margin Mode</span>
-          <div className="flex bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-0.5 rounded-md text-[10px]">
-            {['CROSS', 'ISOLATED'].map(mode => (
-              <button
-                key={mode}
-                onClick={() => setMarginMode(mode as any)}
-                className={`px-2 py-0.5 font-bold rounded transition-colors ${
-                  marginMode === mode ? 'bg-sky-100 text-[#8b5cf6] border border-[#8b5cf6]/15' : 'text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:text-slate-200'
-                }`}
-              >{mode}</button>
+              { label: '24h Change', value: `${activePair.change24h >= 0 ? '+' : ''}${activePair.change24h}%`, color: activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]' },
+              { label: '24h High', value: activePair.high24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+              { label: '24h Low',  value: activePair.low24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+              { label: '24h Vol',  value: `$${(activePair.volume24h / 1e6).toFixed(2)}M` },
+              { label: 'Open Interest', value: `$${(activePair.openInterest / 1e6).toFixed(2)}M` },
+              { label: 'Funding / 1h', value: '0.0051%' },
+            ].map(stat => (
+              <div key={stat.label}>
+                <div className={`text-sm number-mono font-semibold ${stat.color || 'text-white'}`}>{stat.value}</div>
+                <div className="text-[10px] text-[#8a8a9e] uppercase">{stat.label}</div>
+              </div>
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Price */}
-        <div className="mb-3">
-          <div className="flex justify-between mb-1">
-            <span className="text-xs text-slate-500 dark:text-[#8a8a9e]">Price {orderType === 'Market' && <span className="text-amber-500 text-[10px] font-bold bg-amber-500/10 px-1 rounded ml-1">MARKET</span>}</span>
-            <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase">USDC</span>
+      {/* --- MAIN 3-PANEL GRID --- */}
+      <div className="flex-1 flex gap-1 min-h-0 overflow-hidden pb-1">
+        
+        {/* LEFT COLUMN: Chart + Positions */}
+        <div className="flex-[3.5] flex flex-col gap-1 min-w-0">
+          {/* Chart Section */}
+          <div className="flex-[2] bg-[#13131a] border border-[#1f1f2e] min-h-0 flex flex-col">
+            <div className="flex items-center gap-2 p-2 border-b border-[#1f1f2e]">
+              <div className="flex items-center gap-4 text-xs font-bold px-2">
+                <button className="text-[#8b5cf6] border-b-2 border-[#8b5cf6] pb-1">Chart</button>
+                <button className="text-[#8a8a9e] hover:text-white pb-1">Info</button>
+              </div>
+              <div className="h-4 w-px bg-[#1f1f2e]" />
+              <div className="flex items-center gap-1">
+                {['1m', '5m', '15m', '1h', '4h', '1D'].map(tf => (
+                  <button
+                    key={tf}
+                    onClick={() => setTimeframe(tf)}
+                    className={`px-2 py-0.5 text-[10px] font-bold rounded ${
+                      timeframe === tf ? 'bg-[#1f1f2e] text-white' : 'text-[#8a8a9e] hover:text-white'
+                    }`}
+                  >{tf}</button>
+                ))}
+              </div>
+            </div>
+            <div className="flex-1 min-h-0 relative">
+              <TradingViewChart symbol={activePair.symbol} timeframe={timeframe} />
+            </div>
           </div>
-          <input
-            type="text"
-            disabled={orderType === 'Market'}
-            value={orderType === 'Market' ? activePair.lastPrice : inputPrice}
-            onChange={e => setInputPrice(e.target.value)}
-            className={`w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border rounded-lg text-xs number-mono text-slate-900 dark:text-white outline-none transition-colors ${
-              orderType === 'Market' ? 'border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] cursor-not-allowed' : 'border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50'
-            }`}
-          />
+
+          {/* Positions Section */}
+          <div className="flex-[1] bg-[#13131a] border border-[#1f1f2e] flex flex-col min-h-[220px]">
+            <div className="flex items-center gap-4 px-4 pt-2 border-b border-[#1f1f2e]">
+              {[
+                { id: 'Positions',     label: 'Positions',     count: positions.length },
+                { id: 'OpenOrders',    label: 'Open Orders',   count: openOrders.length },
+                { id: 'TradeHistory',  label: 'Trade History', count: null },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveBottomTab(tab.id as any)}
+                  className={`py-2 text-xs font-semibold border-b-2 transition-all ${
+                    activeBottomTab === tab.id
+                      ? 'border-[#8b5cf6] text-[#8b5cf6]'
+                      : 'border-transparent text-[#8a8a9e] hover:text-white'
+                  }`}
+                >
+                  {tab.label} {tab.count !== null && `(${tab.count})`}
+                </button>
+              ))}
+            </div>
+            <div className="flex-1 overflow-auto">
+              {activeBottomTab === 'Positions' && (
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="sticky top-0 bg-[#13131a] z-10">
+                    <tr className="text-[#8a8a9e] font-bold uppercase text-[10px]">
+                      <th className="py-2 pl-4 font-medium">Market</th>
+                      <th className="font-medium">Size</th>
+                      <th className="font-medium">Entry Price</th>
+                      <th className="font-medium">Mark Price</th>
+                      <th className="font-medium">Liq. Price</th>
+                      <th className="font-medium">Unrealized PnL</th>
+                      <th className="font-medium text-right pr-4">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#1f1f2e]">
+                    {positions.map(pos => {
+                      const isGain = pos.unrealizedPnl >= 0;
+                      return (
+                        <tr key={pos.id} className="hover:bg-[#1f1f2e]/50 transition-colors">
+                          <td className="py-2 pl-4">
+                            <div className="font-bold text-white">{pos.symbol}</div>
+                            <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                              {pos.side} {Number(pos.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
+                            </div>
+                          </td>
+                          <td className="number-mono text-white">{pos.size}</td>
+                          <td className="number-mono text-slate-300">${pos.entryPrice.toLocaleString()}</td>
+                          <td className="number-mono text-slate-300">${pos.markPrice.toLocaleString()}</td>
+                          <td className="number-mono text-[#f59e0b]">${pos.liqPrice.toLocaleString()}</td>
+                          <td className={`number-mono font-bold ${isGain ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                            {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
+                          </td>
+                          <td className="text-right pr-4 flex items-center justify-end gap-1 pt-2">
+                            <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-[#8a8a9e] hover:text-white hover:bg-[#1f1f2e] border border-[#1f1f2e] rounded transition-all" title="Set TP/SL">TP/SL</button>
+                            <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                            </button>
+                            <button onClick={async () => {
+                              await closePosition(pos.id);
+                              await new Promise(r => setTimeout(r, 8000));
+                              await placeOrder(pos.side === 'LONG' ? 'SHORT' : 'LONG', 'MARKET', pos.markPrice, pos.size, pos.symbol, false, true);
+                            }} className="px-2 py-1 text-[10px] font-semibold text-[#f59e0b] hover:bg-[#f59e0b]/10 border border-[#f59e0b]/30 rounded transition-all" title="Reverse Position">Reverse</button>
+                            <button onClick={() => {
+                              setClosingPosition(pos);
+                              setCloseSizeInput(pos.size.toString());
+                            }} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {positions.length === 0 && (
+                      <tr><td colSpan={7} className="text-center text-[#8a8a9e] py-8 text-xs">No open positions</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+              {activeBottomTab === 'OpenOrders' && (
+                <div className="p-4 text-[#8a8a9e] text-xs text-center mt-4">No open orders</div>
+              )}
+              {activeBottomTab === 'TradeHistory' && (
+                <div className="p-4 text-[#8a8a9e] text-xs text-center mt-4">No trade history</div>
+              )}
+            </div>
+          </div>
         </div>
 
-        {/* Amount */}
-        <div className="mb-3">
-          <div className="flex justify-between mb-1">
-            <span className="text-xs text-slate-500 dark:text-[#8a8a9e]">Amount</span>
-            <span className="text-[10px] text-slate-500 dark:text-[#8a8a9e] number-mono uppercase">{activePair.symbol.split('-')[0]}</span>
+        {/* MIDDLE COLUMN: Orderbook (Visual Mockup for Pro layout) */}
+        <div className="w-[280px] bg-[#13131a] border border-[#1f1f2e] flex flex-col shrink-0">
+          <div className="flex items-center gap-4 px-3 pt-2 border-b border-[#1f1f2e]">
+            <button className="text-xs font-semibold border-b-2 border-[#8b5cf6] text-[#8b5cf6] py-1">Order Book</button>
+            <button className="text-xs font-semibold text-[#8a8a9e] py-1 hover:text-white">Recent Trades</button>
           </div>
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              value={inputAmount}
-              onChange={e => setInputAmount(e.target.value)}
-              className="w-full pl-3 pr-14 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 rounded-lg text-xs number-mono text-slate-900 dark:text-white outline-none transition-colors"
-            />
-            <button
-              onClick={() => {
-                const available = balances.vaultUSDC;
-                const maxPositionUSD = available * leverage * 0.99;
-                const maxSize = maxPositionUSD / parsedPrice;
-                setInputAmount(maxSize > 0 ? maxSize.toFixed(4) : '0');
-              }}
-              className="absolute right-2 px-2 py-0.5 bg-white dark:bg-[#13131a]/5 hover:bg-white dark:bg-[#13131a]/10 border border-white/10 text-[9px] font-bold text-slate-900 dark:text-white rounded transition-colors cursor-pointer"
-            >
-              MAX
+          <div className="grid grid-cols-3 text-[10px] font-bold text-[#8a8a9e] px-3 py-2 uppercase">
+            <span>Price</span>
+            <span className="text-right">Qty</span>
+            <span className="text-right">Total</span>
+          </div>
+          <div className="flex-1 overflow-hidden flex flex-col relative text-[11px] number-mono">
+            {/* Asks (Red) */}
+            <div className="flex-1 flex flex-col-reverse overflow-hidden px-1">
+              {[...Array(12)].map((_, i) => (
+                <div key={`ask-${i}`} className="grid grid-cols-3 px-2 py-0.5 relative hover:bg-[#1f1f2e]">
+                   <div className="absolute top-0 right-0 h-full bg-[#ef4444]/10" style={{ width: `${Math.random() * 80 + 10}%` }} />
+                   <span className="text-[#ef4444] relative z-10">{(activePair.lastPrice * (1 + (12-i)*0.0001)).toFixed(2)}</span>
+                   <span className="text-white text-right relative z-10">{(Math.random() * 2).toFixed(3)}</span>
+                   <span className="text-[#8a8a9e] text-right relative z-10">{(Math.random() * 10).toFixed(3)}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Spread / Mark Price */}
+            <div className="flex items-center gap-2 py-2 px-3 my-1 bg-[#1f1f2e]/50 border-y border-[#1f1f2e]">
+               <span className={`text-lg font-black ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                 {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+               </span>
+               <span className="text-xs text-[#8a8a9e] line-through">{(activePair.lastPrice * 1.0005).toFixed(2)}</span>
+            </div>
+
+            {/* Bids (Green) */}
+            <div className="flex-1 overflow-hidden px-1">
+              {[...Array(12)].map((_, i) => (
+                <div key={`bid-${i}`} className="grid grid-cols-3 px-2 py-0.5 relative hover:bg-[#1f1f2e]">
+                   <div className="absolute top-0 right-0 h-full bg-[#10b981]/10" style={{ width: `${Math.random() * 80 + 10}%` }} />
+                   <span className="text-[#10b981] relative z-10">{(activePair.lastPrice * (1 - (i+1)*0.0001)).toFixed(2)}</span>
+                   <span className="text-white text-right relative z-10">{(Math.random() * 2).toFixed(3)}</span>
+                   <span className="text-[#8a8a9e] text-right relative z-10">{(Math.random() * 10).toFixed(3)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Order Entry */}
+        <div className="w-[320px] bg-[#13131a] border border-[#1f1f2e] flex flex-col overflow-y-auto shrink-0 p-3">
+          
+          <div className="flex bg-[#0c0c10] border border-[#1f1f2e] p-0.5 rounded mb-4">
+            {(['CROSS', 'ISOLATED'] as const).map(m => (
+              <button
+                key={m}
+                onClick={() => setMarginMode(m as any)}
+                className={`flex-1 py-1 text-xs font-bold rounded-sm transition-colors ${
+                  marginMode === m ? 'bg-[#1f1f2e] text-white' : 'text-[#8a8a9e] hover:text-white'
+                }`}
+              >{m}</button>
+            ))}
+            <div className="w-px bg-[#1f1f2e] mx-1 my-1" />
+            <button className="flex-1 py-1 text-xs font-bold rounded-sm text-white bg-[#1f1f2e] hover:bg-[#2a2a35] transition-colors flex items-center justify-center gap-1">
+              {leverage}x
             </button>
           </div>
-        </div>
 
-
-
-        {/* Leverage Slider (Capped at 20x Max) */}
-        <div className="mb-5">
-          <div className="flex justify-between mb-1">
-            <span className="text-xs text-slate-500 dark:text-[#8a8a9e] flex items-center gap-1"><Scale size={12} /> Leverage (Max 20x)</span>
-            <span className="text-xs font-bold text-[#8b5cf6] number-mono">{leverage}x</span>
-          </div>
-          <input
-            type="range" min="1" max="20" value={leverage}
-            onChange={e => setLeverage(parseInt(e.target.value))}
-            className="w-full h-1 bg-slate-100 dark:bg-[#1f1f2e] rounded-lg appearance-none cursor-pointer accent-[#8b5cf6]"
-          />
-          <div className="flex justify-between text-[9px] text-slate-400 dark:text-slate-500 font-bold mt-1 mb-2">
-            <span>1x</span><span>5x</span><span>10x</span><span>15x</span><span>20x</span>
-          </div>
-
-          {/* Quick-Select Leverage Presets */}
-          <div className="flex gap-1">
-            {[2, 5, 10, 15, 20].map(levVal => (
+          <div className="flex gap-4 border-b border-[#1f1f2e] mb-4">
+            {(['Market', 'Limit'] as const).map(t => (
               <button
-                key={levVal}
-                onClick={() => setLeverage(levVal)}
-                className={`flex-1 py-1 rounded text-[10px] font-bold transition-all ${
-                  leverage === levVal
-                    ? 'bg-[#8b5cf6]/20 text-[#8b5cf6] border border-[#8b5cf6]/40 shadow-sm'
-                    : 'bg-slate-50 dark:bg-[#0c0c10] text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] hover:text-slate-900 dark:text-white hover:border-slate-200 dark:border-[#1f1f2e]'
+                key={t}
+                onClick={() => setOrderType(t)}
+                className={`pb-1.5 text-xs font-bold border-b-2 transition-all ${
+                  orderType === t ? 'border-[#8b5cf6] text-white' : 'border-transparent text-[#8a8a9e] hover:text-white'
                 }`}
-              >
-                {levVal}x
-              </button>
+              >{t}</button>
             ))}
           </div>
-        </div>
 
-        {/* Summary */}
-        <div className="space-y-1.5 text-xs text-slate-500 dark:text-[#8a8a9e] border-t border-slate-200 dark:border-[#1f1f2e] pt-3 mb-3">
-          {[
-            ['Position Value', `$${positionSize.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
-            ['Required Margin', `$${marginRequired.toLocaleString(undefined, { maximumFractionDigits: 2 })} USDC`],
-            ['Effective Leverage', `${leverage}x`],
-              ['Funding (1h)', '0.0051%'],
-            ['Est. Liq. Price', `$${calculatedLiqPrice.toLocaleString(undefined, { maximumFractionDigits: 2 })}`],
-            ['Taker Fee (0.06%)', `$${feeEstimate.toLocaleString(undefined, { maximumFractionDigits: 4 })} USDC`],
-          ].map(([label, value]) => (
-            <div key={label} className="flex justify-between">
-              <span>{label}</span>
-              <span className={`number-mono ${label === 'Required Margin' ? 'text-[#01C38E] font-bold' : label === 'Effective Leverage' ? 'text-[#8b5cf6] font-bold' : 'text-slate-700 dark:text-slate-200'}`}>{value}</span>
+          <div className="text-[10px] text-[#8a8a9e] font-bold mb-3 flex justify-between">
+            <span>Available</span>
+            <span className="text-white number-mono">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          </div>
+
+          <div className="space-y-3 mb-4">
+            <div className="relative">
+              <label className="absolute left-3 top-2 text-[10px] font-bold text-[#8a8a9e] uppercase">Price</label>
+              <input
+                type="text"
+                value={orderType === 'Market' ? 'Market' : inputPrice}
+                onChange={e => orderType !== 'Market' && setInputPrice(e.target.value)}
+                disabled={orderType === 'Market'}
+                className="w-full pl-[50px] pr-12 py-2 bg-[#1a1a24] border border-[#1f1f2e] rounded focus:border-[#8b5cf6] text-sm text-white number-mono outline-none disabled:opacity-50"
+              />
+              <span className="absolute right-3 top-2 text-xs font-bold text-[#8a8a9e]">USDC</span>
             </div>
-          ))}
-        </div>
 
-        {/* Available */}
-        <div className="flex flex-col gap-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] px-3 py-2 rounded-lg mb-3">
-          <div className="flex justify-between items-center text-[10px]">
-            <span className="text-slate-400 dark:text-slate-500">Vault Margin:</span>
-            <span className="number-mono font-bold text-slate-900 dark:text-white">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
-          </div>
-          <div className="flex gap-2">
-            <button onClick={() => {
-              const amt = window.prompt('Enter USDC amount to deposit for trading:');
-              if (amt && !isNaN(parseFloat(amt))) depositFunds(parseFloat(amt));
-            }} className="flex-1 py-1.5 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] rounded text-[10px] font-bold border border-[#10b981]/20 transition-colors">Deposit</button>
-            <button onClick={() => {
-              const amt = window.prompt('Enter USDC amount to withdraw from trading:');
-              if (amt && !isNaN(parseFloat(amt))) withdrawFunds(parseFloat(amt));
-            }} className="flex-1 py-1.5 bg-[#ef4444]/10 hover:bg-[#ef4444]/20 text-[#ef4444] rounded text-[10px] font-bold border border-[#ef4444]/20 transition-colors">Withdraw</button>
-          </div>
-        </div>
+            <div className="relative">
+              <label className="absolute left-3 top-2 text-[10px] font-bold text-[#8a8a9e] uppercase">Amount</label>
+              <input
+                type="text"
+                value={inputAmount}
+                onChange={e => setInputAmount(e.target.value)}
+                className="w-full pl-[60px] pr-16 py-2 bg-[#1a1a24] border border-[#1f1f2e] rounded focus:border-[#8b5cf6] text-sm text-white number-mono outline-none"
+              />
+              <span className="absolute right-3 top-2 text-xs font-bold text-[#8a8a9e]">{activePair.symbol.split('-')[0]}</span>
+            </div>
 
-        {/* Action */}
-        {walletConnected ? (
-          <button
-            onClick={handlePlaceOrder}
-            disabled={parsedAmount <= 0}
-            className={`w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider transition-all ${
-              parsedAmount <= 0
-                ? 'bg-sky-100 text-slate-400 dark:text-slate-500 border border-slate-200 dark:border-[#1f1f2e] cursor-not-allowed'
-                : tradeSide === 'LONG'
-                ? 'bg-[#10b981] hover:bg-[#12cf92] shadow-[0_0_15px_rgba(16,185,129,0.25)]'
-                : 'bg-[#ef4444] hover:bg-[#fa5555] shadow-[0_0_15px_rgba(239,68,68,0.25)]'
-            }`}
-          >
-            {parsedAmount <= 0 ? 'Enter Amount' : tradeSide === 'LONG' ? 'Place Long / Buy' : 'Place Short / Sell'}
-          </button>
-        ) : (
-          <button
-            onClick={() => connectWallet('MetaMask')}
-            className="w-full py-3 rounded-lg text-xs font-bold text-slate-900 dark:text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] uppercase tracking-wider transition-all shadow-[0_0_15px_rgba(59,130,246,0.35)]"
-          >
-            Connect Wallet
-          </button>
-        )}
-      </section>
+            <div className="py-2">
+               <input 
+                 type="range" 
+                 min="1" 
+                 max="100" 
+                 className="w-full accent-[#8b5cf6]"
+                 onChange={(e) => {
+                   const pct = parseInt(e.target.value);
+                   // Mock up slide to set amount based on balance
+                   if (balances.USDC > 0 && leverage > 0) {
+                     const maxPos = balances.USDC * leverage;
+                     const targetPos = maxPos * (pct / 100);
+                     setInputAmount((targetPos / activePair.lastPrice).toFixed(4));
+                   }
+                 }}
+               />
+               <div className="flex justify-between text-[9px] text-[#8a8a9e] mt-1 font-bold">
+                 <span>0%</span>
+                 <span>25%</span>
+                 <span>50%</span>
+                 <span>75%</span>
+                 <span>100%</span>
+               </div>
+            </div>
+
+            <label className="flex items-center gap-2 text-xs font-bold text-[#8a8a9e] cursor-pointer">
+              <input type="checkbox" checked={showTPSL} onChange={e => setShowTPSL(e.target.checked)} className="accent-[#8b5cf6] bg-[#1a1a24] border-[#1f1f2e] rounded-sm" />
+              TP/SL
+            </label>
+
+            {showTPSL && (
+              <div className="grid grid-cols-2 gap-2 mt-2">
+                <input type="text" placeholder="Take Profit" className="w-full px-2 py-1.5 bg-[#1a1a24] border border-[#1f1f2e] rounded text-xs text-white number-mono outline-none focus:border-[#8b5cf6]" />
+                <input type="text" placeholder="Stop Loss" className="w-full px-2 py-1.5 bg-[#1a1a24] border border-[#1f1f2e] rounded text-xs text-white number-mono outline-none focus:border-[#8b5cf6]" />
+              </div>
+            )}
+          </div>
+
+          <div className="text-[10px] text-[#8a8a9e] font-bold space-y-2 mb-4 bg-[#1a1a24] p-3 rounded border border-[#1f1f2e]">
+            <div className="flex justify-between">
+              <span>Required Margin</span>
+              <span className="text-white number-mono">${marginRequired.toFixed(2)} USDC</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Est. Liq Price</span>
+              <span className="text-[#f59e0b] number-mono">${calculatedLiqPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Taker / Maker Fee</span>
+              <span className="text-white number-mono">0.06% / 0.02%</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Est. Fee</span>
+              <span className="text-white number-mono">${feeEstimate.toFixed(2)} USDC</span>
+            </div>
+          </div>
+
+          {!walletConnected ? (
+            <button
+              onClick={() => connectWallet('injected')}
+              className="w-full py-3 rounded text-sm font-bold bg-[#8b5cf6] hover:bg-[#7c3aed] text-white transition-colors"
+            >
+              Sign Up / Log In
+            </button>
+          ) : (
+            <div className="flex gap-2">
+              <button
+                onClick={() => { setTradeSide('LONG'); handlePlaceOrder(); }}
+                className="flex-1 py-3 rounded text-sm font-bold bg-[#10b981] hover:bg-[#059669] text-white transition-colors shadow-lg shadow-[#10b981]/20 flex flex-col items-center justify-center leading-tight"
+              >
+                <span>Buy / Long</span>
+              </button>
+              <button
+                onClick={() => { setTradeSide('SHORT'); handlePlaceOrder(); }}
+                className="flex-1 py-3 rounded text-sm font-bold bg-[#ef4444] hover:bg-[#dc2626] text-white transition-colors shadow-lg shadow-[#ef4444]/20 flex flex-col items-center justify-center leading-tight"
+              >
+                <span>Sell / Short</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+
 
       {/* PnL Share Modal */}
       {sharePosition && (
@@ -800,6 +708,7 @@ export default function PerpetualsView() {
           </div>
         </div>
       )}
+    
     </main>
   );
 }
