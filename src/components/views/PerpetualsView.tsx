@@ -108,16 +108,17 @@ export default function PerpetualsView() {
   const [showMarketDropdown, setShowMarketDropdown] = useState(false);
 
   return (
-    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] h-screen bg-slate-50 dark:bg-[#0b0c10] text-slate-900 dark:text-white">
-      {/* --- TICKER TAPE (Top Coin Movement) --- */}
-      <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[32px] px-2 gap-6 text-[11px] font-bold">
-        {markets.slice(0, 8).map((m) => {
+    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#0b0c10] text-slate-900 dark:text-white">
+      {/* --- TICKER TAPE (EdgeX Style) --- */}
+      <div className="bg-[#1a1a24] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-6 text-xs font-semibold border-b border-[#1f1f2e]">
+        <div className="text-slate-500 dark:text-[#8a8a9e] whitespace-nowrap">Favorites</div>
+        {markets.slice(0, 10).map((m) => {
           const isUp = m.change24h >= 0;
+          const isActive = activePair.symbol === m.symbol;
           return (
-            <div key={m.symbol} className="flex items-center gap-2 cursor-pointer hover:opacity-70 whitespace-nowrap" onClick={() => setActivePairBySymbol(m.symbol)}>
-              <span className="text-slate-700 dark:text-slate-300">{m.symbol}</span>
-              <span className="number-mono">${m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
-              <span className={isUp ? 'text-[#10b981]' : 'text-[#ef4444]'}>{isUp ? '+' : ''}{m.change24h}%</span>
+            <div key={m.symbol} className={`flex items-center gap-2 cursor-pointer transition-colors whitespace-nowrap ${isActive ? 'text-white' : 'text-slate-400 hover:text-white'}`} onClick={() => setActivePairBySymbol(m.symbol)}>
+              <span>{m.symbol.replace('-', '')}</span>
+              {isActive && <span className={isUp ? 'text-[#10b981]' : 'text-[#ef4444]'}>{isUp ? '+' : ''}{m.change24h}%</span>}
             </div>
           );
         })}
@@ -215,7 +216,7 @@ export default function PerpetualsView() {
       </div>
 
       {/* --- MAIN 3-PANEL GRID --- */}
-      <div className="flex-1 flex gap-1 min-h-0 overflow-hidden pb-1">
+      <div className="flex w-full gap-1 h-[calc(100vh-120px)] shrink-0">
         
         {/* LEFT COLUMN: Chart + Positions */}
         <div className="flex-[3.5] flex flex-col gap-1 min-w-0">
@@ -241,92 +242,6 @@ export default function PerpetualsView() {
             </div>
             <div className="flex-1 w-full h-full relative" id="tv_chart_container">
               <TradingViewChart symbol={activePair.symbol} timeframe={timeframe} />
-            </div>
-          </div>
-
-          {/* Positions Section */}
-          <div className="h-[240px] shrink-0 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] flex flex-col">
-            <div className="flex items-center gap-4 px-4 pt-2 border-b border-slate-200 dark:border-[#1f1f2e]">
-              {[
-                { id: 'Positions',     label: 'Positions',     count: positions.length },
-                { id: 'OpenOrders',    label: 'Open Orders',   count: openOrders.length },
-                { id: 'TradeHistory',  label: 'Trade History', count: null },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveBottomTab(tab.id as any)}
-                  className={`py-2 text-xs font-semibold border-b-2 transition-all ${
-                    activeBottomTab === tab.id
-                      ? 'border-[#8b5cf6] text-[#8b5cf6]'
-                      : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
-                  }`}
-                >
-                  {tab.label} {tab.count !== null && `(${tab.count})`}
-                </button>
-              ))}
-            </div>
-            <div className="flex-1 overflow-auto">
-              {activeBottomTab === 'Positions' && (
-                <table className="w-full text-left text-xs whitespace-nowrap">
-                  <thead className="sticky top-0 bg-white dark:bg-[#13131a] z-10">
-                    <tr className="text-slate-500 dark:text-[#8a8a9e] font-bold uppercase text-[10px]">
-                      <th className="py-2 pl-4 font-medium">Market</th>
-                      <th className="font-medium">Size</th>
-                      <th className="font-medium">Entry Price</th>
-                      <th className="font-medium">Mark Price</th>
-                      <th className="font-medium">Liq. Price</th>
-                      <th className="font-medium">Unrealized PnL</th>
-                      <th className="font-medium text-right pr-4">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f2e]">
-                    {positions.map(pos => {
-                      const isGain = pos.unrealizedPnl >= 0;
-                      return (
-                        <tr key={pos.id} className="hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e]/50 transition-colors">
-                          <td className="py-2 pl-4">
-                            <div className="font-bold text-slate-900 dark:text-white">{pos.symbol}</div>
-                            <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                              {pos.side} {Number(pos.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
-                            </div>
-                          </td>
-                          <td className="number-mono text-slate-900 dark:text-white">{pos.size}</td>
-                          <td className="number-mono text-slate-700 dark:text-slate-300">${pos.entryPrice.toLocaleString()}</td>
-                          <td className="number-mono text-slate-700 dark:text-slate-300">${pos.markPrice.toLocaleString()}</td>
-                          <td className="number-mono text-[#f59e0b]">${pos.liqPrice.toLocaleString()}</td>
-                          <td className={`number-mono font-bold ${isGain ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                            {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
-                          </td>
-                          <td className="text-right pr-4 flex items-center justify-end gap-1 pt-2">
-                            <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] border border-slate-200 dark:border-[#1f1f2e] rounded transition-all" title="Set TP/SL">TP/SL</button>
-                            <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-                            </button>
-                            <button onClick={async () => {
-                              await closePosition(pos.id);
-                              await new Promise(r => setTimeout(r, 8000));
-                              await placeOrder(pos.side === 'LONG' ? 'SHORT' : 'LONG', 'MARKET', pos.markPrice, pos.size, pos.symbol, false, true);
-                            }} className="px-2 py-1 text-[10px] font-semibold text-[#f59e0b] hover:bg-[#f59e0b]/10 border border-[#f59e0b]/30 rounded transition-all" title="Reverse Position">Reverse</button>
-                            <button onClick={() => {
-                              setClosingPosition(pos);
-                              setCloseSizeInput(pos.size.toString());
-                            }} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                    {positions.length === 0 && (
-                      <tr><td colSpan={7} className="text-center text-slate-500 dark:text-[#8a8a9e] py-8 text-xs">No open positions</td></tr>
-                    )}
-                  </tbody>
-                </table>
-              )}
-              {activeBottomTab === 'OpenOrders' && (
-                <div className="p-4 text-slate-500 dark:text-[#8a8a9e] text-xs text-center mt-4">No open orders</div>
-              )}
-              {activeBottomTab === 'TradeHistory' && (
-                <div className="p-4 text-slate-500 dark:text-[#8a8a9e] text-xs text-center mt-4">No trade history</div>
-              )}
             </div>
           </div>
         </div>
@@ -764,6 +679,94 @@ export default function PerpetualsView() {
         </div>
       )}
     
+      {/* FULL WIDTH POSITIONS (EdgeX Style) */}
+
+
+          {/* Positions Section */}
+          <div className="w-full shrink-0 min-h-[300px] bg-white dark:bg-[#13131a] border-t border-slate-200 dark:border-[#1f1f2e] flex flex-col mt-1">
+            <div className="flex items-center gap-4 px-4 pt-2 border-b border-slate-200 dark:border-[#1f1f2e]">
+              {[
+                { id: 'Positions',     label: 'Positions',     count: positions.length },
+                { id: 'OpenOrders',    label: 'Open Orders',   count: openOrders.length },
+                { id: 'TradeHistory',  label: 'Trade History', count: null },
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveBottomTab(tab.id as any)}
+                  className={`py-2 text-xs font-semibold border-b-2 transition-all ${
+                    activeBottomTab === tab.id
+                      ? 'border-[#8b5cf6] text-[#8b5cf6]'
+                      : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
+                  }`}
+                >
+                  {tab.label} {tab.count !== null && `(${tab.count})`}
+                </button>
+              ))}
+            </div>
+            <div className="flex-1 overflow-auto">
+              {activeBottomTab === 'Positions' && (
+                <table className="w-full text-left text-xs whitespace-nowrap">
+                  <thead className="sticky top-0 bg-white dark:bg-[#13131a] z-10">
+                    <tr className="text-slate-500 dark:text-[#8a8a9e] font-bold uppercase text-[10px]">
+                      <th className="py-2 pl-4 font-medium">Market</th>
+                      <th className="font-medium">Size</th>
+                      <th className="font-medium">Entry Price</th>
+                      <th className="font-medium">Mark Price</th>
+                      <th className="font-medium">Liq. Price</th>
+                      <th className="font-medium">Unrealized PnL</th>
+                      <th className="font-medium text-right pr-4">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f2e]">
+                    {positions.map(pos => {
+                      const isGain = pos.unrealizedPnl >= 0;
+                      return (
+                        <tr key={pos.id} className="hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e]/50 transition-colors">
+                          <td className="py-2 pl-4">
+                            <div className="font-bold text-slate-900 dark:text-white">{pos.symbol}</div>
+                            <div className={`text-[9px] font-bold ${pos.side === 'LONG' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                              {pos.side} {Number(pos.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
+                            </div>
+                          </td>
+                          <td className="number-mono text-slate-900 dark:text-white">{pos.size}</td>
+                          <td className="number-mono text-slate-700 dark:text-slate-300">${pos.entryPrice.toLocaleString()}</td>
+                          <td className="number-mono text-slate-700 dark:text-slate-300">${pos.markPrice.toLocaleString()}</td>
+                          <td className="number-mono text-[#f59e0b]">${pos.liqPrice.toLocaleString()}</td>
+                          <td className={`number-mono font-bold ${isGain ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                            {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
+                          </td>
+                          <td className="text-right pr-4 flex items-center justify-end gap-1 pt-2">
+                            <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] border border-slate-200 dark:border-[#1f1f2e] rounded transition-all" title="Set TP/SL">TP/SL</button>
+                            <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+                            </button>
+                            <button onClick={async () => {
+                              await closePosition(pos.id);
+                              await new Promise(r => setTimeout(r, 8000));
+                              await placeOrder(pos.side === 'LONG' ? 'SHORT' : 'LONG', 'MARKET', pos.markPrice, pos.size, pos.symbol, false, true);
+                            }} className="px-2 py-1 text-[10px] font-semibold text-[#f59e0b] hover:bg-[#f59e0b]/10 border border-[#f59e0b]/30 rounded transition-all" title="Reverse Position">Reverse</button>
+                            <button onClick={() => {
+                              setClosingPosition(pos);
+                              setCloseSizeInput(pos.size.toString());
+                            }} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {positions.length === 0 && (
+                      <tr><td colSpan={7} className="text-center text-slate-500 dark:text-[#8a8a9e] py-8 text-xs">No open positions</td></tr>
+                    )}
+                  </tbody>
+                </table>
+              )}
+              {activeBottomTab === 'OpenOrders' && (
+                <div className="p-4 text-slate-500 dark:text-[#8a8a9e] text-xs text-center mt-4">No open orders</div>
+              )}
+              {activeBottomTab === 'TradeHistory' && (
+                <div className="p-4 text-slate-500 dark:text-[#8a8a9e] text-xs text-center mt-4">No trade history</div>
+              )}
+            </div>
+          </div>
     </main>
   );
 }
