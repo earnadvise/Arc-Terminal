@@ -59,11 +59,11 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
       symbol:            tvSymbol,
       interval:          tvInterval,
       timezone:          'Etc/UTC',
-      theme:             'dark',
+      theme:             isDarkMode ? 'dark' : 'light',
       style:             '1',
       locale:            'en',
-      backgroundColor:   '#13131a',
-      gridColor:         'rgba(255,255,255,0.04)',
+      backgroundColor:   isDarkMode ? '#13131a' : '#ffffff',
+      gridColor:         isDarkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
       hide_top_toolbar:  false,
       hide_legend:       false,
       hide_side_toolbar: false,
@@ -97,7 +97,7 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
       <div
         className="tradingview-widget-container w-full h-full rounded-xl overflow-hidden"
         ref={containerRef}
-        style={{ minHeight: '100%' }}
+        style={{ height: '100%' }}
       />
     </div>
   );
