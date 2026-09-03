@@ -175,15 +175,16 @@ export default function PerpetualsView() {
           
           <div className="flex gap-8">
             <div>
-              <div className={`text-base font-black number-mono ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+              <div className={`text-xl font-black number-mono ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                 {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
               </div>
-              <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] uppercase">Last Price</div>
+              <div className={`text-[11px] font-bold ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
+                {activePair.change24h >= 0 ? '+' : ''}{activePair.change24h}%
+              </div>
             </div>
             {[
-              { label: '24h Change', value: `${activePair.change24h >= 0 ? '+' : ''}${activePair.change24h}%`, color: activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]' },
-              { label: '24h High', value: activePair.high24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
-              { label: '24h Low',  value: activePair.low24h.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+              { label: 'Index Price', value: (activePair.lastPrice * 1.0001).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
+              { label: 'Mark Price',  value: activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
               { label: '24h Vol',  value: `$${(activePair.volume24h / 1e6).toFixed(2)}M` },
               { label: 'Open Interest', value: `$${(activePair.openInterest / 1e6).toFixed(2)}M` },
               { label: 'Funding / 1h', value: '0.0051%' },

@@ -71,6 +71,11 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
       save_image:        true,
       calendar:          false,
       hide_volume:       false,
+      enable_publishing: false,
+      withdateranges:    true,
+      studies:           [
+        "Volume@tv-basicstudies",
+      ],
       support_host:      'https://www.tradingview.com',
     });
 
