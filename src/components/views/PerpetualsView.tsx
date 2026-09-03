@@ -374,8 +374,16 @@ export default function PerpetualsView() {
               >{m}</button>
             ))}
             <div className="w-px bg-[#1f1f2e] mx-1 my-1" />
-            <button className="flex-1 py-1 text-xs font-bold rounded-sm text-white bg-[#1f1f2e] hover:bg-[#2a2a35] transition-colors flex items-center justify-center gap-1">
-              {leverage}x
+            <button 
+              onClick={() => {
+                const val = window.prompt('Enter leverage (1 to 100):', leverage.toString());
+                const num = parseInt(val || '');
+                if (!isNaN(num) && num >= 1 && num <= 100) setLeverage(num);
+              }}
+              className="flex-1 py-1 text-xs font-bold rounded-sm text-white bg-[#1f1f2e] hover:bg-[#2a2a35] transition-colors flex items-center justify-center gap-1"
+              title="Change Leverage"
+            >
+              {leverage}x <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
             </button>
           </div>
 
