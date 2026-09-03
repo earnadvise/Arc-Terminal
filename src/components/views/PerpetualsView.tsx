@@ -39,6 +39,8 @@ export default function PerpetualsView() {
   const [inputPrice, setInputPrice] = useState<string>(activePair.lastPrice.toString());
   const [inputAmount, setInputAmount] = useState<string>('1.0');
   const [activeBottomTab, setActiveBottomTab] = useState<'Positions' | 'OpenOrders' | 'TradeHistory'>('Positions');
+  const [activeOrderbookTab, setActiveOrderbookTab] = useState<'OrderBook'|'RecentTrades'>('OrderBook');
+  const [showLeverageDropdown, setShowLeverageDropdown] = useState(false);
   const [tpPrice, setTpPrice] = useState<string>('');
   const [slPrice, setSlPrice] = useState<string>('');
   const [showTPSL, setShowTPSL] = useState(false);
@@ -318,8 +320,8 @@ export default function PerpetualsView() {
         {/* MIDDLE COLUMN: Orderbook (Visual Mockup for Pro layout) */}
         <div className="w-[280px] bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] flex flex-col shrink-0">
           <div className="flex items-center gap-4 px-3 pt-2 border-b border-slate-200 dark:border-[#1f1f2e]">
-            <button className="text-xs font-semibold border-b-2 border-[#8b5cf6] text-[#8b5cf6] py-1">Order Book</button>
-            <button className="text-xs font-semibold text-slate-500 dark:text-[#8a8a9e] py-1 hover:text-slate-900 dark:text-white">Recent Trades</button>
+            <button onClick={() => setActiveOrderbookTab('OrderBook')} className={`text-xs font-semibold border-b-2 py-1 transition-colors ${activeOrderbookTab === 'OrderBook' ? 'border-[#8b5cf6] text-[#8b5cf6]' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'}`}>Order Book</button>
+            <button onClick={() => setActiveOrderbookTab('RecentTrades')} className={`text-xs font-semibold border-b-2 py-1 transition-colors ${activeOrderbookTab === 'RecentTrades' ? 'border-[#8b5cf6] text-[#8b5cf6]' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'}`}>Recent Trades</button>
           </div>
           <div className="grid grid-cols-3 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] px-3 py-2 uppercase">
             <span>Price</span>
