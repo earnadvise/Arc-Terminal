@@ -97,7 +97,7 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
       <div
         className="tradingview-widget-container w-full h-full rounded-xl overflow-hidden"
         ref={containerRef}
-        style={{ minHeight: isFullscreen ? '100%' : 460 }}
+        style={{ minHeight: '100%' }}
       />
     </div>
   );

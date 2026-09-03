@@ -391,9 +391,21 @@ export default function PerpetualsView() {
             ))}
           </div>
 
-          <div className="text-[10px] text-[#8a8a9e] font-bold mb-3 flex justify-between">
-            <span>Available</span>
-            <span className="text-white number-mono">${balances.USDC.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+          <div className="bg-[#1a1a24] border border-[#1f1f2e] p-2 rounded mb-3">
+            <div className="text-[10px] text-[#8a8a9e] font-bold flex justify-between mb-2">
+              <span>Margin (Vault)</span>
+              <span className="text-white number-mono">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => {
+                const amt = window.prompt('Enter USDC amount to deposit for trading:');
+                if (amt && !isNaN(parseFloat(amt))) depositFunds(parseFloat(amt));
+              }} className="flex-1 py-1.5 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] rounded text-[10px] font-bold border border-[#10b981]/20 transition-colors">Deposit</button>
+              <button onClick={() => {
+                const amt = window.prompt('Enter USDC amount to withdraw from trading:');
+                if (amt && !isNaN(parseFloat(amt))) withdrawFunds(parseFloat(amt));
+              }} className="flex-1 py-1.5 bg-[#ef4444]/10 hover:bg-[#ef4444]/20 text-[#ef4444] rounded text-[10px] font-bold border border-[#ef4444]/20 transition-colors">Withdraw</button>
+            </div>
           </div>
 
           <div className="space-y-3 mb-4">
@@ -429,8 +441,8 @@ export default function PerpetualsView() {
                  onChange={(e) => {
                    const pct = parseInt(e.target.value);
                    // Mock up slide to set amount based on balance
-                   if (balances.USDC > 0 && leverage > 0) {
-                     const maxPos = balances.USDC * leverage;
+                   if (balances.vaultUSDC > 0 && leverage > 0) {
+                     const maxPos = balances.vaultUSDC * leverage;
                      const targetPos = maxPos * (pct / 100);
                      setInputAmount((targetPos / activePair.lastPrice).toFixed(4));
                    }
