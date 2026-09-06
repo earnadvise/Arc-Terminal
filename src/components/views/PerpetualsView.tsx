@@ -110,9 +110,9 @@ export default function PerpetualsView() {
   const [showMarketDropdown, setShowMarketDropdown] = useState(false);
 
   return (
-    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-1 min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
+    <main className="w-full mx-auto flex flex-col pt-1 min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (Aster Style) --- */}
-      <div className="bg-white dark:bg-[#121216] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-[11px] font-semibold mx-1">
+      <div className="bg-white dark:bg-[#121216] border-b border-slate-200 dark:border-[#1e1e24] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-[11px] font-semibold z-10">
         
         {markets.slice(0, 30).map((m, idx, arr) => {
           const isUp = m.change24h >= 0;
@@ -137,7 +137,7 @@ export default function PerpetualsView() {
       </div>
 
       {/* --- TOP HEADER (Binance Style) --- */}
-      <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-xl flex items-center justify-between px-4 py-2 shrink-0 mx-1">
+      <div className="bg-white dark:bg-[#121216] border-b border-slate-200 dark:border-[#1e1e24] flex items-center justify-between px-4 py-2 shrink-0 z-10">
         <div className="flex items-center gap-6">
           {/* Market Dropdown Toggle */}
           <div className="relative">
