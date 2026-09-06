@@ -786,14 +786,14 @@ export default function PerpetualsView() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f2e]">
-                    {history.map(item => (
+                    {history.map((item: any) => (
                       <tr key={item.id} className="hover:bg-slate-200 dark:hover:bg-[#1f1f2e]/50 transition-colors">
-                        <td className="py-2 pl-4 text-slate-500 dark:text-[#8a8a9e]">{new Date(item.timestamp).toLocaleString()}</td>
-                        <td className="font-bold text-slate-900 dark:text-white">{item.symbol}</td>
-                        <td className={`font-bold ${item.action.includes('Buy') || item.action.includes('Long') ? 'text-[#10b981]' : item.action.includes('Sell') || item.action.includes('Short') ? 'text-[#ef4444]' : 'text-slate-500 dark:text-[#8a8a9e]'}`}>{item.action}</td>
-                        <td className="number-mono text-slate-700 dark:text-slate-300">{item.price ? `$${item.price.toLocaleString()}` : '-'}</td>
-                        <td className={`text-right pr-4 font-bold number-mono ${item.realizedPnl && item.realizedPnl > 0 ? 'text-[#10b981]' : item.realizedPnl && item.realizedPnl < 0 ? 'text-[#ef4444]' : 'text-slate-500 dark:text-[#8a8a9e]'}`}>
-                          {item.realizedPnl ? `${item.realizedPnl > 0 ? '+' : ''}$${item.realizedPnl.toFixed(2)}` : '-'}
+                        <td className="py-2 pl-4 text-slate-500 dark:text-[#8a8a9e]">{item.time}</td>
+                        <td className="font-bold text-slate-900 dark:text-white">{item.pair || item.symbol}</td>
+                        <td className={`font-bold ${String(item.side || item.action).includes('Buy') || String(item.side || item.action).includes('Long') ? 'text-[#10b981]' : String(item.side || item.action).includes('Sell') || String(item.side || item.action).includes('Short') ? 'text-[#ef4444]' : 'text-slate-500 dark:text-[#8a8a9e]'}`}>{item.side || item.action}</td>
+                        <td className="number-mono text-slate-700 dark:text-slate-300">{item.price ? `${item.price.toString().startsWith('$') ? item.price : '$' + Number(item.price).toLocaleString()}` : '-'}</td>
+                        <td className={`text-right pr-4 font-bold number-mono ${item.realizedPnl && Number(item.realizedPnl) > 0 ? 'text-[#10b981]' : item.realizedPnl && Number(item.realizedPnl) < 0 ? 'text-[#ef4444]' : 'text-slate-500 dark:text-[#8a8a9e]'}`}>
+                          {item.realizedPnl ? `${Number(item.realizedPnl) > 0 ? '+' : ''}$${Number(item.realizedPnl).toFixed(2)}` : '-'}
                         </td>
                       </tr>
                     ))}
