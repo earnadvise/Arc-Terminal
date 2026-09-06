@@ -294,10 +294,10 @@ export default function PerpetualsView() {
         </div>
 
         {/* RIGHT COLUMN: Order Entry */}
-        <div className="w-[320px] bg-[#121216] border-l border-[#1e1e24] flex flex-col overflow-y-auto shrink-0 p-3">
+        <div className="w-[320px] bg-white dark:bg-[#121216] border-l border-slate-200 dark:border-[#1e1e24] flex flex-col overflow-y-auto shrink-0 p-3">
           
           {/* Top Tabs */}
-          <div className="flex gap-4 border-b border-[#1e1e24] mb-3 pb-0">
+          <div className="flex gap-4 border-b border-slate-200 dark:border-[#1e1e24] mb-3 pb-0">
             {(['Market', 'Limit', 'Stop Limit'] as const).map(t => (
               <button
                 key={t}
@@ -320,15 +320,15 @@ export default function PerpetualsView() {
 
           {/* Cross | 20x | M Button Group */}
           <div className="flex gap-1 mb-4">
-            <button onClick={() => setMarginMode(marginMode === 'CROSS' ? 'ISOLATED' : 'CROSS')} className="flex-1 py-1.5 bg-[#18181c] hover:bg-[#1f1f26] border border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-300 transition-colors uppercase">
+            <button onClick={() => setMarginMode(marginMode === 'CROSS' ? 'ISOLATED' : 'CROSS')} className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#18181c] dark:hover:bg-[#1f1f26] border border-slate-200 dark:border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-700 dark:text-slate-300 transition-colors uppercase">
               {marginMode === 'CROSS' ? 'Cross' : 'Isolated'}
             </button>
             <div className="relative flex-1">
-              <button onClick={() => setShowLeverageDropdown(!showLeverageDropdown)} className="w-full h-full py-1.5 bg-[#18181c] hover:bg-[#1f1f26] border border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-300 transition-colors">
+              <button onClick={() => setShowLeverageDropdown(!showLeverageDropdown)} className="w-full h-full py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#18181c] dark:hover:bg-[#1f1f26] border border-slate-200 dark:border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-700 dark:text-slate-300 transition-colors">
                 {leverage}x
               </button>
               {showLeverageDropdown && (
-                <div className="absolute top-full right-0 mt-1 w-[200px] bg-[#18181c] border border-[#1e1e24] rounded-lg shadow-2xl z-[100] p-4">
+                <div className="absolute top-full right-0 mt-1 w-[200px] bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded-lg shadow-2xl z-[100] p-4">
                   <div className="flex justify-between text-xs font-bold mb-3 text-white">
                     <span>Leverage</span>
                     <span className="text-[#e5c07b]">{leverage}x</span>
@@ -338,7 +338,7 @@ export default function PerpetualsView() {
                 </div>
               )}
             </div>
-            <button className="w-10 py-1.5 bg-[#18181c] hover:bg-[#1f1f26] border border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-300 transition-colors">M</button>
+            <button className="w-10 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#18181c] dark:hover:bg-[#1f1f26] border border-slate-200 dark:border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-700 dark:text-slate-300 transition-colors">M</button>
           </div>
           <div className="space-y-3 mb-4">
             <div className="relative">
@@ -517,7 +517,7 @@ export default function PerpetualsView() {
           <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
             <div className="p-5 border-b border-slate-100 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Set TP / SL</h3>
-              <button onClick={() => setTpSlPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300 transition-colors">
+              <button onClick={() => setTpSlPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
@@ -583,7 +583,7 @@ export default function PerpetualsView() {
           <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
             <div className="p-5 border-b border-slate-100 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Close Position</h3>
-              <button onClick={() => setClosingPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300 transition-colors">
+              <button onClick={() => setClosingPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
@@ -809,7 +809,7 @@ export default function PerpetualsView() {
           <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
             <div className="p-5 border-b border-slate-100 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">{marginAction === 'deposit' ? 'Deposit Margin' : 'Withdraw Margin'}</h3>
-              <button onClick={() => setMarginAction(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300 transition-colors">
+              <button onClick={() => setMarginAction(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
