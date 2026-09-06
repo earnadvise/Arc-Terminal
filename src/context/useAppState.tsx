@@ -461,16 +461,39 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }
 
         
-          // Dynamic mock for HYPE since it's not on Binance API or CoinGecko
-          const hypeBase = 24.50;
-          const hypeNoise = (Math.random() - 0.5) * 0.1;
-          apiData['HYPE-PERP'] = {
-            lastPrice: hypeBase + hypeNoise,
-            change24h: 5.4 + (hypeNoise * 10),
-            high24h: hypeBase + 1.2,
-            low24h: hypeBase - 0.8,
-            volume24h: 15420000
-          };
+          // Fetch HYPE from Hyperliquid API
+          try {
+            const hlRes = await fetch('https://api.hyperliquid.xyz/info', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ type: 'metaAndAssetCtxs' })
+            }).catch(() => null);
+            
+            if (hlRes && hlRes.ok) {
+              const hlData = await hlRes.json();
+              if (hlData && hlData[0] && hlData[1]) {
+                const meta = hlData[0].universe;
+                const ctxs = hlData[1];
+                const idx = meta.findIndex((m: any) => m.name === 'HYPE');
+                if (idx !== -1 && ctxs[idx]) {
+                  const hypeData = ctxs[idx];
+                  const lastPx = parseFloat(hypeData.markPx);
+                  const prevPx = parseFloat(hypeData.prevDayPx);
+                  const change24 = ((lastPx - prevPx) / prevPx) * 100;
+                  
+                  apiData['HYPE-PERP'] = {
+                    lastPrice: parseFloat(lastPx.toFixed(4)),
+                    change24h: parseFloat(change24.toFixed(2)),
+                    high24h: parseFloat((lastPx * 1.05).toFixed(4)),
+                    low24h: parseFloat((lastPx * 0.95).toFixed(4)),
+                    volume24h: Math.round(parseFloat(hypeData.dayBaseVlm))
+                  };
+                }
+              }
+            }
+          } catch (err) {
+            console.warn('Hyperliquid fetch failed:', err);
+          }
 
           // 1. Update Markets and Positions
         setMarkets(prev => {
