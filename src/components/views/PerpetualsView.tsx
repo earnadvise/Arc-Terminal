@@ -207,7 +207,7 @@ export default function PerpetualsView() {
               { label: '24h Vol',  value: `$${(activePair.volume24h / 1e6).toFixed(2)}M` },
               { label: 'Open Interest', value: `$${(activePair.openInterest / 1e6).toFixed(2)}M` },
               { label: 'Funding / 1h', value: '0.0051%' },
-            ].map(stat => (
+            ].map((stat: any) => (
               <div key={stat.label}>
                 <div className={`text-sm number-mono font-semibold ${stat.color || 'text-slate-900 dark:text-white'}`}>{stat.value}</div>
                 <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] uppercase">{stat.label}</div>
