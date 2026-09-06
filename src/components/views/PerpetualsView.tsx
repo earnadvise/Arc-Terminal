@@ -37,7 +37,7 @@ export default function PerpetualsView() {
   const [orderType, setOrderType] = useState<'Market' | 'Limit' | 'Stop'>('Market');
   const [tradeSide, setTradeSide] = useState<'LONG' | 'SHORT'>('LONG');
   const [inputPrice, setInputPrice] = useState<string>(activePair.lastPrice.toString());
-  const [inputAmount, setInputAmount] = useState<string>('1.0');
+  const [inputSize, setInputSize] = useState<string>('1.0');
   const [activeBottomTab, setActiveBottomTab] = useState<'Positions' | 'OpenOrders' | 'TradeHistory'>('Positions');
   const [activeOrderbookTab, setActiveOrderbookTab] = useState<'OrderBook'|'RecentTrades'>('OrderBook');
   const [showLeverageDropdown, setShowLeverageDropdown] = useState(false);
@@ -69,8 +69,8 @@ export default function PerpetualsView() {
   }, [activePair.symbol]);
 
   const parsedPrice = parseFloat(inputPrice) || activePair.lastPrice;
-  const parsedAmount = parseFloat(inputAmount) || 0;
-  const positionSize = parsedAmount * (orderType === 'Market' ? activePair.lastPrice : parsedPrice);
+  const parsedSize = parseFloat(inputSize) || 0;
+  const positionSize = parsedSize * (orderType === 'Market' ? activePair.lastPrice : parsedPrice);
   const marginRequired = leverage > 0 ? positionSize / leverage : 0;
   const feeEstimate = positionSize * 0.0006;
   const calculatedLiqPrice = tradeSide === 'LONG'
@@ -82,7 +82,7 @@ export default function PerpetualsView() {
       tradeSide,
       orderType.toUpperCase() as 'MARKET' | 'LIMIT' | 'STOP',
       parsedPrice,
-      parsedAmount
+      parsedSize
     );
   };
 
@@ -108,9 +108,9 @@ export default function PerpetualsView() {
   const [showMarketDropdown, setShowMarketDropdown] = useState(false);
 
   return (
-    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#0b0c10] text-slate-900 dark:text-white">
+    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (EdgeX Style) --- */}
-      <div className="bg-[#1a1a24] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-6 text-xs font-semibold border-b border-[#1f1f2e]">
+      <div className="bg-[#08080a] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-6 text-xs font-semibold border-b border-[#1f1f2e]">
         <div className="text-slate-500 dark:text-[#8a8a9e] whitespace-nowrap">Favorites</div>
         {markets.slice(0, 10).map((m) => {
           const isUp = m.change24h >= 0;
@@ -125,13 +125,13 @@ export default function PerpetualsView() {
       </div>
 
       {/* --- TOP HEADER (Binance Style) --- */}
-      <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] flex items-center justify-between px-4 py-2 shrink-0">
+      <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] flex items-center justify-between px-4 py-2 shrink-0">
         <div className="flex items-center gap-6">
           {/* Market Dropdown Toggle */}
           <div className="relative">
             <button 
               onClick={() => setShowMarketDropdown(!showMarketDropdown)}
-              className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white hover:text-[#8b5cf6] transition-colors"
+              className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white hover:text-[#e5c07b] transition-colors"
             >
               {activePair.symbol}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
@@ -140,8 +140,8 @@ export default function PerpetualsView() {
             
             {/* Dropdown Menu */}
             {showMarketDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-[350px] bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-[#1f1f2e] rounded-lg shadow-2xl z-50 overflow-hidden">
-                <div className="p-2 border-b border-slate-200 dark:border-[#1f1f2e]">
+              <div className="absolute top-full left-0 mt-2 w-[350px] bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded-lg shadow-2xl z-50 overflow-hidden">
+                <div className="p-2 border-b border-slate-200 dark:border-[#1e1e24]">
                   <div className="relative">
                     <Search className="absolute left-2.5 top-2 text-slate-500 dark:text-[#8a8a9e]" size={14} />
                     <input
@@ -149,7 +149,7 @@ export default function PerpetualsView() {
                       placeholder="Search..."
                       value={searchTerm}
                       onChange={e => setSearchTerm(e.target.value)}
-                      className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded focus:border-[#8b5cf6] text-xs text-slate-900 dark:text-white outline-none"
+                      className="w-full pl-8 pr-3 py-1.5 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded focus:border-[#e5c07b] text-xs text-slate-900 dark:text-white outline-none"
                     />
                   </div>
                   <div className="flex gap-1 mt-2">
@@ -158,7 +158,7 @@ export default function PerpetualsView() {
                         key={cat}
                         onClick={() => setCategoryFilter(cat)}
                         className={`flex-1 py-1 text-[10px] font-bold rounded ${
-                          categoryFilter === cat ? 'bg-[#8b5cf6]/20 text-[#8b5cf6]' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e]'
+                          categoryFilter === cat ? 'bg-[#e5c07b]/20 text-[#e5c07b]' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e]'
                         }`}
                       >{cat}</button>
                     ))}
@@ -169,7 +169,7 @@ export default function PerpetualsView() {
                     <div
                       key={m.symbol}
                       onClick={() => { setActivePairBySymbol(m.symbol); setShowMarketDropdown(false); }}
-                      className="flex items-center justify-between p-2 hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] cursor-pointer border-b border-slate-200 dark:border-[#1f1f2e]/50"
+                      className="flex items-center justify-between p-2 hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] cursor-pointer border-b border-slate-200 dark:border-[#1e1e24]/50"
                     >
                       <div>
                         <div className="text-xs font-bold text-slate-900 dark:text-white">{m.symbol}</div>
@@ -221,10 +221,10 @@ export default function PerpetualsView() {
         {/* LEFT COLUMN: Chart + Positions */}
         <div className="flex-[3.5] flex flex-col gap-1 min-w-0">
           {/* Chart Section */}
-          <div className="flex-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] min-h-[400px] flex flex-col">
-            <div className="flex items-center gap-2 p-2 border-b border-slate-200 dark:border-[#1f1f2e]">
+          <div className="flex-1 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] min-h-[400px] flex flex-col">
+            <div className="flex items-center gap-2 p-2 border-b border-slate-200 dark:border-[#1e1e24]">
               <div className="flex items-center gap-4 text-xs font-bold px-2">
-                <button className="text-[#8b5cf6] border-b-2 border-[#8b5cf6] pb-1">Chart</button>
+                <button className="text-[#e5c07b] border-b-2 border-[#e5c07b] pb-1">Chart</button>
                 <button className="text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white pb-1">Info</button>
               </div>
               <div className="h-4 w-px bg-slate-200 dark:bg-[#1f1f2e]" />
@@ -247,10 +247,10 @@ export default function PerpetualsView() {
         </div>
 
         {/* MIDDLE COLUMN: Orderbook (Visual Mockup for Pro layout) */}
-        <div className="w-[280px] bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] flex flex-col shrink-0">
-          <div className="flex items-center gap-4 px-3 pt-2 border-b border-slate-200 dark:border-[#1f1f2e]">
-            <button onClick={() => setActiveOrderbookTab('OrderBook')} className={`text-xs font-semibold border-b-2 py-1 transition-colors ${activeOrderbookTab === 'OrderBook' ? 'border-[#8b5cf6] text-[#8b5cf6]' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'}`}>Order Book</button>
-            <button onClick={() => setActiveOrderbookTab('RecentTrades')} className={`text-xs font-semibold border-b-2 py-1 transition-colors ${activeOrderbookTab === 'RecentTrades' ? 'border-[#8b5cf6] text-[#8b5cf6]' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'}`}>Recent Trades</button>
+        <div className="w-[280px] bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] flex flex-col shrink-0">
+          <div className="flex items-center gap-4 px-3 pt-2 border-b border-slate-200 dark:border-[#1e1e24]">
+            <button onClick={() => setActiveOrderbookTab('OrderBook')} className={`text-xs font-semibold border-b-2 py-1 transition-colors ${activeOrderbookTab === 'OrderBook' ? 'border-[#e5c07b] text-[#e5c07b]' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'}`}>Order Book</button>
+            <button onClick={() => setActiveOrderbookTab('RecentTrades')} className={`text-xs font-semibold border-b-2 py-1 transition-colors ${activeOrderbookTab === 'RecentTrades' ? 'border-[#e5c07b] text-[#e5c07b]' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'}`}>Recent Trades</button>
           </div>
           <div className="grid grid-cols-3 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] px-3 py-2 uppercase">
             <span>Price</span>
@@ -271,7 +271,7 @@ export default function PerpetualsView() {
             </div>
             
             {/* Spread / Mark Price */}
-            <div className="flex items-center gap-2 py-2 px-3 my-1 bg-slate-200 dark:bg-[#1f1f2e]/50 border-y border-slate-200 dark:border-[#1f1f2e]">
+            <div className="flex items-center gap-2 py-2 px-3 my-1 bg-slate-200 dark:bg-[#1f1f2e]/50 border-y border-slate-200 dark:border-[#1e1e24]">
                <span className={`text-lg font-black ${activePair.change24h >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
                  {activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                </span>
@@ -292,9 +292,9 @@ export default function PerpetualsView() {
         </div>
 
         {/* RIGHT COLUMN: Order Entry */}
-        <div className="w-[320px] bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] flex flex-col overflow-y-auto shrink-0 p-3">
+        <div className="w-[320px] bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] flex flex-col overflow-y-auto shrink-0 p-3">
           
-          <div className="flex bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-0.5 rounded mb-4">
+          <div className="flex bg-[#0c0c10] border border-slate-200 dark:border-[#1e1e24] p-0.5 rounded mb-4">
             {(['CROSS', 'ISOLATED'] as const).map(m => (
               <button
                 key={m}
@@ -314,21 +314,21 @@ export default function PerpetualsView() {
                 {leverage}x <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
               </button>
               {showLeverageDropdown && (
-                <div className="absolute top-full right-0 mt-2 w-[220px] bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-[#1f1f2e] rounded-lg shadow-2xl z-[100] p-4">
+                <div className="absolute top-full right-0 mt-2 w-[220px] bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded-lg shadow-2xl z-[100] p-4">
                   <div className="flex justify-between text-xs font-bold mb-3 text-slate-900 dark:text-white">
                     <span>Leverage</span>
-                    <span className="text-[#8b5cf6]">{leverage}x</span>
+                    <span className="text-[#e5c07b]">{leverage}x</span>
                   </div>
                   <input
                     type="range"
                     min="1" max="100"
                     value={leverage}
                     onChange={(e) => setLeverage(parseInt(e.target.value))}
-                    className="w-full accent-[#8b5cf6] mb-4"
+                    className="w-full accent-[#e5c07b] mb-4"
                   />
                   <button 
                     onClick={() => setShowLeverageDropdown(false)}
-                    className="w-full py-1.5 bg-[#8b5cf6] text-white text-xs font-bold rounded hover:bg-[#7c3aed]"
+                    className="w-full py-1.5 bg-[#e5c07b] text-white text-xs font-bold rounded hover:bg-[#d4ae6a]"
                   >
                     Confirm
                   </button>
@@ -337,19 +337,19 @@ export default function PerpetualsView() {
             </div>
           </div>
 
-          <div className="flex gap-4 border-b border-slate-200 dark:border-[#1f1f2e] mb-4">
+          <div className="flex gap-4 border-b border-slate-200 dark:border-[#1e1e24] mb-4">
             {(['Market', 'Limit'] as const).map(t => (
               <button
                 key={t}
                 onClick={() => setOrderType(t)}
                 className={`pb-1.5 text-xs font-bold border-b-2 transition-all ${
-                  orderType === t ? 'border-[#8b5cf6] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
+                  orderType === t ? 'border-[#e5c07b] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
                 }`}
               >{t}</button>
             ))}
           </div>
 
-          <div className="bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-[#1f1f2e] p-2 rounded mb-3">
+          <div className="bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] p-2 rounded mb-3">
             <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] font-bold flex justify-between mb-2">
               <span>Margin (Vault)</span>
               <span className="text-slate-900 dark:text-white number-mono">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
@@ -374,18 +374,18 @@ export default function PerpetualsView() {
                 value={orderType === 'Market' ? 'Market' : inputPrice}
                 onChange={e => orderType !== 'Market' && setInputPrice(e.target.value)}
                 disabled={orderType === 'Market'}
-                className="w-full pl-[50px] pr-12 py-2 bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-[#1f1f2e] rounded focus:border-[#8b5cf6] text-sm text-slate-900 dark:text-white number-mono outline-none disabled:opacity-50"
+                className="w-full pl-[50px] pr-12 py-2 bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded focus:border-[#e5c07b] text-sm text-slate-900 dark:text-white number-mono outline-none disabled:opacity-50"
               />
               <span className="absolute right-3 top-2 text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">USDC</span>
             </div>
 
             <div className="relative">
-              <label className="absolute left-3 top-2 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] uppercase">Amount</label>
+              <label className="absolute left-3 top-2 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] uppercase">Size</label>
               <input
                 type="text"
-                value={inputAmount}
-                onChange={e => setInputAmount(e.target.value)}
-                className="w-full pl-[60px] pr-16 py-2 bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-[#1f1f2e] rounded focus:border-[#8b5cf6] text-sm text-slate-900 dark:text-white number-mono outline-none"
+                value={inputSize}
+                onChange={e => setInputSize(e.target.value)}
+                className="w-full pl-[60px] pr-16 py-2 bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded focus:border-[#e5c07b] text-sm text-slate-900 dark:text-white number-mono outline-none"
               />
               <span className="absolute right-3 top-2 text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">{activePair.symbol.split('-')[0]}</span>
             </div>
@@ -395,14 +395,14 @@ export default function PerpetualsView() {
                  type="range" 
                  min="1" 
                  max="100" 
-                 className="w-full accent-[#8b5cf6]"
+                 className="w-full accent-[#e5c07b]"
                  onChange={(e) => {
                    const pct = parseInt(e.target.value);
                    // Mock up slide to set amount based on balance
                    if (balances.vaultUSDC > 0 && leverage > 0) {
                      const maxPos = balances.vaultUSDC * leverage;
                      const targetPos = maxPos * (pct / 100);
-                     setInputAmount((targetPos / activePair.lastPrice).toFixed(4));
+                     setInputSize((targetPos / activePair.lastPrice).toFixed(4));
                    }
                  }}
                />
@@ -416,19 +416,19 @@ export default function PerpetualsView() {
             </div>
 
             <label className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-[#8a8a9e] cursor-pointer">
-              <input type="checkbox" checked={showTPSL} onChange={e => setShowTPSL(e.target.checked)} className="accent-[#8b5cf6] bg-slate-100 dark:bg-[#1a1a24] border-slate-200 dark:border-[#1f1f2e] rounded-sm" />
+              <input type="checkbox" checked={showTPSL} onChange={e => setShowTPSL(e.target.checked)} className="accent-[#e5c07b] bg-slate-100 dark:bg-[#18181c] border-slate-200 dark:border-[#1e1e24] rounded-sm" />
               TP/SL
             </label>
 
             {showTPSL && (
               <div className="grid grid-cols-2 gap-2 mt-2">
-                <input type="text" placeholder="Take Profit" className="w-full px-2 py-1.5 bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-[#1f1f2e] rounded text-xs text-slate-900 dark:text-white number-mono outline-none focus:border-[#8b5cf6]" />
-                <input type="text" placeholder="Stop Loss" className="w-full px-2 py-1.5 bg-slate-100 dark:bg-[#1a1a24] border border-slate-200 dark:border-[#1f1f2e] rounded text-xs text-slate-900 dark:text-white number-mono outline-none focus:border-[#8b5cf6]" />
+                <input type="text" placeholder="Take Profit" className="w-full px-2 py-1.5 bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded text-xs text-slate-900 dark:text-white number-mono outline-none focus:border-[#e5c07b]" />
+                <input type="text" placeholder="Stop Loss" className="w-full px-2 py-1.5 bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded text-xs text-slate-900 dark:text-white number-mono outline-none focus:border-[#e5c07b]" />
               </div>
             )}
           </div>
 
-          <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] font-bold space-y-2 mb-4 bg-slate-100 dark:bg-[#1a1a24] p-3 rounded border border-slate-200 dark:border-[#1f1f2e]">
+          <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] font-bold space-y-2 mb-4 bg-slate-100 dark:bg-[#18181c] p-3 rounded border border-slate-200 dark:border-[#1e1e24]">
             <div className="flex justify-between">
               <span>Required Margin</span>
               <span className="text-slate-900 dark:text-white number-mono">${marginRequired.toFixed(2)} USDC</span>
@@ -450,7 +450,7 @@ export default function PerpetualsView() {
           {!walletConnected ? (
             <button
               onClick={() => connectWallet('injected')}
-              className="w-full py-3 rounded text-sm font-bold bg-[#8b5cf6] hover:bg-[#7c3aed] text-slate-900 dark:text-white transition-colors"
+              className="w-full py-3 rounded text-sm font-bold bg-[#e5c07b] hover:bg-[#d4ae6a] text-slate-900 dark:text-white transition-colors"
             >
               Connect Wallet
             </button>
@@ -483,12 +483,12 @@ export default function PerpetualsView() {
             {/* The Downloadable Card */}
             <div 
               ref={shareCardRef}
-              className="bg-slate-50 dark:bg-[#0b0c10] border border-[#1f2937] rounded-3xl w-full overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] relative mb-6"
+              className="bg-slate-50 dark:bg-[#08080a] border border-[#1f2937] rounded-3xl w-full overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] relative mb-6"
             >
               {/* Premium Glow Effects */}
               <div className={`absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-gradient-to-b ${sharePosition.unrealizedPnl >= 0 ? 'from-[#10b981]/15' : 'from-[#ef4444]/15'} to-transparent opacity-70 pointer-events-none`} />
-              <div className="absolute -top-24 -right-24 w-48 h-48 bg-white dark:bg-white dark:bg-[#13131a]/5 rounded-full blur-3xl pointer-events-none" />
-              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-white dark:bg-white dark:bg-[#13131a]/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-24 -right-24 w-48 h-48 bg-white dark:bg-white dark:bg-[#121216]/5 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-white dark:bg-white dark:bg-[#121216]/5 rounded-full blur-3xl pointer-events-none" />
               
               <div className="p-8 text-center relative z-10">
                 <div className="flex items-center justify-center gap-2 mb-6 opacity-80">
@@ -501,7 +501,7 @@ export default function PerpetualsView() {
                 <div className="flex items-center justify-center gap-2 mb-4">
                   <span className={`px-2.5 py-0.5 rounded-sm text-[10px] font-black tracking-widest ${sharePosition.side === 'LONG' ? 'bg-[#10b981] text-black shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-[#ef4444] text-slate-900 dark:text-white shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`}>{sharePosition.side}</span>
                   <span className="text-xl font-black text-slate-900 dark:text-white tracking-wide">{sharePosition.symbol}</span>
-                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-white dark:bg-[#13131a]/10 px-1.5 py-0.5 rounded">{Number(sharePosition.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-500 bg-white dark:bg-white dark:bg-[#121216]/10 px-1.5 py-0.5 rounded">{Number(sharePosition.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x</span>
                 </div>
                 
                 <div className={`text-6xl font-black number-mono mb-2 ${sharePosition.unrealizedPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'} drop-shadow-lg tracking-tighter`}>
@@ -531,7 +531,7 @@ export default function PerpetualsView() {
                 navigator.clipboard.writeText(`I'm ${sharePosition.side} ${sharePosition.symbol} with ${sharePosition.leverage}x leverage on Arc Terminal AI! PnL: ${sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%`);
                 alert('Copied to clipboard!');
               }} className="flex-1 py-3 rounded-xl text-xs font-bold text-slate-900 bg-white hover:bg-slate-200 transition-colors backdrop-blur-md">Copy Text</button>
-              <button onClick={handleDownloadImage} className="flex-[2] py-3 rounded-xl text-xs font-bold text-slate-900 dark:text-white bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(139,92,246,0.3)] border border-white/10">Download Image</button>
+              <button onClick={handleDownloadImage} className="flex-[2] py-3 rounded-xl text-xs font-bold text-slate-900 dark:text-white bg-gradient-to-r from-[#3b82f6] to-[#e5c07b] hover:opacity-90 transition-opacity shadow-[0_0_20px_rgba(139,92,246,0.3)] border border-white/10">Download Image</button>
             </div>
             
           </div>
@@ -540,8 +540,8 @@ export default function PerpetualsView() {
       {/* TP / SL Modal */}
       {tpSlPosition && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-white dark:bg-[#13131a] border border-slate-200 dark:border-slate-200 dark:border-[#1f1f2e] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            <div className="p-5 border-b border-slate-100 dark:border-slate-200 dark:border-[#1f1f2e] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
+          <div className="bg-white dark:bg-white dark:bg-[#121216] border border-slate-200 dark:border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <div className="p-5 border-b border-slate-100 dark:border-slate-200 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Set TP / SL</h3>
               <button onClick={() => setTpSlPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -561,7 +561,7 @@ export default function PerpetualsView() {
                     placeholder="0.00"
                     value={tpPrice}
                     onChange={e => setTpPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-slate-200 dark:border-[#1f1f2e] focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-slate-900 dark:text-white outline-none transition-all"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-slate-200 dark:border-[#1e1e24] focus:border-[#10b981]/50 focus:ring-2 focus:ring-[#10b981]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-slate-900 dark:text-white outline-none transition-all"
                   />
                   {estimatedTPPnl !== null && (
                     <div className={`mt-1.5 text-[10px] font-bold ${estimatedTPPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
@@ -576,7 +576,7 @@ export default function PerpetualsView() {
                     placeholder="0.00"
                     value={slPrice}
                     onChange={e => setSlPrice(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-slate-200 dark:border-[#1f1f2e] focus:border-[#ef4444]/50 focus:ring-2 focus:ring-[#ef4444]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-slate-900 dark:text-white outline-none transition-all"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-slate-200 dark:border-[#1e1e24] focus:border-[#ef4444]/50 focus:ring-2 focus:ring-[#ef4444]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-slate-900 dark:text-white outline-none transition-all"
                   />
                   {estimatedSLPnl !== null && (
                     <div className={`mt-1.5 text-[10px] font-bold ${estimatedSLPnl >= 0 ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
@@ -586,8 +586,8 @@ export default function PerpetualsView() {
                 </div>
               </div>
             </div>
-            <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-slate-200 dark:border-[#1f1f2e] flex gap-3">
-              <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-700 dark:text-slate-300 bg-white dark:bg-white dark:bg-[#13131a] border border-slate-200 dark:border-slate-200 dark:border-[#1f1f2e] hover:bg-slate-50 dark:hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] dark:bg-[#0c0c10] transition-colors">Cancel</button>
+            <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-slate-200 dark:border-[#1e1e24] flex gap-3">
+              <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-700 dark:text-slate-300 bg-white dark:bg-white dark:bg-[#121216] border border-slate-200 dark:border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] dark:bg-[#0c0c10] transition-colors">Cancel</button>
               <button onClick={() => {
                 if (tpPrice || slPrice) {
                   const tp = tpPrice ? parseFloat(tpPrice) : 0;
@@ -597,7 +597,7 @@ export default function PerpetualsView() {
                 setTpPrice('');
                 setSlPrice('');
                 setTpSlPosition(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 dark:text-white bg-[#8b5cf6] hover:bg-[#7c3aed] transition-colors shadow-lg shadow-[#8b5cf6]/30">Confirm</button>
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 dark:text-white bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
             </div>
           </div>
         </div>
@@ -606,8 +606,8 @@ export default function PerpetualsView() {
       {/* Partial Close Modal */}
       {closingPosition && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-          <div className="bg-white dark:bg-white dark:bg-[#13131a] border border-slate-200 dark:border-slate-200 dark:border-[#1f1f2e] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
-            <div className="p-5 border-b border-slate-100 dark:border-slate-200 dark:border-[#1f1f2e] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
+          <div className="bg-white dark:bg-white dark:bg-[#121216] border border-slate-200 dark:border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <div className="p-5 border-b border-slate-100 dark:border-slate-200 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Close Position</h3>
               <button onClick={() => setClosingPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
@@ -621,13 +621,13 @@ export default function PerpetualsView() {
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="text-xs font-bold text-slate-600 dark:text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-1">Amount to Close</label>
+                  <label className="text-xs font-bold text-slate-600 dark:text-slate-700 dark:text-slate-300 uppercase tracking-wider block mb-1">Size to Close</label>
                   <div className="relative">
                     <input
                       type="text"
                       value={closeSizeInput}
                       onChange={e => setCloseSizeInput(e.target.value)}
-                      className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/50 focus:ring-2 focus:ring-[#8b5cf6]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-slate-900 dark:text-white outline-none transition-all"
+                      className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-slate-200 dark:border-[#1e1e24] focus:border-[#e5c07b]/50 focus:ring-2 focus:ring-[#e5c07b]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-slate-900 dark:text-white outline-none transition-all"
                     />
                     <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                        <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold">{closingPosition.symbol.split('-')[0]}</span>
@@ -665,8 +665,8 @@ export default function PerpetualsView() {
 
               </div>
             </div>
-            <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-slate-200 dark:border-[#1f1f2e] flex gap-3">
-              <button onClick={() => setClosingPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-700 dark:text-slate-300 bg-white dark:bg-white dark:bg-[#13131a] border border-slate-200 dark:border-slate-200 dark:border-[#1f1f2e] hover:bg-slate-50 dark:hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] dark:bg-[#0c0c10] transition-colors">Cancel</button>
+            <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-slate-200 dark:border-[#1e1e24] flex gap-3">
+              <button onClick={() => setClosingPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-700 dark:text-slate-300 bg-white dark:bg-white dark:bg-[#121216] border border-slate-200 dark:border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] dark:bg-[#0c0c10] transition-colors">Cancel</button>
               <button onClick={() => {
                 const amt = parseFloat(closeSizeInput);
                 if (!isNaN(amt) && amt > 0) {
@@ -683,8 +683,8 @@ export default function PerpetualsView() {
 
 
           {/* Positions Section */}
-          <div className="w-full shrink-0 min-h-[300px] bg-white dark:bg-[#13131a] border-t border-slate-200 dark:border-[#1f1f2e] flex flex-col mt-1">
-            <div className="flex items-center gap-4 px-4 pt-2 border-b border-slate-200 dark:border-[#1f1f2e]">
+          <div className="w-full shrink-0 min-h-[300px] bg-white dark:bg-[#121216] border-t border-slate-200 dark:border-[#1e1e24] flex flex-col mt-1">
+            <div className="flex items-center gap-4 px-4 pt-2 border-b border-slate-200 dark:border-[#1e1e24]">
               {[
                 { id: 'Positions',     label: 'Positions',     count: positions.length },
                 { id: 'OpenOrders',    label: 'Open Orders',   count: openOrders.length },
@@ -695,7 +695,7 @@ export default function PerpetualsView() {
                   onClick={() => setActiveBottomTab(tab.id as any)}
                   className={`py-2 text-xs font-semibold border-b-2 transition-all ${
                     activeBottomTab === tab.id
-                      ? 'border-[#8b5cf6] text-[#8b5cf6]'
+                      ? 'border-[#e5c07b] text-[#e5c07b]'
                       : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
                   }`}
                 >
@@ -706,7 +706,7 @@ export default function PerpetualsView() {
             <div className="flex-1 overflow-auto">
               {activeBottomTab === 'Positions' && (
                 <table className="w-full text-left text-xs whitespace-nowrap">
-                  <thead className="sticky top-0 bg-white dark:bg-[#13131a] z-10">
+                  <thead className="sticky top-0 bg-white dark:bg-[#121216] z-10">
                     <tr className="text-slate-500 dark:text-[#8a8a9e] font-bold uppercase text-[10px]">
                       <th className="py-2 pl-4 font-medium">Market</th>
                       <th className="font-medium">Size</th>
@@ -736,8 +736,8 @@ export default function PerpetualsView() {
                             {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
                           </td>
                           <td className="text-right pr-4 flex items-center justify-end gap-1 pt-2">
-                            <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] border border-slate-200 dark:border-[#1f1f2e] rounded transition-all" title="Set TP/SL">TP/SL</button>
-                            <button onClick={() => setSharePosition(pos)} className="p-1 text-[#8b5cf6] hover:bg-[#8b5cf6]/10 border border-[#8b5cf6]/30 rounded transition-all" title="Share PnL">
+                            <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] border border-slate-200 dark:border-[#1e1e24] rounded transition-all" title="Set TP/SL">TP/SL</button>
+                            <button onClick={() => setSharePosition(pos)} className="p-1 text-[#e5c07b] hover:bg-[#e5c07b]/10 border border-[#e5c07b]/30 rounded transition-all" title="Share PnL">
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                             </button>
                             <button onClick={async () => {
@@ -761,12 +761,12 @@ export default function PerpetualsView() {
               )}
               {activeBottomTab === 'OpenOrders' && (
                 <table className="w-full text-left text-xs whitespace-nowrap">
-                  <thead className="sticky top-0 bg-white dark:bg-[#13131a] z-10">
+                  <thead className="sticky top-0 bg-white dark:bg-[#121216] z-10">
                     <tr className="text-slate-500 dark:text-[#8a8a9e] font-bold uppercase text-[10px]">
                       <th className="py-2 pl-4 font-medium">Market</th>
                       <th className="font-medium">Type</th>
                       <th className="font-medium">Price</th>
-                      <th className="font-medium">Amount</th>
+                      <th className="font-medium">Size</th>
                       <th className="font-medium text-right pr-4">Action</th>
                     </tr>
                   </thead>
@@ -802,7 +802,7 @@ export default function PerpetualsView() {
               )}
               {activeBottomTab === 'TradeHistory' && (
                 <table className="w-full text-left text-xs whitespace-nowrap">
-                  <thead className="sticky top-0 bg-white dark:bg-[#13131a] z-10">
+                  <thead className="sticky top-0 bg-white dark:bg-[#121216] z-10">
                     <tr className="text-slate-500 dark:text-[#8a8a9e] font-bold uppercase text-[10px]">
                       <th className="py-2 pl-4 font-medium">Time</th>
                       <th className="font-medium">Market</th>
