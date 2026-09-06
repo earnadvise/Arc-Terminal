@@ -801,6 +801,52 @@ export default function PerpetualsView() {
               )}
             </div>
           </div>
+      {/* Margin Modal */}
+      {marginAction && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
+            <div className="p-5 border-b border-slate-100 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
+              <h3 className="font-bold text-slate-800 dark:text-slate-100">{marginAction === 'deposit' ? 'Deposit Margin' : 'Withdraw Margin'}</h3>
+              <button onClick={() => setMarginAction(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-300 transition-colors">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <span className="font-black text-slate-800 dark:text-slate-100">USDC Vault</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Available: {marginAction === 'deposit' ? balances.walletUSDC.toLocaleString() : balances.vaultUSDC.toLocaleString()}</span>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-1">Amount</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={marginAmount}
+                      onChange={e => setMarginAmount(e.target.value)}
+                      className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1e1e24] focus:border-[#e5c07b]/50 focus:ring-2 focus:ring-[#e5c07b]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white outline-none transition-all"
+                    />
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                      <button onClick={() => setMarginAmount((marginAction === 'deposit' ? balances.walletUSDC : balances.vaultUSDC).toString())} className="px-2 py-1 bg-[#1e1e24] text-[#e5c07b] rounded text-[10px] font-bold">MAX</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
+              <button onClick={() => setMarginAction(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] transition-colors">Cancel</button>
+              <button onClick={() => {
+                const amt = parseFloat(marginAmount);
+                if (!isNaN(amt) && amt > 0) {
+                  if (marginAction === 'deposit') depositFunds(amt);
+                  else withdrawFunds(amt);
+                }
+                setMarginAction(null);
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
