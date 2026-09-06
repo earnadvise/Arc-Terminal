@@ -111,16 +111,33 @@ export default function PerpetualsView() {
 
   return (
     <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
-      {/* --- TICKER TAPE (EdgeX Style) --- */}
-      <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-6 text-xs font-semibold mx-1">
-        <div className="text-slate-500 dark:text-[#8a8a9e] whitespace-nowrap">Favorites</div>
-        {markets.slice(0, 10).map((m) => {
+      {/* --- TICKER TAPE (Aster Style) --- */}
+      <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-xs font-semibold mx-1">
+        {/* $ % Toggle Mock */}
+        <div className="flex items-center bg-slate-100 dark:bg-[#1f1f2e] rounded-full px-2 py-0.5 text-[10px] text-slate-500 dark:text-[#8a8a9e] gap-2 mr-2">
+          <span className="text-slate-900 dark:text-white bg-white dark:bg-[#2a2a3a] rounded-full px-1.5 shadow-sm">$</span>
+          <span className="px-0.5">%</span>
+        </div>
+        
+        {markets.slice(0, 10).map((m, idx) => {
           const isUp = m.change24h >= 0;
           const isActive = activePair.symbol === m.symbol;
+          const displaySymbol = (m.symbol.split('-')[0] + 'USDT').toUpperCase();
+          
           return (
-            <div key={m.symbol} className={`flex items-center gap-2 cursor-pointer transition-colors whitespace-nowrap ${isActive ? 'text-white' : 'text-slate-400 hover:text-white'}`} onClick={() => setActivePairBySymbol(m.symbol)}>
-              <span>{m.symbol.replace('-', '')}</span>
-              {isActive && <span className={isUp ? 'text-[#10b981]' : 'text-[#ef4444]'}>{isUp ? '+' : ''}{m.change24h}%</span>}
+            <div key={m.symbol} className="flex items-center gap-4">
+              <div 
+                className={`flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white'}`} 
+                onClick={() => setActivePairBySymbol(m.symbol)}
+              >
+                <span>{displaySymbol}</span>
+                <span className={isUp ? 'text-[#10b981]' : 'text-[#ef4444]'}>
+                  {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}
+                </span>
+              </div>
+              {idx < 9 && (
+                <div className="text-slate-300 dark:text-[#2a2a3a] text-[10px] tracking-widest font-black">∷</div>
+              )}
             </div>
           );
         })}
