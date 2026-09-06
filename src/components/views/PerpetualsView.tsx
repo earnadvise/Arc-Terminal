@@ -112,7 +112,7 @@ export default function PerpetualsView() {
   return (
     <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (EdgeX Style) --- */}
-      <div className="bg-[#08080a] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-6 text-xs font-semibold border-b border-[#1f1f2e]">
+      <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-6 text-xs font-semibold mx-1">
         <div className="text-slate-500 dark:text-[#8a8a9e] whitespace-nowrap">Favorites</div>
         {markets.slice(0, 10).map((m) => {
           const isUp = m.change24h >= 0;
@@ -127,7 +127,7 @@ export default function PerpetualsView() {
       </div>
 
       {/* --- TOP HEADER (Binance Style) --- */}
-      <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] flex items-center justify-between px-4 py-2 shrink-0">
+      <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-xl flex items-center justify-between px-4 py-2 shrink-0 mx-1">
         <div className="flex items-center gap-6">
           {/* Market Dropdown Toggle */}
           <div className="relative">
