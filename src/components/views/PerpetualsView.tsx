@@ -49,6 +49,8 @@ export default function PerpetualsView() {
   const [closingPosition, setClosingPosition] = useState<any>(null);
   const [closeSizeInput, setCloseSizeInput] = useState<string>('');
   const shareCardRef = useRef<HTMLDivElement>(null);
+    const [marginAction, setMarginAction] = useState<\'deposit\' | \'withdraw\' | null>(null);
+    const [marginAmount, setMarginAmount] = useState<string>(\'\');
 
   const handleDownloadImage = async () => {
     if (shareCardRef.current) {
