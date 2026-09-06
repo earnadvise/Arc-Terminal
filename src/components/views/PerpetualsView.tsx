@@ -292,80 +292,49 @@ export default function PerpetualsView() {
         </div>
 
         {/* RIGHT COLUMN: Order Entry */}
-        <div className="w-[320px] bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] flex flex-col overflow-y-auto shrink-0 p-3">
+        <div className="w-[320px] bg-[#121216] border-l border-[#1e1e24] flex flex-col overflow-y-auto shrink-0 p-3">
           
-          <div className="flex bg-[#0c0c10] border border-slate-200 dark:border-[#1e1e24] p-0.5 rounded mb-4">
-            {(['CROSS', 'ISOLATED'] as const).map(m => (
-              <button
-                key={m}
-                onClick={() => setMarginMode(m as any)}
-                className={`flex-1 py-1 text-xs font-bold rounded-sm transition-colors ${
-                  marginMode === m ? 'bg-slate-200 dark:bg-[#1f1f2e] text-slate-900 dark:text-white' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
-                }`}
-              >{m}</button>
-            ))}
-            <div className="w-px bg-slate-200 dark:bg-[#1f1f2e] mx-1 my-1" />
-            <div className="relative flex-1 flex">
-              <button 
-                onClick={() => setShowLeverageDropdown(!showLeverageDropdown)}
-                className="w-full py-1 text-xs font-bold rounded-sm text-slate-900 dark:text-white bg-slate-200 dark:bg-[#1f1f2e] hover:bg-slate-300 dark:hover:bg-[#2a2a35] transition-colors flex items-center justify-center gap-1"
-                title="Change Leverage"
-              >
-                {leverage}x <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
-              </button>
-              {showLeverageDropdown && (
-                <div className="absolute top-full right-0 mt-2 w-[220px] bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded-lg shadow-2xl z-[100] p-4">
-                  <div className="flex justify-between text-xs font-bold mb-3 text-slate-900 dark:text-white">
-                    <span>Leverage</span>
-                    <span className="text-[#e5c07b]">{leverage}x</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="1" max="100"
-                    value={leverage}
-                    onChange={(e) => setLeverage(parseInt(e.target.value))}
-                    className="w-full accent-[#e5c07b] mb-4"
-                  />
-                  <button 
-                    onClick={() => setShowLeverageDropdown(false)}
-                    className="w-full py-1.5 bg-[#e5c07b] text-white text-xs font-bold rounded hover:bg-[#d4ae6a]"
-                  >
-                    Confirm
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex gap-4 border-b border-slate-200 dark:border-[#1e1e24] mb-4">
-            {(['Market', 'Limit'] as const).map(t => (
+          {/* Top Tabs */}
+          <div className="flex gap-4 border-b border-[#1e1e24] mb-3 pb-0">
+            {(['Market', 'Limit', 'Stop Limit'] as const).map(t => (
               <button
                 key={t}
-                onClick={() => setOrderType(t)}
-                className={`pb-1.5 text-xs font-bold border-b-2 transition-all ${
-                  orderType === t ? 'border-[#e5c07b] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white'
+                onClick={() => setOrderType(t as any)}
+                className={`pb-2 text-xs font-bold border-b-2 transition-all ${
+                  orderType === t ? 'border-[#e5c07b] text-white' : 'border-transparent text-slate-500 hover:text-white'
                 }`}
               >{t}</button>
             ))}
           </div>
 
-          <div className="bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] p-2 rounded mb-3">
-            <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] font-bold flex justify-between mb-2">
-              <span>Margin (Vault)</span>
-              <span className="text-slate-900 dark:text-white number-mono">${balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span>
-            </div>
-            <div className="flex gap-2">
-              <button onClick={() => {
-                const amt = window.prompt('Enter USDC amount to deposit for trading:');
-                if (amt && !isNaN(parseFloat(amt))) depositFunds(parseFloat(amt));
-              }} className="flex-1 py-1.5 bg-[#10b981]/10 hover:bg-[#10b981]/20 text-[#10b981] rounded text-[10px] font-bold border border-[#10b981]/20 transition-colors">Deposit</button>
-              <button onClick={() => {
-                const amt = window.prompt('Enter USDC amount to withdraw from trading:');
-                if (amt && !isNaN(parseFloat(amt))) withdrawFunds(parseFloat(amt));
-              }} className="flex-1 py-1.5 bg-[#ef4444]/10 hover:bg-[#ef4444]/20 text-[#ef4444] rounded text-[10px] font-bold border border-[#ef4444]/20 transition-colors">Withdraw</button>
-            </div>
+          {/* Avbl Balance */}
+          <div className="flex justify-between items-center text-xs font-semibold mb-3 px-1">
+            <span className="text-slate-500">Avbl <span className="text-white">{balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDT</span></span>
+            <button className="text-[#e5c07b] hover:text-white transition-colors" title="Deposit" onClick={() => depositFunds(1000)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
           </div>
 
+          {/* Cross | 20x | M Button Group */}
+          <div className="flex gap-1 mb-4">
+            <button onClick={() => setMarginMode(marginMode === 'CROSS' ? 'ISOLATED' : 'CROSS')} className="flex-1 py-1.5 bg-[#18181c] hover:bg-[#1f1f26] border border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-300 transition-colors uppercase">
+              {marginMode === 'CROSS' ? 'Cross' : 'Isolated'}
+            </button>
+            <div className="relative flex-1">
+              <button onClick={() => setShowLeverageDropdown(!showLeverageDropdown)} className="w-full h-full py-1.5 bg-[#18181c] hover:bg-[#1f1f26] border border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-300 transition-colors">
+                {leverage}x
+              </button>
+              {showLeverageDropdown && (
+                <div className="absolute top-full right-0 mt-1 w-[200px] bg-[#18181c] border border-[#1e1e24] rounded-lg shadow-2xl z-[100] p-4">
+                  <div className="flex justify-between text-xs font-bold mb-3 text-white">
+                    <span>Leverage</span>
+                    <span className="text-[#e5c07b]">{leverage}x</span>
+                  </div>
+                  <input type="range" min="1" max="100" value={leverage} onChange={(e) => setLeverage(parseInt(e.target.value))} className="w-full accent-[#e5c07b] mb-4" />
+                  <button onClick={() => setShowLeverageDropdown(false)} className="w-full py-1.5 bg-[#e5c07b] text-slate-900 text-xs font-bold rounded hover:bg-[#d4ae6a]">Confirm</button>
+                </div>
+              )}
+            </div>
+            <button className="w-10 py-1.5 bg-[#18181c] hover:bg-[#1f1f26] border border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-300 transition-colors">M</button>
+          </div>
           <div className="space-y-3 mb-4">
             <div className="relative">
               <label className="absolute left-3 top-2 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] uppercase">Price</label>
