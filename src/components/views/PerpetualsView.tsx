@@ -112,7 +112,7 @@ export default function PerpetualsView() {
   return (
     <main className="w-full mx-auto flex flex-col pt-1 min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (Aster Style) --- */}
-      <div className="bg-white dark:bg-[#121216] border-b border-slate-200 dark:border-[#1e1e24] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-[11px] font-semibold z-10">
+      <div className="bg-white dark:bg-[#121216] shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-[11px] font-semibold z-10">
         
         {markets.slice(0, 30).map((m, idx, arr) => {
           const isUp = m.change24h >= 0;
@@ -137,7 +137,7 @@ export default function PerpetualsView() {
       </div>
 
       {/* --- TOP HEADER (Binance Style) --- */}
-      <div className="bg-white dark:bg-[#121216] border-b border-slate-200 dark:border-[#1e1e24] flex items-center justify-between px-4 py-2 shrink-0 z-10">
+      <div className="bg-white dark:bg-[#121216] flex items-center justify-between px-4 py-2 shrink-0 z-10">
         <div className="flex items-center gap-6">
           {/* Market Dropdown Toggle */}
           <div className="relative">
@@ -146,7 +146,7 @@ export default function PerpetualsView() {
               className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white hover:text-[#e5c07b] transition-colors"
               >
                 <div className="flex items-center gap-1">
-                  <div className="bg-[#e5c07b] text-slate-900 rounded-full w-4 h-4 flex items-center justify-center text-[10px] mr-1">₿</div>
+                  
                   {(activePair.symbol.split('-')[0] + 'USDT').toUpperCase()}
                   
                 </div>
