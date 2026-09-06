@@ -243,7 +243,7 @@ export const initialMarkets: Market[] = [
     nextFundingTime: Date.now() + 4 * 60 * 60 * 1000,
     high24h: 160.40,
     low24h: 159.90
-  }
+  },
   {
     symbol: 'XRP-PERP',
     name: 'XRP Token',
