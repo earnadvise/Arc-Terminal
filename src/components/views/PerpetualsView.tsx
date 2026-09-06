@@ -303,7 +303,7 @@ export default function PerpetualsView() {
                 key={t}
                 onClick={() => setOrderType(t as any)}
                 className={`pb-2 text-xs font-bold border-b-2 transition-all ${
-                  orderType === t ? 'border-[#e5c07b] text-white' : 'border-transparent text-slate-500 hover:text-white'
+                  orderType === t ? 'border-[#e5c07b] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >{t}</button>
             ))}
