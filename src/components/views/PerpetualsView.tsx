@@ -127,15 +127,13 @@ export default function PerpetualsView() {
           return (
             <div key={m.symbol} className="flex items-center gap-4">
               <div 
-                className={`flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${isActive ? 'text-slate-900 dark:text-white font-black' : 'text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-white'}`} 
+                className={`flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${isActive ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white'}`} 
                 onClick={() => setActivePairBySymbol(m.symbol)}
               >
                 <span>{displaySymbol}</span>
-                {isActive && (
-                  <span className={isUp ? 'text-[#10b981]' : 'text-[#ef4444]'}>
-                    {isUp ? '+' : ''}{m.change24h}%
-                  </span>
-                )}
+                <span className={isUp ? 'text-[#10b981]' : 'text-[#ef4444]'}>
+                  {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}
+                </span>
               </div>
               {idx < arr.length - 1 && (
                 <div className="text-slate-300 dark:text-[#2a2a3a] text-[10px] tracking-widest font-black">∷</div>
