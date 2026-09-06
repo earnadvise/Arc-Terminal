@@ -429,7 +429,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const fetchPrices = async () => {
       try {
         // Fetch directly from Binance client-side to bypass Vercel US server blocks
-        const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22SUIUSDT%22,%22APTUSDT%22,%22PAXGUSDT%22,%22LITUSDT%22,%22ASTRUSDT%22%5D').catch(() => null);
+        const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22SUIUSDT%22,%22APTUSDT%22,%22PAXGUSDT%22,%22ASTRUSDT%22%5D').catch(() => null);
         
         let apiData: Record<string, any> = {};
         if (binanceRes && binanceRes.ok) {
@@ -494,6 +494,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           } catch (err) {
             console.warn('Hyperliquid fetch failed:', err);
           }
+
+          
+          // Dynamic mock for LITER since it's a custom token
+          const literBase = 4.65;
+          const literNoise = (Math.random() - 0.5) * 0.02;
+          apiData['LIT-PERP'] = {
+            lastPrice: parseFloat((literBase + literNoise).toFixed(4)),
+            change24h: parseFloat((2.4 + (literNoise * 10)).toFixed(2)),
+            high24h: parseFloat((literBase * 1.05).toFixed(4)),
+            low24h: parseFloat((literBase * 0.95).toFixed(4)),
+            volume24h: 3420000
+          };
 
           // 1. Update Markets and Positions
         setMarkets(prev => {
