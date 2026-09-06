@@ -433,15 +433,7 @@ export default function PerpetualsView() {
             </div>
           </div>
 
-          {!walletConnected ? (
-            <button
-              onClick={() => connectWallet('injected')}
-              className="w-full py-3 rounded text-sm font-bold bg-[#e5c07b] hover:bg-[#d4ae6a] text-slate-900 dark:text-white transition-colors"
-            >
-              Connect Wallet
-            </button>
-          ) : (
-            <div className="flex gap-2">
+          <div className="flex gap-2">
               <button
                 onClick={() => { setTradeSide('LONG'); handlePlaceOrder(); }}
                 className="flex-1 py-3 rounded text-sm font-bold bg-[#10b981] hover:bg-[#059669] text-slate-900 dark:text-white transition-colors shadow-lg shadow-[#10b981]/20 flex flex-col items-center justify-center leading-tight"
@@ -455,7 +447,6 @@ export default function PerpetualsView() {
                 <span>Sell / Short</span>
               </button>
             </div>
-          )}
         </div>
       </div>
 
