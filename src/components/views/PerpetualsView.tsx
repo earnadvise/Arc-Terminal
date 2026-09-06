@@ -110,9 +110,9 @@ export default function PerpetualsView() {
   const [showMarketDropdown, setShowMarketDropdown] = useState(false);
 
   return (
-    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
+    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[64px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (Aster Style) --- */}
-      <div className="bg-white dark:bg-[#121216] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-6 gap-8 text-xs font-semibold mx-1">
+      <div className="bg-white dark:bg-[#121216] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-[11px] font-semibold mx-1">
         
         {markets.slice(0, 30).map((m, idx, arr) => {
           const isUp = m.change24h >= 0;
@@ -120,7 +120,7 @@ export default function PerpetualsView() {
           const displaySymbol = (m.symbol.split('-')[0] + 'USDT').toUpperCase();
           
           return (
-            <div key={m.symbol} className="flex items-center gap-8">
+            <div key={m.symbol} className="flex items-center gap-4">
               <div 
                 className={`flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${isActive ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white'}`} 
                 onClick={() => setActivePairBySymbol(m.symbol)}
@@ -131,7 +131,7 @@ export default function PerpetualsView() {
                 </span>
               </div>
               {idx < arr.length - 1 && (
-                <div className="grid grid-cols-2 gap-[2px] opacity-30 mx-2"><div className="w-[2px] h-[2px] rounded-full bg-slate-500"/><div className="w-[2px] h-[2px] rounded-full bg-slate-500"/><div className="w-[2px] h-[2px] rounded-full bg-slate-500"/><div className="w-[2px] h-[2px] rounded-full bg-slate-500"/></div>
+                <div className="text-slate-400 dark:text-[#2a2a3a] tracking-widest font-black opacity-50">::</div>
               )}
             </div>
           );
@@ -146,9 +146,13 @@ export default function PerpetualsView() {
             <button 
               onClick={() => setShowMarketDropdown(!showMarketDropdown)}
               className="flex items-center gap-2 text-xl font-black text-slate-900 dark:text-white hover:text-[#e5c07b] transition-colors"
-            >
-              {activePair.symbol}
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
+              >
+                <div className="flex items-center gap-1">
+                  <div className="bg-[#e5c07b] text-slate-900 rounded-full w-4 h-4 flex items-center justify-center text-[10px] mr-1">₿</div>
+                  {(activePair.symbol.split('-')[0] + 'USDT').toUpperCase()}
+                  <span className="text-[10px] text-slate-500 dark:text-[#8a8a9e] bg-slate-100 dark:bg-[#1f1f2e] px-1.5 py-0.5 rounded ml-1">200x</span>
+                </div>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
             </button>
             <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mt-0.5">{activePair.name}</div>
             
