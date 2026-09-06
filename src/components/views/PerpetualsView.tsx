@@ -130,9 +130,7 @@ export default function PerpetualsView() {
                   {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}
                 </span>
               </div>
-              {idx < arr.length - 1 && (
-                <div className="text-slate-400 dark:text-[#2a2a3a] tracking-widest font-black opacity-50">::</div>
-              )}
+              
             </div>
           );
         })}
