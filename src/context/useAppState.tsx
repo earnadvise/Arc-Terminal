@@ -1128,7 +1128,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
       const returnMargin = pos.margin * fraction;
       const closeFee = (actualCloseSize * pos.markPrice) * 0.0006;
-      const netReturn = returnMargin + realizedPnl - closeFee;
+      const netReturn = realizedPnl - closeFee; // Margin is already in vaultUSDC, just unlocked by removing the position
 
       // Optimistically refund margin + PnL to vault
       setBalances(prev => ({
