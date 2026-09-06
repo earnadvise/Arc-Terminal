@@ -112,7 +112,7 @@ export default function PerpetualsView() {
   return (
     <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (Aster Style) --- */}
-      <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-xs font-semibold mx-1">
+      <div className="bg-white dark:bg-[#121216] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-xs font-semibold mx-1">
         
         {markets.slice(0, 30).map((m, idx, arr) => {
           const isUp = m.change24h >= 0;
