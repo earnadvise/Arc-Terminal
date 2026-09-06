@@ -110,7 +110,7 @@ export default function PerpetualsView() {
   const [showMarketDropdown, setShowMarketDropdown] = useState(false);
 
   return (
-    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[64px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
+    <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-1 min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (Aster Style) --- */}
       <div className="bg-white dark:bg-[#121216] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-[11px] font-semibold mx-1">
         
@@ -150,7 +150,7 @@ export default function PerpetualsView() {
                 <div className="flex items-center gap-1">
                   <div className="bg-[#e5c07b] text-slate-900 rounded-full w-4 h-4 flex items-center justify-center text-[10px] mr-1">₿</div>
                   {(activePair.symbol.split('-')[0] + 'USDT').toUpperCase()}
-                  <span className="text-[10px] text-slate-500 dark:text-[#8a8a9e] bg-slate-100 dark:bg-[#1f1f2e] px-1.5 py-0.5 rounded ml-1">200x</span>
+                  
                 </div>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="m6 9 6 6 6-6"/></svg>
             </button>
