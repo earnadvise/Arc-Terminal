@@ -311,8 +311,8 @@ export default function PerpetualsView() {
           <div className="flex justify-between items-center text-xs font-semibold mb-3 px-1">
             <span className="text-slate-500">Avbl <span className="text-white">{balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDT</span></span>
             <div className="flex items-center gap-2">
-              <button className="text-[#e5c07b] hover:text-white transition-colors" title="Withdraw" onClick={() => withdrawFunds(1000)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></button>
-              <button className="text-[#e5c07b] hover:text-white transition-colors" title="Deposit" onClick={() => depositFunds(1000)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
+              <button className="text-[#e5c07b] hover:text-white transition-colors" title="Deposit" onClick={() => depositFunds(100)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
+              <button className="text-[#e5c07b] hover:text-white transition-colors" title="Withdraw" onClick={() => withdrawFunds(100)}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></button>
             </div>
           </div>
 
