@@ -113,10 +113,10 @@ export default function PerpetualsView() {
     <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (Aster Style) --- */}
       <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-xs font-semibold mx-1">
-        {/* $ % Toggle Mock */}
-        <div className="flex items-center bg-slate-100 dark:bg-[#1f1f2e] rounded-full px-2 py-0.5 text-[10px] text-slate-500 dark:text-[#8a8a9e] gap-2 mr-2">
-          <span className="text-slate-900 dark:text-white bg-white dark:bg-[#2a2a3a] rounded-full px-1.5 shadow-sm">$</span>
-          <span className="px-0.5">%</span>
+        {/* Favorites */}
+        <div className="flex items-center gap-1 cursor-pointer text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white transition-colors mr-2">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span className="whitespace-nowrap font-bold">Favorites</span>
         </div>
         
         {markets.slice(0, 10).map((m, idx) => {
