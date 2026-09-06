@@ -51,7 +51,7 @@ const encodeOpenPosition = (symbol: string, isLong: boolean, amount: number, ent
   
   const priceWei = BigInt(Math.floor(entryPrice * 1e6));
   const priceHex = priceWei.toString(16).padStart(64, '0');
-  const leverageHex = leverage.toString(16).padStart(64, '0');
+  const leverageHex = Math.floor(leverage).toString(16).padStart(64, '0');
   const stringLenHex = symbol.length.toString(16).padStart(64, '0');
   let stringBytes = '';
   for (let i = 0; i < symbol.length; i++) {
@@ -71,7 +71,7 @@ const encodePlaceLimitOrder = (symbol: string, isLong: boolean, size: number, ta
   const sizeHex = sizeWei.toString(16).padStart(64, '0');
   const priceWei = BigInt(Math.floor(targetPrice * 1e6));
   const priceHex = priceWei.toString(16).padStart(64, '0');
-  const leverageHex = leverage.toString(16).padStart(64, '0');
+  const leverageHex = Math.floor(leverage).toString(16).padStart(64, '0');
   const stringLenHex = symbol.length.toString(16).padStart(64, '0');
   let stringBytes = '';
   for (let i = 0; i < symbol.length; i++) {
@@ -103,7 +103,7 @@ const encodeCancelLimitOrder = (symbol: string, size: number, entryPrice: number
   const positionSize = size * entryPrice;
   const sizeWei = BigInt(Math.floor(positionSize * 1e6));
   const sizeHex = sizeWei.toString(16).padStart(64, '0');
-  const leverageHex = leverage.toString(16).padStart(64, '0');
+  const leverageHex = Math.floor(leverage).toString(16).padStart(64, '0');
   const stringLenHex = symbol.length.toString(16).padStart(64, '0');
   let stringBytes = '';
   for (let i = 0; i < symbol.length; i++) {
@@ -121,7 +121,7 @@ const encodeClosePosition = (symbol: string, size: number, entryPrice: number, l
   const sizeWei = BigInt(Math.floor(positionSize * 1e6));
   const sizeHex = sizeWei.toString(16).padStart(64, '0');
   
-  const leverageHex = leverage.toString(16).padStart(64, '0');
+  const leverageHex = Math.floor(leverage).toString(16).padStart(64, '0');
   
   const pnlWei = BigInt(Math.round(realizedPnl * 1e6));
   const pnlHex = (pnlWei < BigInt(0) ? (BigInt(1) << BigInt(256)) + pnlWei : pnlWei).toString(16).padStart(64, '0');
