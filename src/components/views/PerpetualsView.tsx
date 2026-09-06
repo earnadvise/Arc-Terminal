@@ -112,7 +112,7 @@ export default function PerpetualsView() {
   return (
     <main className="w-full mx-auto p-1 flex flex-col gap-1 pt-[72px] min-h-screen bg-slate-50 dark:bg-[#08080a] text-slate-900 dark:text-white">
       {/* --- TICKER TAPE (Aster Style) --- */}
-      <div className="bg-white dark:bg-[#121216] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-4 gap-4 text-xs font-semibold mx-1">
+      <div className="bg-white dark:bg-[#121216] rounded-xl shrink-0 flex items-center overflow-x-auto no-scrollbar h-[36px] px-6 gap-8 text-xs font-semibold mx-1">
         
         {markets.slice(0, 30).map((m, idx, arr) => {
           const isUp = m.change24h >= 0;
@@ -120,7 +120,7 @@ export default function PerpetualsView() {
           const displaySymbol = (m.symbol.split('-')[0] + 'USDT').toUpperCase();
           
           return (
-            <div key={m.symbol} className="flex items-center gap-4">
+            <div key={m.symbol} className="flex items-center gap-8">
               <div 
                 className={`flex items-center gap-1.5 cursor-pointer transition-colors whitespace-nowrap ${isActive ? 'text-slate-900 dark:text-white font-bold' : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white'}`} 
                 onClick={() => setActivePairBySymbol(m.symbol)}
