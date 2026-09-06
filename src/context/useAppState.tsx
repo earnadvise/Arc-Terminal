@@ -429,7 +429,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const fetchPrices = async () => {
       try {
         // Fetch directly from Binance client-side to bypass Vercel US server blocks
-        const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22SUIUSDT%22,%22APTUSDT%22,%22PAXGUSDT%22%5D').catch(() => null);
+        const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22SUIUSDT%22,%22APTUSDT%22,%22PAXGUSDT%22,%22LITUSDT%22,%22ASTRUSDT%22%5D').catch(() => null);
         
         let apiData: Record<string, any> = {};
         if (binanceRes && binanceRes.ok) {
