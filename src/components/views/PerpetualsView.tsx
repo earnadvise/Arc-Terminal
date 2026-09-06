@@ -611,7 +611,7 @@ export default function PerpetualsView() {
                     <button
                       key={fraction}
                       onClick={() => setCloseSizeInput((closingPosition.size * fraction).toFixed(4))}
-                      className="flex-1 py-1.5 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-200 dark:bg-[#1f1f2e] hover:bg-slate-200 rounded-md transition-colors"
+                      className="flex-1 py-1.5 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white bg-slate-100 dark:bg-[#1f1f2e] hover:bg-slate-200 rounded-md transition-colors"
                     >
                       {fraction * 100}%
                     </button>
