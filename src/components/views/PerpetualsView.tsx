@@ -51,6 +51,7 @@ export default function PerpetualsView() {
   const shareCardRef = useRef<HTMLDivElement>(null);
     const [marginAction, setMarginAction] = useState<'deposit' | 'withdraw' | null>(null);
     const [marginAmount, setMarginAmount] = useState<string>('');
+  const [favorites, setFavorites] = useState<string[]>(['BTC-PERP', 'ETH-PERP', 'SOL-PERP', 'ARC-PERP', 'SUI-PERP']);
 
   const handleDownloadImage = async () => {
     if (shareCardRef.current) {
@@ -119,7 +120,7 @@ export default function PerpetualsView() {
           <span className="whitespace-nowrap font-bold">Favorites</span>
         </div>
         
-        {markets.slice(0, 10).map((m, idx) => {
+        {markets.filter(m => favorites.includes(m.symbol)).map((m, idx, arr) => {
           const isUp = m.change24h >= 0;
           const isActive = activePair.symbol === m.symbol;
           const displaySymbol = (m.symbol.split('-')[0] + 'USDT').toUpperCase();
@@ -135,7 +136,7 @@ export default function PerpetualsView() {
                   {m.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 5 })}
                 </span>
               </div>
-              {idx < 9 && (
+              {idx < arr.length - 1 && (
                 <div className="text-slate-300 dark:text-[#2a2a3a] text-[10px] tracking-widest font-black">∷</div>
               )}
             </div>
