@@ -136,7 +136,7 @@ export default function PerpetualsView() {
                 </span>
               </div>
               {idx < arr.length - 1 && (
-                <div className="flex gap-[2px] opacity-20"><div className="w-[3px] h-[3px] rounded-full bg-current"/><div className="w-[3px] h-[3px] rounded-full bg-current"/><div className="w-[3px] h-[3px] rounded-full bg-current"/><div className="w-[3px] h-[3px] rounded-full bg-current"/></div>
+                <div className="grid grid-cols-2 gap-[2px] opacity-30 mx-2"><div className="w-[2px] h-[2px] rounded-full bg-slate-500"/><div className="w-[2px] h-[2px] rounded-full bg-slate-500"/><div className="w-[2px] h-[2px] rounded-full bg-slate-500"/><div className="w-[2px] h-[2px] rounded-full bg-slate-500"/></div>
               )}
             </div>
           );
