@@ -460,7 +460,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           apiData = await res.json();
         }
 
-        // 1. Update Markets and Positions
+        
+          // Dynamic mock for HYPE since it's not on Binance API or CoinGecko
+          const hypeBase = 24.50;
+          const hypeNoise = (Math.random() - 0.5) * 0.1;
+          apiData['HYPE-PERP'] = {
+            lastPrice: hypeBase + hypeNoise,
+            change24h: 5.4 + (hypeNoise * 10),
+            high24h: hypeBase + 1.2,
+            low24h: hypeBase - 0.8,
+            volume24h: 15420000
+          };
+
+          // 1. Update Markets and Positions
         setMarkets(prev => {
           const newMarkets = prev.map(m => {
             const marketData = apiData[m.symbol];
