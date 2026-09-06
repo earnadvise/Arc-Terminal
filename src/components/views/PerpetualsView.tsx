@@ -522,16 +522,6 @@ export default function PerpetualsView() {
           <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
             <div className="p-5 border-b border-slate-100 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Set TP / SL</h3>
-              <button onClick={() => {
-                if (tpPrice || slPrice) {
-                  const tp = tpPrice ? parseFloat(tpPrice) : 0;
-                  const sl = slPrice ? parseFloat(slPrice) : 0;
-                  setTPSL(tpSlPosition.symbol, tp, sl);
-                }
-                setTpPrice('');
-                setSlPrice('');
-                setTpSlPosition(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 dark:text-white bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
               <button onClick={() => setTpSlPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
@@ -577,6 +567,16 @@ export default function PerpetualsView() {
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
               <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] transition-colors">Cancel</button>
+              <button onClick={() => {
+                if (tpPrice || slPrice) {
+                  const tp = tpPrice ? parseFloat(tpPrice) : 0;
+                  const sl = slPrice ? parseFloat(slPrice) : 0;
+                  setTPSL(tpSlPosition.symbol, tp, sl);
+                }
+                setTpPrice('');
+                setSlPrice('');
+                setTpSlPosition(null);
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 dark:text-white bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
             </div>
           </div>
         </div>
@@ -588,13 +588,6 @@ export default function PerpetualsView() {
           <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
             <div className="p-5 border-b border-slate-100 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">Close Position</h3>
-              <button onClick={() => {
-                const amt = parseFloat(closeSizeInput);
-                if (!isNaN(amt) && amt > 0) {
-                  closePosition(closingPosition.id, amt);
-                }
-                setClosingPosition(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 dark:text-white bg-[#ef4444] hover:bg-[#dc2626] transition-colors shadow-lg shadow-[#ef4444]/30">Confirm Close</button>
               <button onClick={() => setClosingPosition(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
@@ -653,6 +646,13 @@ export default function PerpetualsView() {
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
               <button onClick={() => setClosingPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] transition-colors">Cancel</button>
+              <button onClick={() => {
+                const amt = parseFloat(closeSizeInput);
+                if (!isNaN(amt) && amt > 0) {
+                  closePosition(closingPosition.id, amt);
+                }
+                setClosingPosition(null);
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 dark:text-white bg-[#ef4444] hover:bg-[#dc2626] transition-colors shadow-lg shadow-[#ef4444]/30">Confirm Close</button>
             </div>
           </div>
         </div>
@@ -814,14 +814,6 @@ export default function PerpetualsView() {
           <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
             <div className="p-5 border-b border-slate-100 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">{marginAction === 'deposit' ? 'Deposit Margin' : 'Withdraw Margin'}</h3>
-              <button onClick={() => {
-                const amt = parseFloat(marginAmount);
-                if (!isNaN(amt) && amt > 0) {
-                  if (marginAction === 'deposit') depositFunds(amt);
-                  else withdrawFunds(amt);
-                }
-                setMarginAction(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
               <button onClick={() => setMarginAction(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
@@ -850,6 +842,14 @@ export default function PerpetualsView() {
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
               <button onClick={() => setMarginAction(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] transition-colors">Cancel</button>
+              <button onClick={() => {
+                const amt = parseFloat(marginAmount);
+                if (!isNaN(amt) && amt > 0) {
+                  if (marginAction === 'deposit') depositFunds(amt);
+                  else withdrawFunds(amt);
+                }
+                setMarginAction(null);
+              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
             </div>
           </div>
         </div>
