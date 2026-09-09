@@ -19,6 +19,7 @@ const TV_SYMBOL_MAP: Record<string, string> = {
   'jpy-PERP':  'FX:USDJPY',
   'HYPE-PERP': 'Hyperliquid:HYPE',
   'ASTER-PERP':'Binance:ASTRUSDT',
+  'LIT-PERP': 'Binance:LITUSDT',
   
 };
 
