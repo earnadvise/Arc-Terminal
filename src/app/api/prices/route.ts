@@ -26,8 +26,6 @@ export async function GET() {
     'gbp-PERP': { lastPrice: 1.2720, change24h: -0.12, high24h: 1.2760, low24h: 1.2680, volume24h: 98400000 },
     'jpy-PERP': { lastPrice: 157.40, change24h: 0.15, high24h: 158.10, low24h: 156.80, volume24h: 245080000 },
     'ARC-PERP': { lastPrice: 64144.00, change24h: 1.36, high24h: 65120.00, low24h: 63800.00, volume24h: 2845012000 },
-    'HYPE-PERP': { lastPrice: 24.50, change24h: 5.4, high24h: 25.7, low24h: 23.7, volume24h: 15420000 },
-    'ASTER-PERP': { lastPrice: 0.006, change24h: 1.1, high24h: 0.0065, low24h: 0.0055, volume24h: 3000000 },
   };
 
   // 1. Try Binance
@@ -77,7 +75,7 @@ export async function GET() {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3500);
       const cgRes = await fetch(
-        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,sui,aptos,pax-gold,astar&vs_currencies=usd&include_24hr_change=true',
+        'https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,solana,sui,aptos,pax-gold,&vs_currencies=usd&include_24hr_change=true',
         { next: { revalidate: 0 }, signal: controller.signal }
       );
       clearTimeout(timeoutId);
@@ -91,7 +89,7 @@ export async function GET() {
           sui: 'SUI-PERP',
           aptos: 'APT-PERP',
           'pax-gold': 'xau-PERP',
-          'astar': 'ASTER-PERP'
+          '': 'ASTER-PERP'
         };
 
         Object.entries(cgMap).forEach(([cgId, symbol]) => {

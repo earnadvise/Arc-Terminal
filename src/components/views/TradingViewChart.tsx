@@ -16,8 +16,6 @@ const TV_SYMBOL_MAP: Record<string, string> = {
   'eur-PERP':  'FX:EURUSD',
   'gbp-PERP':  'FX:GBPUSD',
   'jpy-PERP':  'FX:USDJPY',
-  'HYPE-PERP': 'BINANCE:BTCUSDT', // Fallback since HYPE doesn't exist on TV widget
-  'ASTER-PERP':'BINANCE:ASTRUSDT',
 };
 
 interface Props {
