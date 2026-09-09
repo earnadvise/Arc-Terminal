@@ -36,7 +36,7 @@ declare global {
 
 function TradingViewChart({ symbol, timeframe = '60' }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
+  
   const { isDarkMode } = useAppState();
   const tvWidgetRef = useRef<any>(null);
 
@@ -72,7 +72,7 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
         container: containerRef.current,
         library_path: '/charting_library/',
         locale: 'en',
-        disabled_features: ['use_localstorage_for_settings'],
+        disabled_features: ['use_localstorage_for_settings', 'create_volume_indicator_by_default'],
         enabled_features: ['study_templates'],
         charts_storage_url: 'https://saveload.tradingview.com',
         charts_storage_api_version: '1.1',
@@ -102,18 +102,8 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
   }, [tvSymbol, timeframe, isDarkMode]);
 
   return (
-    <div className={isFullscreen ? "fixed inset-0 z-[100] bg-white dark:bg-[#13131a] p-4 flex flex-col" : "w-full h-full relative"}>
-      <button 
-        onClick={() => setIsFullscreen(!isFullscreen)}
-        className="absolute top-2 right-2 z-10 bg-white dark:bg-[#13131a] hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e] text-slate-700 dark:text-slate-200 p-2 rounded-lg shadow-lg border border-slate-200 dark:border-[#1f1f2e] transition-colors"
-        title={isFullscreen ? "Exit Fullscreen" : "Maximize Chart"}
-      >
-        {isFullscreen ? (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
-        ) : (
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>
-        )}
-      </button>
+    <div className={"w-full h-full relative"}>
+      
       <div
         className="tradingview-widget-container w-full h-full rounded-xl overflow-hidden"
         ref={containerRef}
