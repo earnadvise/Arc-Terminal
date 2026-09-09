@@ -62,7 +62,27 @@ export default {
     const interval = intervalMap[resolution] || '1h';
     
     try {
-      if (symbol === 'LITER' || !symbol.endsWith('USDT')) {
+      if (symbol === 'Mock:LITER' || symbol === 'LITER') {
+         // Generate fake mock candlesticks for LITER since it doesn't exist on any exchange
+         let bars = [];
+         let currentTime = from * 1000;
+         while (currentTime <= to * 1000) {
+            bars.push({
+               time: currentTime,
+               open: 4.65 + (Math.random() * 0.02 - 0.01),
+               high: 4.66 + (Math.random() * 0.02),
+               low: 4.64 - (Math.random() * 0.02),
+               close: 4.65 + (Math.random() * 0.02 - 0.01),
+               volume: Math.random() * 1000 + 500
+            });
+            // increment by 1 hour (3600000 ms) as a generic step
+            currentTime += 3600000;
+         }
+         onHistoryCallback(bars, { noData: false });
+         return;
+      }
+
+      if (!symbol.endsWith('USDT')) {
          onHistoryCallback([], { noData: true });
          return;
       }
