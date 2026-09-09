@@ -57,35 +57,75 @@ export default {
     onHistoryCallback: Function,
     onErrorCallback: Function
   ) => {
-    const { from, to, firstDataRequest } = periodParams;
-    const symbol = symbolInfo.name; // e.g., "SOLUSDT"
+    const { from, to } = periodParams;
+    const symbol = symbolInfo.name; // e.g., "SOLUSDT" or "HYPEUSDT"
     const interval = intervalMap[resolution] || '1h';
     
     try {
-      // If it's a mock or Hyperliquid symbol, we might need a different API. 
-      // For now, we route everything to Binance (except HYPE/LITER which will fail gracefully)
-      if (!symbol.endsWith('USDT') || symbol === 'HYPEUSDT' || symbol === 'LITER') {
+      if (symbol === 'LITER' || !symbol.endsWith('USDT')) {
          onHistoryCallback([], { noData: true });
          return;
       }
-      
-      const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&startTime=${from * 1000}&endTime=${to * 1000}&limit=1000`;
-      const response = await fetch(url);
-      const data = await response.json();
-      
-      if (!data || data.length === 0) {
-        onHistoryCallback([], { noData: true });
-        return;
+
+      let bars = [];
+
+      if (symbol === 'HYPEUSDT') {
+         // Use Hyperliquid API for HYPE
+         const hlIntervalMap: Record<string, string> = {
+            '1m': '1m', '5m': '5m', '15m': '15m', '1h': '1h', '4h': '4h', '1d': '1d'
+         };
+         
+         const payload = {
+            type: "candleSnapshot",
+            req: {
+               coin: "HYPE",
+               interval: hlIntervalMap[interval] || '1h',
+               startTime: from * 1000,
+               endTime: to * 1000
+            }
+         };
+
+         const response = await fetch("https://api.hyperliquid.xyz/info", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+         });
+         
+         const data = await response.json();
+         if (!data || data.length === 0) {
+            onHistoryCallback([], { noData: true });
+            return;
+         }
+         
+         bars = data.map((el: any) => ({
+            time: el.t,
+            open: parseFloat(el.o),
+            high: parseFloat(el.h),
+            low: parseFloat(el.l),
+            close: parseFloat(el.c),
+            volume: parseFloat(el.v)
+         }));
+
+      } else {
+         // Use Binance API for all other crypto
+         const url = `https://api.binance.com/api/v3/klines?symbol=${symbol}&interval=${interval}&startTime=${from * 1000}&endTime=${to * 1000}&limit=1000`;
+         const response = await fetch(url);
+         const data = await response.json();
+         
+         if (!data || data.length === 0) {
+            onHistoryCallback([], { noData: true });
+            return;
+         }
+         
+         bars = data.map((el: any) => ({
+            time: el[0], 
+            open: parseFloat(el[1]),
+            high: parseFloat(el[2]),
+            low: parseFloat(el[3]),
+            close: parseFloat(el[4]),
+            volume: parseFloat(el[5]),
+         }));
       }
-      
-      const bars = data.map((el: any) => ({
-        time: el[0], // timestamp in ms
-        open: parseFloat(el[1]),
-        high: parseFloat(el[2]),
-        low: parseFloat(el[3]),
-        close: parseFloat(el[4]),
-        volume: parseFloat(el[5]),
-      }));
       
       onHistoryCallback(bars, { noData: false });
     } catch (error) {
