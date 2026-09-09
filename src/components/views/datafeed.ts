@@ -64,7 +64,7 @@ export default {
     try {
       // If it's a mock or Hyperliquid symbol, we might need a different API. 
       // For now, we route everything to Binance (except HYPE/LITER which will fail gracefully)
-      if (symbol === 'HYPE' || symbol === 'LITER') {
+      if (!symbol.endsWith('USDT') || symbol === 'HYPEUSDT' || symbol === 'LITER') {
          onHistoryCallback([], { noData: true });
          return;
       }

@@ -352,7 +352,7 @@ export default function PerpetualsView() {
                 </div>
               )}
             </div>
-            <button className="w-10 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#18181c] dark:hover:bg-[#1f1f26] border border-slate-200 dark:border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-700 dark:text-slate-300 transition-colors">M</button>
+            <button onClick={() => { if (balances.vaultUSDC > 0 && leverage > 0) { const maxPos = balances.vaultUSDC * leverage; setInputSize((Math.floor((maxPos / activePair.lastPrice) * 10000) / 10000).toString()); } }} className="w-10 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#18181c] dark:hover:bg-[#1f1f26] border border-slate-200 dark:border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-700 dark:text-slate-300 transition-colors">M</button>
           </div>
           <div className="space-y-3 mb-4">
             <div className="relative">
@@ -390,7 +390,7 @@ export default function PerpetualsView() {
                    if (balances.vaultUSDC > 0 && leverage > 0) {
                      const maxPos = balances.vaultUSDC * leverage;
                      const targetPos = maxPos * (pct / 100);
-                     setInputSize((targetPos / activePair.lastPrice).toFixed(4));
+                     setInputSize((Math.floor((targetPos / activePair.lastPrice) * 10000) / 10000).toString());
                    }
                  }}
                />
