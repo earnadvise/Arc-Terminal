@@ -496,16 +496,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           }
 
           
-          // Dynamic mock for LITER since it's a custom token
-          const literBase = 4.65;
-          const literNoise = (Math.random() - 0.5) * 0.02;
-          apiData['LIT-PERP'] = {
-            lastPrice: parseFloat((literBase + literNoise).toFixed(4)),
-            change24h: parseFloat((2.4 + (literNoise * 10)).toFixed(2)),
-            high24h: parseFloat((literBase * 1.05).toFixed(4)),
-            low24h: parseFloat((literBase * 0.95).toFixed(4)),
-            volume24h: 3420000
-          };
+          
 
           // 1. Update Markets and Positions
         setMarkets(prev => {
