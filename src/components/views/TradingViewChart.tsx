@@ -19,7 +19,7 @@ const TV_SYMBOL_MAP: Record<string, string> = {
   'jpy-PERP':  'FX:USDJPY',
   'HYPE-PERP': 'Hyperliquid:HYPE',
   'ASTER-PERP':'Binance:ASTRUSDT',
-  'LIT-PERP':  'Dexscreener:base/0x7f756443f9baf7620960e65a2e47a44f7cfe1d5cbf7591a5c8436b8305a25467',
+  
 };
 
 interface Props {
@@ -49,14 +49,7 @@ useEffect(() => {
     containerRef.current.innerHTML = '';
 
     const isIframeFallback = tvSymbol.startsWith('TVC:') || tvSymbol.startsWith('FX:');
-    const isDexscreener = tvSymbol.startsWith('Dexscreener:');
-
-    if (isDexscreener) {
-      const dsPath = tvSymbol.split('Dexscreener:')[1];
-      const theme = isDarkMode ? 'dark' : 'light';
-      containerRef.current.innerHTML = `<iframe src="https://dexscreener.com/${dsPath}?embed=1&theme=${theme}&trades=0&info=0" style="width: 100%; height: 100%; border: none;"></iframe>`;
-      return;
-    }
+    
 
     if (isIframeFallback) {
       // Use the standard Iframe Widget for Forex/Commodities
