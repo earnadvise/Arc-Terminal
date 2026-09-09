@@ -63,7 +63,7 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
       await loadScript('/charting_library/charting_library.standalone.js');
       
 
-      if (!window.TradingView || !window.Datafeeds) return;
+      if (!window.TradingView) return;
 
       const widgetOptions = {
         symbol: tvSymbol,
