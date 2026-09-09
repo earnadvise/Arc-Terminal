@@ -60,7 +60,7 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
 
     const initWidget = async () => {
       await loadScript('/charting_library/charting_library.standalone.js');
-      await loadScript('/charting_library/bundles/datafeeds/udf/dist/bundle.js');
+      await loadScript('/datafeeds/udf/dist/bundle.js');
 
       if (!window.TradingView || !window.Datafeeds) return;
 
