@@ -132,48 +132,6 @@ export const initialMarkets: Market[] = [
     high24h: 149.20,
     low24h: 138.10
   },
-    {
-    symbol: 'HYPE-PERP',
-    name: 'Hype Token',
-    category: 'Crypto',
-    lastPrice: 24.50,
-    prevPrice: 21.00,
-    change24h: 16.66,
-    volume24h: 120500000,
-    openInterest: 45120000,
-    fundingRate: 0.0041,
-    nextFundingTime: Date.now() + 4 * 60 * 60 * 1000,
-    high24h: 26.00,
-    low24h: 20.00
-  },
-  {
-    symbol: 'LIT-PERP',
-    name: 'Litentry',
-    category: 'Crypto',
-    lastPrice: 1.25,
-    prevPrice: 1.15,
-    change24h: 8.69,
-    volume24h: 45200000,
-    openInterest: 15120000,
-    fundingRate: 0.0021,
-    nextFundingTime: Date.now() + 4 * 60 * 60 * 1000,
-    high24h: 1.35,
-    low24h: 1.10
-  },
-  {
-    symbol: 'ASTER-PERP',
-    name: 'Aster Token',
-    category: 'Crypto',
-    lastPrice: 0.7906,
-    prevPrice: 0.7306,
-    change24h: 8.21,
-    volume24h: 286744271,
-    openInterest: 85120000,
-    fundingRate: 0.0031,
-    nextFundingTime: Date.now() + 4 * 60 * 60 * 1000,
-    high24h: 0.8500,
-    low24h: 0.7100
-  },
   {
     symbol: 'SUI-PERP',
     name: 'Sui',
