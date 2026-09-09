@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, memo, useState } from 'react';
 import { useAppState } from '@/context/useAppState';
+import Datafeed from './datafeed';
 
 // Maps our internal pair symbols to TradingView symbols
 const TV_SYMBOL_MAP: Record<string, string> = {
@@ -60,13 +61,13 @@ function TradingViewChart({ symbol, timeframe = '60' }: Props) {
 
     const initWidget = async () => {
       await loadScript('/charting_library/charting_library.standalone.js');
-      await loadScript('/datafeeds/udf/dist/bundle.js');
+      
 
       if (!window.TradingView || !window.Datafeeds) return;
 
       const widgetOptions = {
         symbol: tvSymbol,
-        datafeed: new window.Datafeeds.UDFCompatibleDatafeed('https://demo_feed.tradingview.com'),
+        datafeed: Datafeed,
         interval: timeframe.replace('m', '').replace('h', '60').replace('D', '1D'),
         container: containerRef.current,
         library_path: '/charting_library/',
