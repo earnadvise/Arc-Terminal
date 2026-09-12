@@ -19,7 +19,7 @@ export default function LandingView() {
   const features = [
     {
       title: 'Agentic Trading',
-      desc: 'Let Arc AI execute complex multi-step trades automatically via prompt.',
+      desc: 'Let AI execute complex multi-step trades automatically via prompt.',
       icon: <Sparkles size={20} className="text-[#8b5cf6]" />
     },
     {
@@ -68,7 +68,7 @@ export default function LandingView() {
             
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.05]">
               Trade Smarter <br />
-              With <span className="bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] bg-clip-text text-transparent">Arc AI</span>
+              With <span className="bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] bg-clip-text text-transparent">AI</span>
             </h1>
             
             <p className="text-slate-500 dark:text-[#8a8a9e] text-lg sm:text-xl max-w-2xl mx-auto lg:mx-0 leading-relaxed">
