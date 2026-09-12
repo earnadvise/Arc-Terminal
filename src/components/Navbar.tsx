@@ -35,8 +35,62 @@ export default function Navbar() {
     { id: 'Vault',      label: 'Vault',      icon: <VaultIcon size={15} /> },
   ];
 
+  const targetDate = new Date('2026-09-16T00:00:00Z').getTime();
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hrs: 0, min: 0, sec: 0 });
+
+  React.useEffect(() => {
+    // Initial calculate
+    const calculateTime = () => {
+      const now = new Date().getTime();
+      const distance = targetDate - now;
+      if (distance < 0) return { days: 0, hrs: 0, min: 0, sec: 0 };
+      return {
+        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+        hrs: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+        min: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+        sec: Math.floor((distance % (1000 * 60)) / 1000)
+      };
+    };
+    setTimeLeft(calculateTime());
+    
+    const interval = setInterval(() => {
+      setTimeLeft(calculateTime());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [targetDate]);
+
   return (
     <>
+      <div className="w-full bg-[#10b981] text-slate-900 py-2 px-4 flex items-center justify-center gap-6 text-sm font-bold shadow-md z-50">
+        <div className="flex items-center gap-2">
+          <span>🚀</span>
+          <span>Mainnet Launch</span>
+          <span className="opacity-80">|</span>
+          <span>16 September 2026</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col items-center leading-none">
+            <span className="text-lg font-black number-mono">{timeLeft.days.toString().padStart(2, '0')}</span>
+            <span className="text-[9px] uppercase font-bold opacity-80">Days</span>
+          </div>
+          <span className="text-lg font-black opacity-50">:</span>
+          <div className="flex flex-col items-center leading-none">
+            <span className="text-lg font-black number-mono">{timeLeft.hrs.toString().padStart(2, '0')}</span>
+            <span className="text-[9px] uppercase font-bold opacity-80">Hrs</span>
+          </div>
+          <span className="text-lg font-black opacity-50">:</span>
+          <div className="flex flex-col items-center leading-none">
+            <span className="text-lg font-black number-mono">{timeLeft.min.toString().padStart(2, '0')}</span>
+            <span className="text-[9px] uppercase font-bold opacity-80">Min</span>
+          </div>
+          <span className="text-lg font-black opacity-50">:</span>
+          <div className="flex flex-col items-center leading-none">
+            <span className="text-lg font-black number-mono">{timeLeft.sec.toString().padStart(2, '0')}</span>
+            <span className="text-[9px] uppercase font-bold opacity-80">Sec</span>
+          </div>
+        </div>
+      </div>
+      
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-[#1f1f2e] bg-sky-50/80 dark:bg-[#0c0c10]/80 backdrop-blur-md px-6 py-3 flex items-center justify-between">
         {/* Logo */}
         <div className="flex items-center gap-8">
