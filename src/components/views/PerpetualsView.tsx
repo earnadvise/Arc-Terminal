@@ -29,12 +29,14 @@ export default function PerpetualsView() {
     connectWallet,
     depositFunds,
     withdrawFunds,
-    setTPSL
+    setTPSL,
+    addNotification
   } = useAppState();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Crypto' | 'Commodities' | 'Forex'>('All');
-  const [orderType, setOrderType] = useState<'Market' | 'Limit' | 'Stop'>('Market');
+  const [orderType, setOrderType] = useState<'Market' | 'Limit' | 'Stop' | 'Trailing' | 'OCO'>('Market');
+  const [oneClickTrading, setOneClickTrading] = useState(false);
   const [tradeSide, setTradeSide] = useState<'LONG' | 'SHORT'>('LONG');
   const [inputPrice, setInputPrice] = useState<string>(activePair.lastPrice.toString());
   const [inputSize, setInputSize] = useState<string>('1.0');
@@ -217,13 +219,15 @@ export default function PerpetualsView() {
             </div>
             {[
               { label: 'Index Price', value: (activePair.lastPrice * 1.0001).toLocaleString(undefined, { minimumFractionDigits: 2 }) },
-              { label: 'Mark Price',  value: activePair.lastPrice.toLocaleString(undefined, { minimumFractionDigits: 2 }) },
               { label: '24h Vol',  value: `$${(activePair.volume24h / 1e6).toFixed(2)}M` },
               { label: 'Open Interest', value: `$${(activePair.openInterest / 1e6).toFixed(2)}M` },
-              { label: 'Funding / 1h', value: '0.0051%' },
+              { label: 'Funding / Countdown', value: '0.0051%', extra: '02:45:10', color: 'text-[#e5c07b]' },
             ].map((stat: any) => (
               <div key={stat.label}>
-                <div className={`text-sm number-mono font-semibold ${stat.color || 'text-slate-900 dark:text-white'}`}>{stat.value}</div>
+                <div className="flex items-center gap-1.5">
+                  <div className={`text-sm number-mono font-semibold ${stat.color || 'text-slate-900 dark:text-white'}`}>{stat.value}</div>
+                  {stat.extra && <div className="text-[10px] bg-[#e5c07b]/10 text-[#e5c07b] px-1.5 py-0.5 rounded number-mono font-bold">{stat.extra}</div>}
+                </div>
                 <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] uppercase">{stat.label}</div>
               </div>
             ))}
@@ -241,7 +245,6 @@ export default function PerpetualsView() {
             <div className="flex items-center gap-2 p-2 border-b border-slate-200 dark:border-[#1e1e24]">
               <div className="flex items-center gap-4 text-xs font-bold px-2">
                 <button className="text-[#e5c07b] border-b-2 border-[#e5c07b] pb-1">Chart</button>
-                <button className="text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white pb-1">Info</button>
               </div>
               <div className="h-4 w-px bg-slate-200 dark:bg-[#1f1f2e]" />
               <div className="flex items-center gap-1">
@@ -278,10 +281,10 @@ export default function PerpetualsView() {
             <div className="flex-1 flex flex-col-reverse overflow-hidden px-1">
               {[...Array(12)].map((_, i) => (
                 <div key={`ask-${i}`} className="grid grid-cols-3 px-2 py-0.5 relative hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e]">
-                   <div className="absolute top-0 right-0 h-full bg-[#ef4444]/10" style={{ width: `${Math.random() * 80 + 10}%` }} />
+                   <div className="absolute top-0 right-0 h-full bg-[#ef4444]/10" style={{ width: `${(i * 7 + 20) % 100}%` }} />
                    <span className="text-[#ef4444] relative z-10">{(activePair.lastPrice * (1 + (12-i)*0.0001)).toFixed(2)}</span>
-                   <span className="text-slate-900 dark:text-white text-right relative z-10">{(Math.random() * 2).toFixed(3)}</span>
-                   <span className="text-slate-500 dark:text-[#8a8a9e] text-right relative z-10">{(Math.random() * 10).toFixed(3)}</span>
+                   <span className="text-slate-900 dark:text-white text-right relative z-10">{((i * 0.37) % 2 + 0.1).toFixed(3)}</span>
+                   <span className="text-slate-500 dark:text-[#8a8a9e] text-right relative z-10">{((12 - i) * 1.5 + 2).toFixed(3)}</span>
                 </div>
               ))}
             </div>
@@ -297,10 +300,10 @@ export default function PerpetualsView() {
             <div className="flex-1 overflow-hidden px-1">
               {[...Array(12)].map((_, i) => (
                 <div key={`bid-${i}`} className="grid grid-cols-3 px-2 py-0.5 relative hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e]">
-                   <div className="absolute top-0 right-0 h-full bg-[#10b981]/10" style={{ width: `${Math.random() * 80 + 10}%` }} />
+                   <div className="absolute top-0 right-0 h-full bg-[#10b981]/10" style={{ width: `${(i * 11 + 30) % 100}%` }} />
                    <span className="text-[#10b981] relative z-10">{(activePair.lastPrice * (1 - (i+1)*0.0001)).toFixed(2)}</span>
-                   <span className="text-slate-900 dark:text-white text-right relative z-10">{(Math.random() * 2).toFixed(3)}</span>
-                   <span className="text-slate-500 dark:text-[#8a8a9e] text-right relative z-10">{(Math.random() * 10).toFixed(3)}</span>
+                   <span className="text-slate-900 dark:text-white text-right relative z-10">{((i * 0.43) % 2 + 0.1).toFixed(3)}</span>
+                   <span className="text-slate-500 dark:text-[#8a8a9e] text-right relative z-10">{((i + 1) * 1.5 + 1).toFixed(3)}</span>
                 </div>
               ))}
             </div>
@@ -311,28 +314,55 @@ export default function PerpetualsView() {
         <div className="w-[320px] bg-white dark:bg-[#121216] border-l border-slate-200 dark:border-[#1e1e24] flex flex-col overflow-y-auto shrink-0 p-3">
           
           {/* Top Tabs */}
-          <div className="flex gap-4 border-b border-slate-200 dark:border-[#1e1e24] mb-3 pb-0">
-            {(['Market', 'Limit', 'Stop Limit'] as const).map(t => (
-              <button
-                key={t}
-                onClick={() => setOrderType(t as any)}
-                className={`pb-2 text-xs font-bold border-b-2 transition-all ${
-                  orderType === t ? 'border-[#e5c07b] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >{t}</button>
-            ))}
+          <div className="flex justify-between items-center border-b border-slate-200 dark:border-[#1e1e24] mb-3 pb-0">
+            <div className="flex gap-4">
+              {(['Market', 'Limit'] as const).map(t => (
+                <button
+                  key={t}
+                  onClick={() => setOrderType(t as any)}
+                  className={`pb-2 text-xs font-bold border-b-2 transition-all ${
+                    orderType === t ? 'border-[#e5c07b] text-slate-900 dark:text-white' : 'border-transparent text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >{t}</button>
+              ))}
+              <div className="relative group pb-2">
+                <select 
+                  value={['Market', 'Limit'].includes(orderType) ? 'Stop Limit' : orderType}
+                  onChange={(e) => setOrderType(e.target.value as any)}
+                  className={`text-xs font-bold bg-transparent outline-none cursor-pointer appearance-none ${
+                    !['Market', 'Limit'].includes(orderType) ? 'text-[#e5c07b]' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'
+                  }`}
+                >
+                  <option value="Stop Limit" className="text-slate-900 bg-white dark:bg-[#121216] dark:text-white">Stop Limit</option>
+                  <option value="Trailing" className="text-slate-900 bg-white dark:bg-[#121216] dark:text-white">Trailing</option>
+                  <option value="OCO" className="text-slate-900 bg-white dark:bg-[#121216] dark:text-white">OCO</option>
+                </select>
+                {!['Market', 'Limit'].includes(orderType) && <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#e5c07b]"></div>}
+              </div>
+            </div>
           </div>
 
-          {/* Avbl Balance */}
+          {/* Avbl Balance & 1CT */}
           <div className="flex justify-between items-center text-xs font-semibold mb-3 px-1">
-            <span className="text-slate-500">Avbl <span className="text-slate-900 dark:text-white">{balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDT</span></span>
+            <div className="flex items-center gap-3">
+              <span className="text-slate-500">Avbl <span className="text-slate-900 dark:text-white">{balances.vaultUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span></span>
+              
+              {/* 1CT Toggle */}
+              <label className="flex items-center gap-1.5 cursor-pointer group" title="One-Click Trading (Gasless)">
+                <input type="checkbox" className="hidden" checked={oneClickTrading} onChange={(e) => setOneClickTrading(e.target.checked)} />
+                <div className={`relative w-6 h-3.5 rounded-full transition-colors ${oneClickTrading ? 'bg-[#10b981]' : 'bg-slate-300 dark:bg-[#1e1e24]'}`}>
+                  <div className={`absolute top-[2px] w-2.5 h-2.5 bg-white rounded-full transition-transform ${oneClickTrading ? 'left-[12px]' : 'left-[2px]'}`} />
+                </div>
+                <span className={`text-[10px] font-bold ${oneClickTrading ? 'text-[#10b981]' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>1CT</span>
+              </label>
+            </div>
             <div className="flex items-center gap-2">
                 <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Deposit" onClick={() => { setMarginAction('deposit'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
                 <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Withdraw" onClick={() => { setMarginAction('withdraw'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></button>
               </div>
           </div>
 
-          {/* Cross | 20x | M Button Group */}
+          {/* Cross | 20x Button Group */}
           <div className="flex gap-1 mb-4">
             <button onClick={() => setMarginMode(marginMode === 'CROSS' ? 'ISOLATED' : 'CROSS')} className="flex-1 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#18181c] dark:hover:bg-[#1f1f26] border border-slate-200 dark:border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-700 dark:text-slate-300 transition-colors uppercase">
               {marginMode === 'CROSS' ? 'Cross' : 'Isolated'}
@@ -352,7 +382,6 @@ export default function PerpetualsView() {
                 </div>
               )}
             </div>
-            <button onClick={() => { if (balances.vaultUSDC > 0 && leverage > 0) { const maxPos = balances.vaultUSDC * leverage; setInputSize((Math.floor((maxPos / activePair.lastPrice) * 10000) / 10000).toString()); } }} className="w-10 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-[#18181c] dark:hover:bg-[#1f1f26] border border-slate-200 dark:border-[#1e1e24] rounded-sm text-[10px] font-semibold text-slate-700 dark:text-slate-300 transition-colors">M</button>
           </div>
           <div className="space-y-3 mb-4">
             <div className="relative">
@@ -386,8 +415,14 @@ export default function PerpetualsView() {
                  className="w-full accent-[#e5c07b]"
                  onChange={(e) => {
                    const pct = parseInt(e.target.value);
-                   // Mock up slide to set amount based on balance
-                   if (balances.vaultUSDC > 0 && leverage > 0) {
+                   if (balances.vaultUSDC <= 0) {
+                     if (pct > 0) {
+                       addNotification('warning', 'Empty Vault', 'You must deposit USDC into your Vault to trade.');
+                       e.target.value = "0";
+                     }
+                     return;
+                   }
+                   if (leverage > 0) {
                      const maxPos = balances.vaultUSDC * leverage;
                      const targetPos = maxPos * (pct / 100);
                      setInputSize((Math.floor((targetPos / activePair.lastPrice) * 10000) / 10000).toString());
@@ -403,17 +438,7 @@ export default function PerpetualsView() {
                </div>
             </div>
 
-            <label className="flex items-center gap-2 text-xs font-bold text-slate-500 dark:text-[#8a8a9e] cursor-pointer">
-              <input type="checkbox" checked={showTPSL} onChange={e => setShowTPSL(e.target.checked)} className="accent-[#e5c07b] bg-slate-100 dark:bg-[#18181c] border-slate-200 dark:border-[#1e1e24] rounded-sm" />
-              TP/SL
-            </label>
 
-            {showTPSL && (
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                <input type="text" placeholder="Take Profit" className="w-full px-2 py-1.5 bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded text-xs text-slate-900 dark:text-white number-mono outline-none focus:border-[#e5c07b]" />
-                <input type="text" placeholder="Stop Loss" className="w-full px-2 py-1.5 bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded text-xs text-slate-900 dark:text-white number-mono outline-none focus:border-[#e5c07b]" />
-              </div>
-            )}
           </div>
 
           <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] font-bold space-y-2 mb-4 bg-slate-100 dark:bg-[#18181c] p-3 rounded border border-slate-200 dark:border-[#1e1e24]">
