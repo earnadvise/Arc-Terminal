@@ -35,7 +35,7 @@ export default function Navbar() {
     { id: 'Vault',      label: 'Vault',      icon: <VaultIcon size={15} /> },
   ];
 
-  const targetDate = new Date('2026-09-16T00:00:00Z').getTime();
+  const targetDate = new Date('2026-09-17T00:00:00Z').getTime();
   const [timeLeft, setTimeLeft] = useState({ days: 0, hrs: 0, min: 0, sec: 0 });
 
   React.useEffect(() => {
