@@ -328,6 +328,13 @@ export default function SwapView() {
             setIsSwapping(false);
             return;
           }
+        }
+      } catch (err: any) {
+        console.warn('On-chain swap transaction error:', err);
+        addNotification('error', 'Swap Failed', 'Transaction failed or reverted on-chain.');
+        setIsSwapping(false);
+        return;
+      }
     }
 
     // Simulate instant local state update for UI responsiveness
