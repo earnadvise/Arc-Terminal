@@ -286,6 +286,7 @@ export default function SwapView() {
             const lifiData = await lifiRes.json();
             let txBytesToExecute: any = null;
             let targetRouter: string = '';
+            let txValue: string = '0x0';
             
             if (!lifiRes.ok || !lifiData.transactionRequest) {
                console.warn('LI.FI rejected quote. Falling back to local Arc Router.');
@@ -297,10 +298,15 @@ export default function SwapView() {
                
                txBytesToExecute = encodeExactInputSingle(fromData.addr, toData.addr, poolFee, amountInWei, minOut);
                targetRouter = SWAP_ROUTER_ADDRESS;
+               
+               if (fromToken === 'USDC') {
+                   txValue = '0x' + amountInWei.toString(16);
+               }
             } else {
                // SUCCESS: Use LI.FI route
                txBytesToExecute = lifiData.transactionRequest.data;
                targetRouter = lifiData.transactionRequest.to;
+               txValue = lifiData.transactionRequest.value || '0x0';
             }
 
             // 2. Check Allowance for the chosen router (skip if native USDC)
@@ -310,30 +316,26 @@ export default function SwapView() {
                 const currentAllowance = await checkAllowance(eth, fromData.addr, walletAddress, targetRouter);
                 
                 if (currentAllowance < amountInWei) {
-                   addNotification('info', 'Approve Required', `Approving ${fromToken} for Router...`);
                    const approveData = encodeApprove(targetRouter, amountInWei);
                    const approveTx = await eth.request({
                      method: 'eth_sendTransaction',
                      params: [{ from: walletAddress, to: fromData.addr, data: approveData }]
                    });
-                   addNotification('success', 'Approval Submitted', 'Waiting for network confirmation...');
                    
                    // WAIT FOR APPROVAL TO MINE ON-CHAIN BEFORE SWAPPING
                    const { waitForTransaction } = await import('@/lib/swapRouter');
                    await waitForTransaction(eth, approveTx);
-                   addNotification('success', 'Approval Confirmed', 'Proceeding with swap...');
                 }
             }
 
             // 3. Execute the optimal Swap!
-            addNotification('info', 'Executing Swap', 'Please confirm the swap in MetaMask.');
             realTxHash = await eth.request({
                method: 'eth_sendTransaction',
                params: [{
                   from: walletAddress,
                   to: targetRouter,
                   data: txBytesToExecute,
-                  value: lifiData?.transactionRequest?.value || '0x0'
+                  value: txValue
                }]
             });
             
