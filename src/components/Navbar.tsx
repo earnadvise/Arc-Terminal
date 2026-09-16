@@ -23,10 +23,10 @@ export default function Navbar() {
 
   const mainNavItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
     { id: 'Home',       label: 'Home',       icon: <HomeIcon size={15} /> },
-    { id: 'Portfolio',  label: 'Portfolio',  icon: <Compass size={15} /> },
     { id: 'Perpetuals', label: 'Perpetuals', icon: <Activity size={15} /> },
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
     { id: 'Bridge',     label: 'Bridge',     icon: <Network size={15} /> },
+    { id: 'Portfolio',  label: 'Portfolio',  icon: <Compass size={15} /> },
   ];
 
   const moreNavItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
