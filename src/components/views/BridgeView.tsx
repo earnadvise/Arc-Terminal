@@ -114,17 +114,14 @@ export default function BridgeView() {
     }
   }, [fromNet, walletConnected]);
 
-  const getAppKitChainName = (net: string) => {
-    switch (net) {
-      case 'Arbitrum': return 'Arbitrum';
-      case 'Base': return 'Base';
-      case 'Ethereum': return 'Ethereum';
-      case 'Optimism': return 'Optimism';
-      case 'Avalanche': return 'Avalanche';
-      case 'Polygon': return 'Polygon';
-      case 'Arc Mainnet': return 'Arc_Mainnet';
-      default: return 'Arc_Mainnet';
-    }
+  const NETWORKS: any = {
+    'Ethereum': { id: 1, usdc: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48' },
+    'Optimism': { id: 10, usdc: '0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85' },
+    'Polygon': { id: 137, usdc: '0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359' },
+    'Arc Mainnet': { id: 5042, usdc: '0x3600000000000000000000000000000000000000' },
+    'Base': { id: 8453, usdc: '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913' },
+    'Arbitrum': { id: 42161, usdc: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831' },
+    'Avalanche': { id: 43114, usdc: '0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E' }
   };
 
   const executeBridge = async () => {
@@ -150,92 +147,73 @@ export default function BridgeView() {
 
     const eth = getProvider() || (typeof window !== 'undefined' ? (window as any).ethereum : null);
     if (!eth) {
-        addNotification('error', 'No Wallet', 'Please install MetaMask.');
+        addNotification('error', 'No Wallet', 'Please install a wallet like Rabby or MetaMask.');
         setIsBridging(false);
         setStep('IDLE');
         return;
     }
 
     try {
-        console.log('[Bridge] Switching network to', fromNet);
+        console.log('[LI.FI] Switching network to', fromNet);
         await switchNetwork(fromNet);
 
-        console.log('[Bridge] Initializing App Kit adapter...');
-        const adapter = await createEthersAdapterFromProvider({
-            provider: eth
-        });
+        const provider = new ethers.BrowserProvider(eth);
+        const signer = await provider.getSigner();
+        const address = await signer.getAddress();
+        const amountInWei = ethers.parseUnits(val.toString(), 6).toString(); // USDC has 6 decimals
+
+        const fromChain = NETWORKS[fromNet];
+        const toChain = NETWORKS[toNet];
+
+        console.log('[LI.FI] Fetching quote...');
+        const quoteUrl = `https://li.quest/v1/quote?fromChain=${fromChain.id}&toChain=${toChain.id}&fromToken=${fromChain.usdc}&toToken=${toChain.usdc}&fromAmount=${amountInWei}&fromAddress=${address}`;
         
-        console.log('[Bridge] Creating AppKit instance...');
-        const kit = new AppKit();
+        const quoteRes = await fetch(quoteUrl);
+        const quoteData = await quoteRes.json();
         
-        kit.on("*", (payload: any) => {
-            console.log('[AppKit Event]', payload);
-            
-            const method = payload?.method || payload?.values?.name;
-            const state = payload?.values?.state;
-            
-            if (method === 'approve') setStep('APPROVING');
-            if (method === 'burn') setStep('BURNING');
-            if (method === 'fetchAttestation') setStep('ATTESTING');
-            if (method === 'mint') setStep('MINTING');
-        });
-
-        const fromChain = getAppKitChainName(fromNet);
-        const toChain = getAppKitChainName(toNet);
-
-        let result = await kit.bridge({
-            from: { adapter, chain: fromChain as any },
-            to: { adapter, chain: toChain as any, useForwarder: true },
-            amount: amount
-        });
-
-        console.log('[AppKit Result]', result);
-
-        if (result.state === "error") {
-             // AppKit retry fallback
-             result = await kit.retryBridge(result as any, {
-                 from: adapter,
-                 to: adapter,
-             });
+        if (quoteData.message) {
+            throw new Error(quoteData.message);
         }
 
-        if (result.state === "success") {
-            setStep('SUCCESS');
-            if ((result as any).steps) {
-                setCompletedSteps((result as any).steps);
+        const txRequest = quoteData.transactionRequest;
+        const approvalAddress = quoteData.estimate?.approvalAddress;
+
+        if (approvalAddress) {
+            console.log('[LI.FI] Checking allowance for', approvalAddress);
+            const usdcContract = new ethers.Contract(fromChain.usdc, ['function allowance(address,address) view returns (uint256)', 'function approve(address,uint256)'], signer);
+            const allowance = await usdcContract.allowance(address, approvalAddress);
+            
+            if (allowance < BigInt(amountInWei)) {
+                setStep('APPROVING');
+                console.log('[LI.FI] Approving USDC...');
+                const tx = await usdcContract.approve(approvalAddress, ethers.MaxUint256);
+                await tx.wait();
             }
-            setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-            addNotification('success', 'Bridge Complete', 'USDC successfully bridged across chains!');
-            setTimeout(() => resetState(), 10000);
-        } else {
-            throw new Error((result as any).error?.message || "Bridge failed to complete.");
         }
+
+        setStep('BURNING');
+        console.log('[LI.FI] Executing route transaction...');
+        
+        const tx = await signer.sendTransaction({
+            to: txRequest.to,
+            data: txRequest.data,
+            value: txRequest.value ? BigInt(txRequest.value) : 0n,
+            gasLimit: txRequest.gasLimit ? BigInt(txRequest.gasLimit) : undefined
+        });
+
+        setStep('ATTESTING');
+        console.log('[LI.FI] Waiting for transaction...', tx.hash);
+        
+        await tx.wait();
+        
+        setStep('SUCCESS');
+        setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
+        setCompletedSteps([{ name: 'burn', txHash: tx.hash, explorerUrl: `https://arcscan.io/tx/${tx.hash}` }] as any);
+        addNotification('success', 'Bridge Complete', 'USDC successfully bridged via LI.FI!');
+        setTimeout(() => resetState(), 10000);
 
     } catch (err: any) {
         console.error(err);
-        
-        // Handle Circle AppKit missing Enum for brand new chains
-        if (err.message && (err.message.includes('Arc_Mainnet') || err.message.includes('BridgeChain') || err.message.includes('supported'))) {
-            console.warn('[CCTP Fallback] AppKit does not yet support the requested chain enum natively. Simulating execution for UI...');
-            setStep('APPROVING');
-            setTimeout(() => {
-              setStep('BURNING');
-              setTimeout(() => {
-                setStep('ATTESTING');
-                setTimeout(() => {
-                  setStep('MINTING');
-                  setTimeout(() => {
-                    setStep('SUCCESS');
-                    setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-                    addNotification('success', 'Bridge Complete', 'USDC successfully bridged via Circle CCTP!');
-                    setTimeout(() => resetState(), 6000);
-                  }, 1500);
-                }, 1500);
-              }, 1500);
-            }, 1500);
-            return;
-        }
-
         setStep('ERROR');
         setErrorMessage(err.message || 'Transaction rejected by user.');
         addNotification('error', 'Bridge Failed', err.message || 'Transaction rejected by user.');
@@ -412,7 +390,7 @@ export default function BridgeView() {
                 <div className="pt-2 flex flex-col gap-2">
                    <div className="flex justify-center items-center gap-1.5 opacity-60">
                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-widest">Powered by</span>
-                     <span className="text-[12px] font-black tracking-wider text-[#3b82f6]">CIRCLE CCTP</span>
+                     <span className="text-[12px] font-black tracking-wider text-[#3b82f6]">LI.FI</span>
                      <span className="text-[11px] font-semibold text-slate-400 mx-1">|</span>
                      <span className="text-[11px] font-bold text-green-500">0% SLIPPAGE</span>
                    </div>
@@ -460,9 +438,9 @@ export default function BridgeView() {
 
                 <div className="space-y-1">
                   {renderStep('Approve USDC', step === 'APPROVING', ['BURNING', 'ATTESTING', 'MINTING', 'SUCCESS'].includes(step))}
-                  {renderStep('Burn on source chain', step === 'BURNING', ['ATTESTING', 'MINTING', 'SUCCESS'].includes(step))}
-                  {renderStep('Circle Attestation', step === 'ATTESTING', ['MINTING', 'SUCCESS'].includes(step))}
-                  {renderStep('Mint on destination', step === 'MINTING', step === 'SUCCESS')}
+                  {renderStep('Initiate on source chain', step === 'BURNING', ['ATTESTING', 'MINTING', 'SUCCESS'].includes(step))}
+                  {renderStep('LI.FI cross-chain swap', step === 'ATTESTING', ['MINTING', 'SUCCESS'].includes(step))}
+                  {renderStep('Complete on destination', step === 'MINTING', step === 'SUCCESS')}
                 </div>
 
                 {step === 'SUCCESS' && (
