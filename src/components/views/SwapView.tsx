@@ -315,6 +315,11 @@ export default function SwapView() {
                  params: [{ from: walletAddress, to: fromData.addr, data: approveData }]
                });
                addNotification('success', 'Approval Submitted', 'Waiting for network confirmation...');
+               
+               // WAIT FOR APPROVAL TO MINE ON-CHAIN BEFORE SWAPPING
+               const { waitForTransaction } = await import('@/lib/swapRouter');
+               await waitForTransaction(eth, approveTx);
+               addNotification('success', 'Approval Confirmed', 'Proceeding with swap...');
             }
 
             // 3. Execute the optimal Swap!
