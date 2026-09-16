@@ -343,14 +343,23 @@ export default function SwapView() {
       }
     }
 
-    // Simulate instant local state update for UI responsiveness
-    await new Promise(r => setTimeout(r, 600));
-
-    setBalances(prev => ({
-      ...prev,
-      [fromToken]: Math.max(0, (prev as any)[fromToken] - parsed),
-      [toToken]:   ((prev as any)[toToken] ?? 0) + received
-    }));
+    // Wait for the transaction to be mined before refreshing balances
+    try {
+      if (typeof window !== 'undefined' && walletAddress) {
+        const { waitForTransaction } = await import('@/lib/swapRouter');
+        const eth = await getProvider();
+        if (eth && realTxHash) {
+          await waitForTransaction(eth, realTxHash);
+        }
+        
+        // Refresh the actual on-chain balances!
+        refreshOnChainBalances(walletAddress);
+        // Refresh again slightly later in case the RPC node is lagging
+        setTimeout(() => refreshOnChainBalances(walletAddress), 4000);
+      }
+    } catch (e) {
+      console.warn("Failed to wait for transaction", e);
+    }
 
     setIsSwapping(false);
 
