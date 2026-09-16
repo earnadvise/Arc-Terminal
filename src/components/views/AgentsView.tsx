@@ -255,12 +255,17 @@ export default function AgentsView() {
           }
         }
 
-        setChatSwapFromToken(parsedFrom);
-        setChatSwapToToken(parsedTo);
-        setChatSwapAmount(parsedAmount);
+        if (!ARC_TOKENS[parsedFrom] || !ARC_TOKENS[parsedTo]) {
+          const badToken = !ARC_TOKENS[parsedFrom] ? parsedFrom : parsedTo;
+          responseContent = `I cannot prepare this swap because **${badToken}** is not supported on Arc Mainnet. Supported tokens include: ${Object.keys(ARC_TOKENS).join(', ')}.`;
+        } else {
+          setChatSwapFromToken(parsedFrom);
+          setChatSwapToToken(parsedTo);
+          setChatSwapAmount(parsedAmount);
 
-        responseContent = `I can help you swap assets on SynthraV3 Router. I parsed your swap request as: **${parsedAmount} ${parsedFrom}** → **${parsedTo}**.\n\nYou can customize the swap parameters in the card below and execute it directly from the chat:`;
-        action = 'swap_tokens';
+          responseContent = `I can help you swap assets via LI.FI on Arc Mainnet. I parsed your swap request as: **${parsedAmount} ${parsedFrom}** → **${parsedTo}**.\n\nYou can customize the swap parameters in the card below and execute it directly from the chat:`;
+          action = 'swap_tokens';
+        }
       } else if (query.includes('balance') || query.includes('portfolio') || query.includes('wallet') || query.includes('assets')) {
         if (!walletConnected) {
           responseContent = 'It looks like your wallet is not connected. Please connect your wallet in the navigation bar to view your balances.';
