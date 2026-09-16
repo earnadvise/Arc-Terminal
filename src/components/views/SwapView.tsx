@@ -29,24 +29,21 @@ interface TokenMeta {
 }
 
 const TOKENS: TokenMeta[] = [
-  { symbol: 'USDC', name: 'USD Coin', decimals: 6,  color: '#8b5cf6', address: '' },
-  { symbol: 'EURC', name: 'Euro Coin',  decimals: 6,  color: '#3b82f6', address: '' },
-  { symbol: 'cirBTC', name: 'Circle BTC', decimals: 8, color: '#F7931A', address: '' },
-  { symbol: 'USDT', name: 'Tether USD', decimals: 6, color: '#10b981', address: '' },
-  { symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, color: '#627EEA', address: '' },
-  { symbol: 'LINK', name: 'Chainlink', decimals: 18, color: '#2A5ADA', address: '' },
-  { symbol: 'UNI',  name: 'Uniswap', decimals: 18, color: '#FF007A', address: '' },
-  { symbol: 'ARB',  name: 'Arbitrum', decimals: 18, color: '#28A0F0', address: '' },
+  { symbol: 'USDC', name: 'USD Coin', decimals: 6,  color: '#8b5cf6', address: '0x3600000000000000000000000000000000000000' },
+  { symbol: 'EURC', name: 'Euro Coin',  decimals: 6,  color: '#3b82f6', address: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1' },
+  { symbol: 'cirBTC', name: 'Circle BTC', decimals: 8, color: '#F7931A', address: '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0' }
 ];
 
 function TokenSelector({
   value,
   onChange,
-  exclude
+  exclude,
+  tokens
 }: {
   value: string;
   onChange: (s: string) => void;
   exclude: string;
+  tokens: TokenMeta[];
 }) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
@@ -56,9 +53,9 @@ function TokenSelector({
     setMounted(true);
   }, []);
   
-  const token = TOKENS.find(t => t.symbol === value) || { symbol: value, name: 'Custom Token', decimals: 18, color: '#64748b' };
+  const token = tokens.find(t => t.symbol === value) || { symbol: value, name: 'Custom Token', decimals: 18, color: '#64748b' };
 
-  const filteredTokens = TOKENS.filter(t => 
+  const filteredTokens = tokens.filter(t => 
     t.symbol.toLowerCase().includes(search.toLowerCase()) || 
     t.name.toLowerCase().includes(search.toLowerCase()) || 
     (t.address && t.address.toLowerCase().includes(search.toLowerCase()))
@@ -87,7 +84,7 @@ function TokenSelector({
             <div className="flex items-start justify-between p-5 pb-4 border-b border-slate-100 dark:border-[#1f1f2e]">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">Select a token</h2>
-                <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-0.5">{TOKENS.length} listed tokens</p>
+                <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-0.5">{tokens.length} listed tokens</p>
               </div>
               <button 
                 onClick={() => setOpen(false)}
@@ -135,12 +132,16 @@ function TokenSelector({
                     >
                       <div className="flex items-center gap-3.5">
                         <div className="relative">
-                          <span
-                            className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-slate-900 dark:text-white shadow-sm"
-                            style={{ backgroundColor: t.color }}
-                          >
-                            {t.symbol[0]}
-                          </span>
+                          {t.icon ? (
+                            <img src={t.icon} alt={t.symbol} className="w-10 h-10 rounded-full shadow-sm" />
+                          ) : (
+                            <span
+                              className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold text-slate-900 dark:text-white shadow-sm"
+                              style={{ backgroundColor: t.color }}
+                            >
+                              {t.symbol[0]}
+                            </span>
+                          )}
                           <div className="absolute -bottom-0.5 -right-0.5 bg-white dark:bg-[#13131a] rounded-full p-0.5 shadow-sm">
                             <div className="w-4 h-4 bg-[#3b82f6] rounded-full flex items-center justify-center">
                               <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
@@ -191,12 +192,16 @@ function TokenSelector({
         onClick={() => { setOpen(true); setSearch(''); }}
         className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#1f1f2e] hover:bg-white dark:hover:bg-[#13131a] dark:bg-[#13131a] border border-[#232330]/20 dark:border-white/10 hover:border-[#8b5cf6]/40 transition-all cursor-pointer shadow-sm"
       >
-        <span
-          className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 dark:text-white shadow-sm"
-          style={{ backgroundColor: token.color }}
-        >
-          {token.symbol[0]}
-        </span>
+        {token.icon ? (
+          <img src={token.icon} alt={token.symbol} className="w-5 h-5 rounded-full shadow-sm" />
+        ) : (
+          <span
+            className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold text-slate-900 dark:text-white shadow-sm"
+            style={{ backgroundColor: token.color }}
+          >
+            {token.symbol[0]}
+          </span>
+        )}
         <span className="text-sm font-bold text-slate-900 dark:text-white">{token.symbol.substring(0, 8)}</span>
         <ChevronDown size={14} className="text-slate-500 dark:text-[#8a8a9e]" />
       </button>
@@ -219,6 +224,27 @@ export default function SwapView() {
 
   const [realReceived, setRealReceived] = useState<number | null>(null);
   const [isQuoting, setIsQuoting] = useState(false);
+  
+  const [dynamicTokens, setDynamicTokens] = useState<TokenMeta[]>(TOKENS);
+  
+  useEffect(() => {
+    fetch('https://li.quest/v1/tokens?chains=5042')
+      .then(res => res.json())
+      .then(data => {
+        if (data.tokens && data.tokens['5042']) {
+          const lifiTokens = data.tokens['5042'].map((t: any) => ({
+            symbol: t.symbol,
+            name: t.name,
+            decimals: t.decimals,
+            color: '#64748b',
+            address: t.address,
+            icon: t.logoURI
+          }));
+          setDynamicTokens(lifiTokens);
+        }
+      })
+      .catch(e => console.warn('Failed to load LI.FI tokens:', e));
+  }, []);
 
   // Derive prices and 24h change from global markets state
   const prices: Record<string, number> = {
