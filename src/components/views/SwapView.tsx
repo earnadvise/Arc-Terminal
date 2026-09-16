@@ -275,11 +275,7 @@ export default function SwapView() {
             const amountInWei = toWei(parsed, fromData.dec);
 
             // 1. Fetch exact Quote & Tx Bytes from LI.FI API for Arc Mainnet (Chain 5042)
-            // Note: If USDC is the native gas token, LI.FI expects the zero address!
-            const lifiFromAddr = fromToken === 'USDC' ? '0x0000000000000000000000000000000000000000' : fromData.addr;
-            const lifiToAddr = toToken === 'USDC' ? '0x0000000000000000000000000000000000000000' : toData.addr;
-
-            const lifiUrl = `https://li.quest/v1/quote?fromChain=5042&toChain=5042&fromToken=${lifiFromAddr}&toToken=${lifiToAddr}&fromAmount=${amountInWei.toString()}&fromAddress=${walletAddress}&slippage=${parseFloat(slippage) / 100}`;
+            const lifiUrl = `https://li.quest/v1/quote?fromChain=5042&toChain=5042&fromToken=${fromData.addr}&toToken=${toData.addr}&fromAmount=${amountInWei.toString()}&fromAddress=${walletAddress}&slippage=${parseFloat(slippage) / 100}`;
             
             const lifiRes = await fetch(lifiUrl);
             const lifiData = await lifiRes.json();

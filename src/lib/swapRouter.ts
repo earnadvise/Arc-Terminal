@@ -11,10 +11,11 @@ import { rpcCall, rpcGetReceipt } from './rpcClient';
 
 // ─── Token Registry ───────────────────────────────────────────────
 export const ARC_TOKENS: Record<string, { address: string; decimals: number; name: string }> = {
-  USDC:   { address: '0x3600000000000000000000000000000000000000', decimals: 6,  name: 'USD Coin' },
-  USDT:   { address: '0x175CdB1D338945f0D851A741ccF787D343E57952', decimals: 18, name: 'Tether USD' },
-  EURC:   { address: '0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a', decimals: 6,  name: 'Euro Coin' },
-  cirBTC: { address: '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF', decimals: 8,  name: 'Circle BTC' },
+  USDC: { address: '0x3600000000000000000000000000000000000000', decimals: 6, name: 'USD Coin' },
+  EURC: { address: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1', decimals: 6, name: 'EURC' },
+  USDT: { address: '0x0000000000000000000000000000000000000000', decimals: 6, name: 'Tether USD' }, // Placeholder if not on LI.FI yet
+  cirBTC: { address: '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0', decimals: 8, name: 'Circle BTC' },
+  'ARC-PERP': { address: '0x0000000000000000000000000000000000000000', decimals: 18, name: 'Arc Perpetual Token' }
 };
 
 // Arc Terminal Router on Arc Mainnet (Our custom protocol proxy contract)
