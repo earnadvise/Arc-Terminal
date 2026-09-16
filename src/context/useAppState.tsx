@@ -157,8 +157,8 @@ interface AppContextType {
   walletConnected: boolean;
   walletAddress: string;
   walletType: string;
-  balances: { USDC: number; walletUSDC: number; vaultUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number };
-  setBalances: React.Dispatch<React.SetStateAction<{ USDC: number; walletUSDC: number; vaultUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number }>>;
+  balances: { USDC: number; walletUSDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number };
+  setBalances: React.Dispatch<React.SetStateAction<{ USDC: number; walletUSDC: number; walletUSDC: number; BTC: number; ETH: number; SOL: number; ARC: number; EURC: number; USDT: number }>>;
   notifications: AppNotification[];
   timeframe: string;
   setTimeframe: (time: string) => void;
@@ -188,8 +188,8 @@ interface AppContextType {
   adjustPositionMargin: (id: string, additionalMargin: number) => void;
   cancelOrder: (id: string) => void;
   setTPSL: (symbol: string, tpPrice: number, slPrice: number) => Promise<void>;
-  depositFunds: (amount: number) => Promise<void>;
-  withdrawFunds: (amount: number) => Promise<void>;
+  DEPRECATED_depositFunds: (amount: number) => Promise<void>;
+  DEPRECATED_withdrawFunds: (amount: number) => Promise<void>;
   addHistoryItem: (item: Omit<HistoryItem, 'id' | 'time'>) => void;
   clearHistory: () => void;
   isDarkMode: boolean;
@@ -238,7 +238,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [balances, setBalances] = useState({
     USDC: 0,
     walletUSDC: 0,
-    vaultUSDC: 0,
+    walletUSDC: 0,
     BTC: 0,
     ETH: 0,
     SOL: 0,
@@ -279,11 +279,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         if (savedHist) setHistory(JSON.parse(savedHist));
           else setHistory([]);
           
-          const savedVaultUSDC = localStorage.getItem(`arc_terminal_vault_${walletAddress}`);
-          if (savedVaultUSDC) {
-             const parsedVault = Number(savedVaultUSDC);
+          const savedwalletUSDC = localStorage.getItem(`arc_terminal_vault_${walletAddress}`);
+          if (savedwalletUSDC) {
+             const parsedVault = Number(savedwalletUSDC);
              if (!isNaN(parsedVault) && parsedVault >= 0 && parsedVault < 10000000) {
-                 setBalances(prev => ({ ...prev, vaultUSDC: parsedVault }));
+                 setBalances(prev => ({ ...prev, walletUSDC: parsedVault }));
              } else {
                  localStorage.removeItem(`arc_terminal_vault_${walletAddress}`);
              }
@@ -311,8 +311,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }, [history, walletAddress, isDataLoaded]);
 
     useEffect(() => {
-      if (walletAddress && isDataLoaded) localStorage.setItem(`arc_terminal_vault_${walletAddress}`, balances.vaultUSDC.toString());
-    }, [balances.vaultUSDC, walletAddress, isDataLoaded]);
+      if (walletAddress && isDataLoaded) localStorage.setItem(`arc_terminal_vault_${walletAddress}`, balances.walletUSDC.toString());
+    }, [balances.walletUSDC, walletAddress, isDataLoaded]);
 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   
@@ -391,7 +391,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         return {
           USDC: nextWalletUSDC,
           walletUSDC: nextWalletUSDC,
-          vaultUSDC: 0,
+          walletUSDC: 0,
           BTC: nextCirBTC,
           ETH: 0,
           SOL: 0,
@@ -537,7 +537,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                     
                     setBalances(prev => ({
                       ...prev,
-                      vaultUSDC: prev.vaultUSDC + netReturn
+                      walletUSDC: prev.walletUSDC + netReturn
                     }));
                   }
                 }
@@ -864,7 +864,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     setBalances({
       USDC: 0,
       walletUSDC: 0,
-      vaultUSDC: 0,
+      walletUSDC: 0,
       BTC: 0,
       ETH: 0,
       SOL: 0,
@@ -906,7 +906,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
       if (eth && walletAddress) {
         try {
-          if (!skipMarginCheck && balances.vaultUSDC < requiredMargin) {
+          if (!skipMarginCheck && balances.walletUSDC < requiredMargin) {
             if (unifiedBalances?.USDC >= requiredMargin) {
               addNotification('info', 'Unified Balance Kit', 'Auto-allocating cross-chain USDC margin...');
               const calldata = encodeOpenPosition(
@@ -950,7 +950,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           // Optimistically deduct margin
           setBalances(prev => ({
             ...prev,
-            vaultUSDC: prev.vaultUSDC - requiredMargin
+            walletUSDC: prev.walletUSDC - requiredMargin
           }));
           
         } catch (err: any) {
@@ -1037,7 +1037,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         addNotification('info', 'Executing Limit Order', 'Please confirm the transaction in MetaMask/Rabby...');
         try {
           const requiredMargin = (amount * price) / leverage;
-          if (balances.vaultUSDC < requiredMargin) {
+          if (balances.walletUSDC < requiredMargin) {
             await spend({ 
               amount: requiredMargin, 
               to: VAULT_ADDRESS, 
@@ -1063,7 +1063,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           // Optimistically deduct margin
           setBalances(prev => ({
             ...prev,
-            vaultUSDC: prev.vaultUSDC - requiredMargin
+            walletUSDC: prev.walletUSDC - requiredMargin
           }));
           
         } catch (err: any) {
@@ -1137,7 +1137,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // Optimistically refund margin + PnL to vault
       setBalances(prev => ({
         ...prev,
-        vaultUSDC: prev.vaultUSDC + netReturn
+        walletUSDC: prev.walletUSDC + netReturn
       }));
 
       // Update position locally for immediate responsive UI feedback
@@ -1196,7 +1196,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const eth = getProvider();
     
     if (eth && walletConnected && walletAddress) {
-      if (balances.vaultUSDC < additionalMargin) {
+      if (balances.walletUSDC < additionalMargin) {
         if (unifiedBalances?.USDC >= additionalMargin) {
           addNotification('info', 'Unified Balance Kit', 'Auto-allocating cross-chain USDC margin...');
           try {
@@ -1240,7 +1240,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     setBalances(prev => ({
       ...prev,
-      vaultUSDC: prev.vaultUSDC - additionalMargin
+      walletUSDC: prev.walletUSDC - additionalMargin
     }));
     
     setPositions(prev => prev.map(p => {
@@ -1288,7 +1288,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           const returnMargin = (order.amount * order.price) / order.leverage;
           setBalances(prev => ({
             ...prev,
-            vaultUSDC: prev.vaultUSDC + returnMargin
+            walletUSDC: prev.walletUSDC + returnMargin
           }));
           
           setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
@@ -1344,7 +1344,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const depositFunds = async (amount: number) => {
+  const DEPRECATED_depositFunds = async (amount: number) => {
     const eth = getProvider();
     if (!eth || !walletConnected || !walletAddress) {
       addNotification('error', 'Deposit Failed', 'Wallet not connected.');
@@ -1414,7 +1414,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // Optimistically update local vault margin
       setBalances(prev => ({
         ...prev,
-        vaultUSDC: prev.vaultUSDC + amount,
+        walletUSDC: prev.walletUSDC + amount,
         walletUSDC: prev.walletUSDC - amount
       }));
 
@@ -1429,14 +1429,14 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const withdrawFunds = async (amount: number) => {
+  const DEPRECATED_withdrawFunds = async (amount: number) => {
     const eth = getProvider();
     if (!eth || !walletConnected || !walletAddress) {
       addNotification('error', 'Withdrawal Failed', 'Wallet not connected.');
       return;
     }
 
-    if (balances.vaultUSDC < amount) {
+    if (balances.walletUSDC < amount) {
       addNotification('error', 'Withdrawal Failed', 'Insufficient margin deposited in the Vault. Please check your Exact Vault Balance.');
       return;
     }
@@ -1456,7 +1456,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // Optimistically update local vault margin
       setBalances(prev => ({
         ...prev,
-        vaultUSDC: prev.vaultUSDC - amount,
+        walletUSDC: prev.walletUSDC - amount,
         walletUSDC: prev.walletUSDC + amount
       }));
 
@@ -1514,8 +1514,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         closePosition,
         cancelOrder,
         setTPSL,
-        depositFunds,
-        withdrawFunds,
+        DEPRECATED_depositFunds,
+        DEPRECATED_withdrawFunds,
         adjustPositionMargin
       }}
     >
