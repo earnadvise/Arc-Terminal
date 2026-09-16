@@ -371,15 +371,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       
       // Fetch mainnet wallet USDC balance (to allow deposits from mainnet faucet funds)
       const walletRes = await req('eth_call', [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest']);
+      const eurcRes = await req('eth_call', [{ to: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1', data: '0x70a08231' + padAddress(address) }, 'latest']);
 
       const nativeHex = nativeRes?.result;
       const walletBalRes = walletRes?.result;
+      const eurcBalRes = eurcRes?.result;
 
       setBalances(prev => {
         const nextNativeBal = nativeHex && nativeHex !== '0x' && !nativeHex.error ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
         
         // Parse mainnet wallet USDC
         const nextWalletUSDC = walletBalRes && walletBalRes !== '0x' && !walletBalRes.error ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
+        const nextEURC = eurcBalRes && eurcBalRes !== '0x' && !eurcBalRes.error ? Number(BigInt(eurcBalRes)) / 1e6 : prev.EURC;
         
         // We removed the Vault module, so USDC balance should purely be the on-chain Wallet USDC
         return {
@@ -390,7 +393,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           ETH: 0,
           SOL: 0,
           ARC: nextNativeBal,
-          EURC: 0,
+          EURC: nextEURC,
           USDT: 0
         };
       });
