@@ -21,7 +21,7 @@ export default function BridgeView() {
   const [currentBalance, setCurrentBalance] = useState(0);
   const [completedSteps, setCompletedSteps] = useState<any[] | null>(null);
 
-  // AppKit uses these official USDC contract addresses for testnets
+  // AppKit uses these official USDC contract addresses for mainnets
   const USDC_ADDRESSES: Record<string, string> = {
     'Arbitrum': '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
     'Base': '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913',

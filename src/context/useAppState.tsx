@@ -381,16 +381,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         // Parse mainnet wallet USDC
         const nextWalletUSDC = walletBalRes && walletBalRes !== '0x' && !walletBalRes.error ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
         
-        // Use purely local state for Vault USDC to prevent the massive fake/garbage contract return value from breaking the UI
-        const nextVaultUSDC = prev.vaultUSDC;
-        
-        const localUSDC = nextVaultUSDC + nextWalletUSDC;
-        const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
-
+        // We removed the Vault module, so USDC balance should purely be the on-chain Wallet USDC
         return {
-          USDC: activeUSDC,
+          USDC: nextWalletUSDC,
           walletUSDC: nextWalletUSDC,
-          vaultUSDC: nextVaultUSDC,
+          vaultUSDC: 0,
           BTC: nextNativeBal,
           ETH: 0,
           SOL: 0,
