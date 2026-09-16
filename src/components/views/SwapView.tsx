@@ -282,26 +282,19 @@ export default function SwapView() {
             
             const lifiRes = await fetch(lifiUrl);
             const lifiData = await lifiRes.json();
-            
             let txBytesToExecute: any = null;
             let targetRouter: string = '';
             
             if (!lifiRes.ok || !lifiData.transactionRequest) {
-               console.warn('LI.FI API rejected quote (likely token not whitelisted). Falling back to local SynthraV3 Router:', lifiData.message);
-               addNotification('warning', 'LI.FI API Pending', 'LI.FI has not whitelisted this pair yet. Falling back to direct SynthraV3 swap...');
-               
-               // FALLBACK: Execute direct SynthraV3 Swap
-               const { SWAP_ROUTER_ADDRESS, calculateMinOutput, encodeExactInputSingle, getPoolFee } = await import('@/lib/swapRouter');
-               const minOut = calculateMinOutput(parsed, fromData.dec, toData.dec, parseFloat(slippage), (fromPrice/toPrice));
-               const poolFee = getPoolFee(fromToken, toToken);
-               
-               txBytesToExecute = encodeExactInputSingle(fromData.addr, toData.addr, poolFee, amountInWei, minOut);
-               targetRouter = SWAP_ROUTER_ADDRESS;
-            } else {
-               // SUCCESS: Use LI.FI route
-               txBytesToExecute = lifiData.transactionRequest.data;
-               targetRouter = lifiData.transactionRequest.to;
+               console.warn('LI.FI API rejected quote:', lifiData.message);
+               addNotification('warning', 'Swap Unavailable', 'LI.FI has not whitelisted this token pair on Arc Mainnet yet, and local AMMs (Synthra) are still bootstrapping. Please try again later.');
+               setIsSwapping(false);
+               return;
             }
+            
+            // SUCCESS: Use LI.FI route
+            txBytesToExecute = lifiData.transactionRequest.data;
+            targetRouter = lifiData.transactionRequest.to;
 
             // 2. Check Allowance for the chosen router
             const { checkAllowance, encodeApprove } = await import('@/lib/swapRouter');
