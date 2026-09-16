@@ -291,9 +291,9 @@ export default function SwapView() {
                addNotification('warning', 'LI.FI API Pending', 'LI.FI has not whitelisted this pair yet. Falling back to direct SynthraV3 swap...');
                
                // FALLBACK: Execute direct SynthraV3 Swap
-               const { SWAP_ROUTER_ADDRESS, calculateMinOutput, encodeExactInputSingle } = await import('@/lib/swapRouter');
+               const { SWAP_ROUTER_ADDRESS, calculateMinOutput, encodeExactInputSingle, getPoolFee } = await import('@/lib/swapRouter');
                const minOut = calculateMinOutput(parsed, fromData.dec, toData.dec, parseFloat(slippage), (fromPrice/toPrice));
-               const poolFee = (fromToken.includes('USD') && toToken.includes('USD')) || (fromToken.includes('EUR') && toToken.includes('USD')) ? 500 : 3000;
+               const poolFee = getPoolFee(fromToken, toToken);
                
                txBytesToExecute = encodeExactInputSingle(fromData.addr, toData.addr, poolFee, amountInWei, minOut);
                targetRouter = SWAP_ROUTER_ADDRESS;
