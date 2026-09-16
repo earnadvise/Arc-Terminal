@@ -9,10 +9,10 @@ import LandingView    from '@/components/views/LandingView';
 import PerpetualsView from '@/components/views/PerpetualsView';
 import HistoryView    from '@/components/views/HistoryView';
 import SwapView       from '@/components/views/SwapView';
-import VaultView      from '@/components/views/VaultView';
 import BridgeView     from '@/components/views/BridgeView';
 import ArcSafePayView from '@/components/views/ArcSafePayView';
 import AgentsView     from '@/components/views/AgentsView';
+import PortfolioView  from '@/components/views/PortfolioView';
 
 import { Info, CheckCircle2, AlertTriangle, XCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -25,11 +25,11 @@ export default function Home() {
       case 'Home':       return <LandingView />;
       case 'Perpetuals': return <PerpetualsView />;
       case 'Swap':       return <SwapView />;
-      case 'Vault':      return <VaultView />;
       case 'Bridge':     return <BridgeView />;
       case 'SafePay':    return <ArcSafePayView />;
       case 'Agents':     return <AgentsView />;
       case 'History':    return <HistoryView />;
+      case 'Portfolio':  return <PortfolioView />;
       default:           return <LandingView />;
     }
   };
@@ -95,7 +95,7 @@ export default function Home() {
                 <p className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mt-1 leading-normal">{n.message}</p>
                 {n.txHash && (
                   <a
-                    href={n.explorerUrl ? `${n.explorerUrl}/tx/${n.txHash}` : `https://testnet.arcscan.app/tx/${n.txHash}`}
+                    href={n.explorerUrl ? `${n.explorerUrl}/tx/${n.txHash}` : `https://arcscan.io/tx/${n.txHash}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold text-[#8b5cf6] hover:text-[#a78bfa] transition-colors"

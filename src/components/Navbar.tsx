@@ -23,73 +23,23 @@ export default function Navbar() {
 
   const mainNavItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
     { id: 'Home',       label: 'Home',       icon: <HomeIcon size={15} /> },
+    { id: 'Portfolio',  label: 'Portfolio',  icon: <Compass size={15} /> },
     { id: 'Perpetuals', label: 'Perpetuals', icon: <Activity size={15} /> },
     { id: 'Swap',       label: 'Swap',       icon: <ArrowLeftRight size={15} /> },
     { id: 'Bridge',     label: 'Bridge',     icon: <Network size={15} /> },
-    { id: 'History',    label: 'History',    icon: <HistIcon size={15} /> },
   ];
 
   const moreNavItems: { id: AppTab; label: string; icon: React.ReactNode }[] = [
+    { id: 'History',    label: 'History',    icon: <HistIcon size={15} /> },
     { id: 'SafePay',    label: 'SafePay',    icon: <Bot size={15} /> },
     { id: 'Agents',     label: 'Arc AI',     icon: <Bot size={15} /> },
-    { id: 'Vault',      label: 'Vault',      icon: <VaultIcon size={15} /> },
   ];
 
-  const targetDate = new Date('2026-09-17T00:00:00Z').getTime();
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hrs: 0, min: 0, sec: 0 });
 
-  React.useEffect(() => {
-    // Initial calculate
-    const calculateTime = () => {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-      if (distance < 0) return { days: 0, hrs: 0, min: 0, sec: 0 };
-      return {
-        days: Math.floor(distance / (1000 * 60 * 60 * 24)),
-        hrs: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
-        min: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
-        sec: Math.floor((distance % (1000 * 60)) / 1000)
-      };
-    };
-    setTimeLeft(calculateTime());
-    
-    const interval = setInterval(() => {
-      setTimeLeft(calculateTime());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [targetDate]);
 
   return (
     <>
-      <div className="w-full bg-[#10b981] text-slate-900 py-2 px-4 flex items-center justify-center gap-6 text-sm font-bold shadow-md z-50">
-        <div className="flex items-center gap-2">
-          <span>🚀</span>
-          <span>Mainnet Launch</span>
-          <span className="opacity-80">|</span>
-          <span>16 September 2026</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex flex-col items-center leading-none">
-            <span className="text-lg font-black number-mono">{timeLeft.days.toString().padStart(2, '0')}</span>
-            <span className="text-[9px] uppercase font-bold opacity-80">Days</span>
-          </div>
-          <span className="text-lg font-black opacity-50">:</span>
-          <div className="flex flex-col items-center leading-none">
-            <span className="text-lg font-black number-mono">{timeLeft.hrs.toString().padStart(2, '0')}</span>
-            <span className="text-[9px] uppercase font-bold opacity-80">Hrs</span>
-          </div>
-          <span className="text-lg font-black opacity-50">:</span>
-          <div className="flex flex-col items-center leading-none">
-            <span className="text-lg font-black number-mono">{timeLeft.min.toString().padStart(2, '0')}</span>
-            <span className="text-[9px] uppercase font-bold opacity-80">Min</span>
-          </div>
-          <span className="text-lg font-black opacity-50">:</span>
-          <div className="flex flex-col items-center leading-none">
-            <span className="text-lg font-black number-mono">{timeLeft.sec.toString().padStart(2, '0')}</span>
-            <span className="text-[9px] uppercase font-bold opacity-80">Sec</span>
-          </div>
-        </div>
-      </div>
+
       
       <header className="sticky top-0 z-40 w-full border-b border-slate-200 dark:border-[#1f1f2e] bg-sky-50/80 dark:bg-[#0c0c10]/80 backdrop-blur-md px-6 py-3 flex items-center justify-between">
         {/* Logo */}
@@ -196,36 +146,38 @@ export default function Navbar() {
             {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </button>
 
-          {/* Faucet */}
-          <button
-            onClick={claimFaucet}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#3b82f6]/15 to-[#8b5cf6]/15 border border-[#8b5cf6]/30 hover:border-[#8b5cf6]/70 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white dark:text-white text-xs font-semibold transition-all duration-250"
-          >
-            <Coins size={14} className="text-[#8b5cf6]" />
-            Faucets
-          </button>
 
-          {/* Testnet badge */}
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] text-xs font-semibold text-[#8b5cf6]">
-            <Network size={14} className="animate-pulse" />
-            <span className="hidden sm:inline">Arc Testnet</span>
-          </div>
 
-          {/* Wallet */}
+          {/* Network Selector & Wallet */}
           {walletConnected ? (
-            <div className="relative">
-              <button
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] hover:border-[#3b82f6]/50 text-sm font-medium text-slate-900 dark:text-white transition-all duration-200"
-              >
-                <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                <span className="number-mono text-xs">
-                  {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : ''}
-                </span>
-                <ChevronDown size={14} className="text-slate-500 dark:text-[#8a8a9e]" />
-              </button>
+            <div className="flex items-center gap-2">
+              <div className="relative group cursor-not-allowed">
+                <button
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] text-sm font-medium text-slate-900 dark:text-white transition-all duration-200 opacity-90"
+                >
+                  <img src="/logo.jpg" alt="Arc" className="w-4 h-4 rounded-full" />
+                  <span className="text-xs font-bold">Arc Mainnet</span>
+                  <ChevronDown size={14} className="text-slate-500 dark:text-[#8a8a9e]" />
+                </button>
+                {/* Tooltip for Network Dropdown */}
+                <div className="absolute top-full right-0 mt-2 w-48 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity text-center p-3 text-xs text-slate-500 dark:text-[#8a8a9e] z-50">
+                  Arc Terminal is currently exclusive to Arc Mainnet.
+                </div>
+              </div>
 
-              <AnimatePresence>
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] hover:border-[#3b82f6]/50 text-sm font-medium text-slate-900 dark:text-white transition-all duration-200"
+                >
+                  <div className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                  <span className="number-mono text-xs">
+                    {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : ''}
+                  </span>
+                  <ChevronDown size={14} className="text-slate-500 dark:text-[#8a8a9e]" />
+                </button>
+
+                <AnimatePresence>
                 {isDropdownOpen && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
@@ -254,6 +206,7 @@ export default function Navbar() {
                   </motion.div>
                 )}
               </AnimatePresence>
+            </div>
             </div>
           ) : (
             <button
@@ -286,7 +239,7 @@ export default function Navbar() {
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900 dark:text-white">Connect Wallet</h3>
-                  <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-1">Connect to Arc Testnet to trade</p>
+                  <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-1">Connect to Arc Mainnet to trade</p>
                 </div>
                 <button onClick={() => setIsWalletModalOpen(false)} className="text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white">✕</button>
               </div>
@@ -312,7 +265,7 @@ export default function Navbar() {
               <div className="flex gap-2 items-center mt-6 px-3 py-3 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/15">
                 <ShieldAlert size={16} className="text-[#ef4444] shrink-0" />
                 <p className="text-[10px] text-[#ef4444]/90 leading-normal">
-                  Make sure you are on the <strong>Arc Testnet</strong>. Never deposit real funds.
+                  Make sure you are on the <strong>Arc Mainnet</strong>. Never deposit real funds.
                 </p>
               </div>
             </motion.div>

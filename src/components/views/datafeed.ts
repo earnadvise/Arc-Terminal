@@ -1,4 +1,4 @@
-﻿// Basic custom datafeed for Binance
+// Basic custom datafeed for Binance
 const configurationData = {
   supported_resolutions: ['1', '5', '15', '60', '240', '1D'],
   exchanges: [{ value: 'Binance', name: 'Binance', desc: 'Binance' }],

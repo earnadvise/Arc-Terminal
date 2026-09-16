@@ -85,7 +85,7 @@ export default function HistoryView() {
             Transaction History
           </h1>
           <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-1">
-            Track all your live swaps, vault, and perpetuals transactions on Arc Testnet
+            Track all your live swaps, vault, and perpetuals transactions on Arc Mainnet
           </p>
         </div>
 
@@ -219,7 +219,7 @@ export default function HistoryView() {
                     <td className="px-4 text-right">
                       {item.txHash ? (
                         <a
-                          href={`https://testnet.arcscan.app/tx/${item.txHash}`}
+                          href={`https://arcscan.io/tx/${item.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs font-bold text-[#10b981] hover:underline"

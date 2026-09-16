@@ -1,4 +1,4 @@
-const ARC_RPC_URL = 'https://rpc.testnet.arc.network';
+const ARC_RPC_URL = 'https://rpc.mainnet.arc.io';
 
 /**
  * Wait for a specific number of milliseconds.

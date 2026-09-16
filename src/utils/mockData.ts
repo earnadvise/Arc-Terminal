@@ -685,7 +685,7 @@ export const initialMissions: Mission[] = [
   {
     id: 'm1',
     title: 'Arc Terminal Onboarding',
-    description: 'Connect your wallet to Arc Testnet',
+    description: 'Connect your wallet to Arc Mainnet',
     points: 100,
     progress: 0,
     completed: false,
@@ -694,7 +694,7 @@ export const initialMissions: Mission[] = [
   {
     id: 'm2',
     title: 'Faucet Claim',
-    description: 'Claim free testnet funds from the faucet',
+    description: 'Claim free mainnet funds from the faucet',
     points: 150,
     progress: 0,
     completed: false,
@@ -729,7 +729,7 @@ export const initialMissions: Mission[] = [
   },
   {
     id: 'm6',
-    title: 'Arc Testnet Master',
+    title: 'Arc Mainnet Master',
     description: 'Place 10 limit orders and 10 market orders',
     points: 1000,
     progress: 0,

@@ -3,10 +3,10 @@ import { useAppState } from '@/context/useAppState';
 import { ShieldCheck, CheckCircle2, RefreshCw, Lock, Unlock, XCircle, ArrowRight } from 'lucide-react';
 import { ethers } from 'ethers';
 
-// Arc Testnet USDC address
+// Arc Mainnet USDC address
 const USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
 // Deployed ArcReversiblePayment Contract Address
-const ARC_PAY_ADDRESS = '0x95D00C1B48218e44Be6fF1e90D2f473A646191f0'; // Replace after deployment
+const ARC_PAY_ADDRESS = '0xCA51920257DD503150F3eF9a3fE4a34B2176C866';
 
 interface Payment {
   id: string;
@@ -174,15 +174,17 @@ export default function ArcSafePayView() {
       const arcPayContract = new ethers.Contract(
         ARC_PAY_ADDRESS,
         [
-          'function cancel(uint256 paymentId) external',
-          'function release(uint256 paymentId) external'
+          'function cancelPayment(uint256 paymentId) external',
+          'function releasePayment(uint256 paymentId) external'
         ],
         signer
       );
 
       // Trigger the real MetaMask transaction
       addNotification('info', `Initiating ${action}`, `Please confirm the transaction in your wallet.`);
-      const tx = await arcPayContract[action](paymentId);
+      const tx = action === 'cancel' 
+        ? await arcPayContract.cancelPayment(paymentId)
+        : await arcPayContract.releasePayment(paymentId);
       const receipt = await tx.wait();
       
       addNotification('success', `SafePay ${action === 'cancel' ? 'Cancelled' : 'Released'}`, `The transaction was successful.`, receipt.hash);

@@ -19,7 +19,6 @@ export default function PortfolioView() {
     { name: 'USD Coin',   symbol: 'USDC', amount: balances.USDC, price: 1.0,       value: balances.USDC,            color: '#8b5cf6' },
     { name: 'Euro Coin',  symbol: 'EURC', amount: balances.EURC, price: eurcPrice, value: balances.EURC * eurcPrice, color: '#3b82f6' },
     { name: 'Tether USD', symbol: 'USDT', amount: balances.USDT, price: 1.0,       value: balances.USDT,            color: '#10b981' },
-    { name: 'Arc Native', symbol: 'ARC',  amount: balances.ARC,  price: arcPrice,  value: balances.ARC * arcPrice,  color: '#ec4899' },
   ];
 
   const totalMarginLocked = positions.reduce((acc, pos) => acc + pos.margin, 0);

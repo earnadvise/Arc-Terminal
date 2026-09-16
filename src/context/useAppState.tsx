@@ -13,7 +13,7 @@ import {
 } from '../utils/mockData';
 import { useUnifiedBalance } from "@/lib/circle-unified-balance-kit";
 
-export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Vault' | 'Bridge' | 'Buy' | 'SafePay' | 'Agents' | 'History';
+export type AppTab = 'Home' | 'Perpetuals' | 'Swap' | 'Bridge' | 'Buy' | 'SafePay' | 'Agents' | 'History' | 'Portfolio';
 
 const getPrecision = (symbol: string): number => {
   const s = symbol.toLowerCase();
@@ -360,7 +360,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     try {
       // Direct RPC fetch to bypass MetaMask queue and avoid network mismatch
-      const rpcUrl = 'https://rpc.testnet.arc.network';
+      const rpcUrl = 'https://rpc.mainnet.arc.io';
       const req = (method: string, params: any[]) => fetch(rpcUrl, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
@@ -369,7 +369,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       // Execute sequentially to prevent burst rate limits
       const nativeRes = await req('eth_getBalance', [address, 'latest']);
       
-      // Fetch testnet wallet USDC balance (to allow deposits from testnet faucet funds)
+      // Fetch mainnet wallet USDC balance (to allow deposits from mainnet faucet funds)
       const walletRes = await req('eth_call', [{ to: '0x3600000000000000000000000000000000000000', data: '0x70a08231' + padAddress(address) }, 'latest']);
 
       const nativeHex = nativeRes?.result;
@@ -378,7 +378,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setBalances(prev => {
         const nextNativeBal = nativeHex && nativeHex !== '0x' && !nativeHex.error ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
         
-        // Parse testnet wallet USDC
+        // Parse mainnet wallet USDC
         const nextWalletUSDC = walletBalRes && walletBalRes !== '0x' && !walletBalRes.error ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
         
         // Use purely local state for Vault USDC to prevent the massive fake/garbage contract return value from breaking the UI
@@ -388,15 +388,15 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         const activeUSDC = localUSDC + (unifiedBalances?.USDC || 0);
 
         return {
-          USDC: localUSDC + (unifiedBalances?.USDC || 0),
+          USDC: activeUSDC,
           walletUSDC: nextWalletUSDC,
           vaultUSDC: nextVaultUSDC,
           BTC: nextNativeBal,
           ETH: 0,
           SOL: 0,
           ARC: nextNativeBal,
-          EURC: activeUSDC > 0 ? activeUSDC * 0.92 : 0,
-          USDT: activeUSDC
+          EURC: 0,
+          USDT: 0
         };
       });
     } catch (e) {
@@ -816,19 +816,19 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             await eth.request({
               method: 'wallet_addEthereumChain',
               params: [{
-                chainId: '0x4cef52',
-                chainName: 'Arc Testnet',
-                rpcUrls: ['https://rpc.testnet.arc.network', 'https://rpc.quicknode.testnet.arc.network/'],
+                chainId: '0x13b2',
+                chainName: 'Arc Mainnet',
+                rpcUrls: ['https://rpc.mainnet.arc.io', 'https://rpc.quicknode.mainnet.arc.network/'],
                 nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 },
-                blockExplorerUrls: ['https://testnet.arcscan.app']
+                blockExplorerUrls: ['https://arcscan.io']
               }]
             });
             await eth.request({
               method: 'wallet_switchEthereumChain',
-              params: [{ chainId: '0x4cef52' }]
+              params: [{ chainId: '0x13b2' }]
             });
           } catch (e) {
-            console.warn("Could not add or switch to Arc Testnet:", e);
+            console.warn("Could not add or switch to Arc Mainnet:", e);
           }
           const fullAddr = accounts[0];
           const truncated = `${fullAddr.slice(0, 6)}...${fullAddr.slice(-4)}`;
@@ -836,7 +836,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           setWalletAddress(fullAddr);
           setWalletType(type);
           refreshOnChainBalances(fullAddr);
-          addNotification('success', 'Wallet Connected', `Connected ${type} (${truncated}) on Arc Testnet.`);
+          addNotification('success', 'Wallet Connected', `Connected ${type} (${truncated}) on Arc Mainnet.`);
           return;
         }
       } catch (err) {
@@ -877,7 +877,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     if (typeof window !== 'undefined') {
       window.open('https://faucet.circle.com/', '_blank');
     }
-    addNotification('info', 'Circle Testnet Faucet', 'Opened Circle Faucet (faucet.circle.com) to request testnet USDC.');
+    addNotification('info', 'Circle mainnet Faucet', 'Opened Circle Faucet (faucet.circle.com) to request mainnet USDC.');
   };
 
   const placeOrder = async (
@@ -891,7 +891,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   ) => {
     const orderSymbol = symbolOverride || activePair.symbol;
     if (!walletConnected || !walletAddress) {
-      addNotification('error', 'Execution Failed', 'Please connect your wallet to trade on Arc Testnet.');
+      addNotification('error', 'Execution Failed', 'Please connect your wallet to trade on Arc Mainnet.');
       return;
     }
 
@@ -918,7 +918,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               txHash = await spend({ 
                 amount: requiredMargin, 
                 to: VAULT_ADDRESS, 
-                chain: "ARC_TESTNET"
+                chain: "Arc_Mainnet"
               });
             } else {
               addNotification('error', 'Execution Failed', `Insufficient margin. You need at least $${requiredMargin.toFixed(2)} USDC in the Vault to open this position.`);
@@ -959,7 +959,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }
       } else {
         txHash = '0x' + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('');
-        addNotification('success', 'Order Submitted', `Market order submitted to Arc Testnet.`, txHash);
+        addNotification('success', 'Order Submitted', `Market order submitted to Arc Mainnet.`, txHash);
       }
 
       const entryPrice = activePair.lastPrice;
@@ -1040,7 +1040,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             await spend({ 
               amount: requiredMargin, 
               to: VAULT_ADDRESS, 
-              chain: "ARC_TESTNET"
+              chain: "Arc_Mainnet"
             });
             addNotification('warning', 'Margin Depositing', 'Margin deposit initiated. Please wait 10 seconds for it to confirm, then click Place Order again.');
             return;
@@ -1202,7 +1202,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             txHash = await spend({ 
               amount: additionalMargin, 
               to: VAULT_ADDRESS, 
-              chain: "ARC_TESTNET"
+              chain: "Arc_Mainnet"
             });
           } catch (err: any) {
             console.error(err);

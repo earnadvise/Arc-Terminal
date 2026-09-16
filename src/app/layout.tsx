@@ -5,7 +5,7 @@ import { UnifiedBalanceProvider } from "@/lib/circle-unified-balance-kit";
 
 export const metadata: Metadata = {
   title: "Arc Terminal | Modern Perpetual DEX",
-  description: "Trade perpetual futures with up to 20x leverage on Arc Testnet.",
+  description: "Trade perpetual futures with up to 20x leverage on Arc Mainnet.",
 };
 
 export const viewport: Viewport = {

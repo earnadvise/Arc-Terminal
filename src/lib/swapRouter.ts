@@ -1,9 +1,9 @@
 import { rpcCall, rpcGetReceipt } from './rpcClient';
 /**
- * Arc Testnet Swap Router Utilities
+ * Arc Mainnet Swap Router Utilities
  *
  * ABI-encoding helpers and constants for interacting with the
- * SynthraV3 (Uniswap V3 fork) SwapRouter on Arc Testnet.
+ * SynthraV3 (Uniswap V3 fork) SwapRouter on Arc Mainnet.
  *
  * This is the same router infrastructure used by Tower Exchange.
  * Discovered from Tower tx 0x225198... decoded_input.
@@ -17,7 +17,7 @@ export const ARC_TOKENS: Record<string, { address: string; decimals: number; nam
   cirBTC: { address: '0xf0C4a4CE82A5746AbAAd9425360Ab04fbBA432BF', decimals: 8,  name: 'Circle BTC' },
 };
 
-// Arc Terminal Router on Arc Testnet (Our custom protocol proxy contract)
+// Arc Terminal Router on Arc Mainnet (Our custom protocol proxy contract)
 // This contract handles protocol fees and routes the remaining liquidity to SynthraV3
 export const SWAP_ROUTER_ADDRESS = '0x2de601bE529C4D59DC2b11725a2c75e06aC4cDBa';
 
@@ -68,7 +68,7 @@ export function fromWei(wei: bigint, decimals: number): number {
 }
 
 // ─── Real-Swap Capability Check ──────────────────────────────────
-/** Returns true if both tokens have known Arc Testnet ERC-20 addresses. */
+/** Returns true if both tokens have known Arc Mainnet ERC-20 addresses. */
 export function isRealSwapSupported(tokenIn: string, tokenOut: string): boolean {
   return (
     !!ARC_TOKENS[tokenIn] &&
