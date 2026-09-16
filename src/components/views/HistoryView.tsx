@@ -7,7 +7,7 @@ import { RefreshCw, Trash2, ArrowRightLeft, ArrowDownRight, ArrowUpRight, Trendi
 export default function HistoryView() {
   const { history, clearHistory, addNotification } = useAppState();
   
-  const [activeTab, setActiveTab] = useState<'All' | 'Swap' | 'Vault' | 'Perpetuals'>('All');
+  const [activeTab, setActiveTab] = useState<'All' | 'Swap' | 'Perpetuals'>('All');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Helper for relative time
@@ -31,9 +31,10 @@ export default function HistoryView() {
 
   // Filter history by selected tab
   const filteredHistory = history.filter(item => {
+    if (item.category === 'Vault' || item.side === 'DEPOSIT' || item.side === 'WITHDRAW') return false;
+    
     if (activeTab === 'All') return true;
     if (activeTab === 'Swap') return item.category === 'Swap' || item.side === 'SWAP';
-    if (activeTab === 'Vault') return item.category === 'Vault' || item.side === 'DEPOSIT' || item.side === 'WITHDRAW';
     if (activeTab === 'Perpetuals') return item.category === 'Perpetuals' || item.side === 'LONG' || item.side === 'SHORT' || item.side === 'BUY' || item.side === 'SELL';
     return true;
   });
@@ -124,9 +125,9 @@ export default function HistoryView() {
           </button>
         </div>
 
-        {/* Category Tabs: All, Swap, Vault, Perpetuals */}
-        <div className="flex bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-1 rounded-xl w-fit text-xs font-bold gap-1 mt-4">
-          {(['All', 'Swap', 'Vault', 'Perpetuals'] as const).map(tab => (
+        {/* Category Tabs: All, Swap, Perpetuals */}
+        <div className="flex bg-slate-100 dark:bg-[#13131a] p-1 rounded-xl border border-slate-200 dark:border-slate-800 shadow-inner w-full sm:w-auto mt-4">
+          {(['All', 'Swap', 'Perpetuals'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
