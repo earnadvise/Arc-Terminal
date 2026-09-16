@@ -1,0 +1,341 @@
+        };
+      });
+    } catch (e) {
+      console.error('Error refreshing on-chain balances:', e);
+    }
+  };
+
+  // Poll balances when wallet changes
+  useEffect(() => {
+    let active = true;
+    
+    const poll = async () => {
+      if (!active || !walletConnected || !walletAddressRef.current) return;
+      
+      await refreshOnChainBalances(walletAddressRef.current);
+      
+      if (active) {
+        setTimeout(poll, 2500); // Wait 2.5s AFTER the previous request finishes to prevent overlapping rate limits
+      }
+    };
+
+    if (walletConnected && walletAddress) {
+      poll();
+    }
+    
+    return () => { active = false; };
+  }, [walletConnected, walletAddress]);
+
+  useEffect(() => {
+    const fetchPrices = async () => {
+      try {
+        // Fetch directly from Binance client-side to bypass Vercel US server blocks
+        const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22SUIUSDT%22,%22APTUSDT%22,%22PAXGUSDT%22,%22ASTRUSDT%22%5D').catch(() => null);
+        
+        let apiData: Record<string, any> = {};
+        if (binanceRes && binanceRes.ok) {
+          const data = await binanceRes.json();
+          data.forEach((item: any) => {
+            const symbolMap: Record<string, string> = {
+              BTCUSDT: 'BTC-PERP', ETHUSDT: 'ETH-PERP', SOLUSDT: 'SOL-PERP',
+              SUIUSDT: 'SUI-PERP', APTUSDT: 'APT-PERP', PAXGUSDT: 'xau-PERP'
+            };
+            const sym = symbolMap[item.symbol];
+            if (sym) {
+              apiData[sym] = {
+                lastPrice: parseFloat(item.lastPrice),
+                change24h: parseFloat(item.priceChangePercent),
+                high24h: parseFloat(item.highPrice),
+                low24h: parseFloat(item.lowPrice),
+                volume24h: Math.round(parseFloat(item.quoteVolume)),
+              };
+            }
+          });
+          if (apiData['BTC-PERP']) {
+            apiData['ARC-PERP'] = { ...apiData['BTC-PERP'] };
+          }
+        } else {
+          // Fallback to our Next.js API if Binance client-fetch fails
+          const res = await fetch('/api/prices');
+          if (!res.ok) throw new Error('API request failed');
+          apiData = await res.json();
+        }
+
+          
+          
+
+          // 1. Update Markets and Positions
+        setMarkets(prev => {
+          const newMarkets = prev.map(m => {
+            const marketData = apiData[m.symbol];
+            if (!marketData) return m;
+
+            return {
+              ...m,
+              lastPrice: marketData.lastPrice,
+              change24h: marketData.change24h,
+              high24h: marketData.high24h,
+              low24h: marketData.low24h,
+              volume24h: marketData.volume24h,
+            };
+          });
+
+          // Trigger updates in positions PnL based on these new prices
+          // ALSO Mock Execute Limit Orders and TP/SL
+          setOpenOrders(prevOrders => {
+            const executedOrders: any[] = [];
+            const remainingOrders: typeof prevOrders = [];
+            
+            prevOrders.forEach(order => {
+              const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
+              if (!currentMarket) {
+                remainingOrders.push(order);
+                return;
+              }
+              const markPrice = currentMarket.lastPrice;
+              let shouldExecute = false;
+              let isTpSlTrigger = false;
+              let tpSlPnl = 0;
+
+              if (order.type === 'LIMIT') {
+                if (order.side === 'BUY' && markPrice <= order.price) shouldExecute = true;
+                if (order.side === 'SELL' && markPrice >= order.price) shouldExecute = true;
+              } else if (order.type === 'STOP') {
+                if (order.side === 'BUY' && markPrice >= order.price) shouldExecute = true;
+                if (order.side === 'SELL' && markPrice <= order.price) shouldExecute = true;
+              } else if (order.type === 'TPSL') {
+                // If it's TP/SL, check if price crossed TP or SL
+                if (order.tpPrice && order.side === 'BUY' && markPrice <= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; }
+                if (order.slPrice && order.side === 'BUY' && markPrice >= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; }
+                if (order.tpPrice && order.side === 'SELL' && markPrice >= order.tpPrice) { shouldExecute = true; isTpSlTrigger = true; }
+                if (order.slPrice && order.side === 'SELL' && markPrice <= order.slPrice) { shouldExecute = true; isTpSlTrigger = true; }
+              }
+
+              if (shouldExecute) {
+                executedOrders.push({ ...order, isTpSlTrigger });
+              } else {
+                remainingOrders.push(order);
+              }
+            });
+
+            if (executedOrders.length > 0) {
+              executedOrders.forEach(order => {
+                if (order.isTpSlTrigger) {
+                  const posToClose = positionsRef.current.find(p => p.symbol === order.symbol);
+                  if (posToClose) {
+                    const returnMargin = (posToClose.size * posToClose.entryPrice) / posToClose.leverage;
+                    const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
+                    const markPrice = currentMarket ? currentMarket.lastPrice : posToClose.markPrice;
+                    
+                    // Calculate proper PnL for TP/SL using entry price
+                    const diff = posToClose.side === 'LONG' ? (markPrice - posToClose.entryPrice) : (posToClose.entryPrice - markPrice);
+                    const finalPnl = (diff / posToClose.entryPrice) * (posToClose.size * posToClose.entryPrice);
+                    order.tpSlPnl = finalPnl; // Attach PnL to order for history logging
+
+                    const closeFee = (posToClose.size * markPrice) * 0.0006;
+                    const netReturn = returnMargin + finalPnl - closeFee;
+                    
+                    setBalances(prev => ({
+                      ...prev,
+                      marginUSDC: prev.marginUSDC + netReturn
+                    }));
+                  }
+                }
+              });
+
+              setPositions(prevPos => {
+                let newPos = [...prevPos];
+                executedOrders.forEach(order => {
+                  if (order.isTpSlTrigger) {
+                    newPos = newPos.filter(p => p.symbol !== order.symbol);
+                  } else {
+                    const currentMarket = newMarkets.find(m => m.symbol === order.symbol);
+                    const markPrice = currentMarket ? currentMarket.lastPrice : order.price;
+                    const orderSide = order.side === 'BUY' ? 'LONG' : 'SHORT';
+                    const margin = (order.amount * order.price) / order.leverage;
+
+                    const existingPosIndex = newPos.findIndex(p => p.symbol === order.symbol && p.side === orderSide);
+
+                    if (existingPosIndex !== -1) {
+                      const existingPos = newPos[existingPosIndex];
+                      const newSize = existingPos.size + order.amount;
+                      const newMargin = existingPos.margin + margin;
+                      const newEntryPrice = ((existingPos.size * existingPos.entryPrice) + (order.amount * order.price)) / newSize;
+                      const newLeverage = (newSize * newEntryPrice) / newMargin;
+                      
+                      const buffer = existingPos.marginMode === 'ISOLATED' ? 0.95 : 0.98;
+                      const liqPrice = orderSide === 'LONG'
+                        ? newEntryPrice * (1 - (1 / newLeverage) * buffer)
+                        : newEntryPrice * (1 + (1 / newLeverage) * buffer);
+                        
+                      newPos[existingPosIndex] = {
+                        ...existingPos,
+                        size: Number(newSize.toFixed(6)),
+                        margin: Number(newMargin.toFixed(2)),
+                        entryPrice: Number(newEntryPrice.toFixed(2)),
+                        markPrice: markPrice,
+                        leverage: Number(newLeverage.toFixed(2)),
+                        liqPrice: Number(liqPrice.toFixed(getPrecision(order.symbol))),
+                      };
+                    } else {
+                      const buffer = order.marginMode === 'ISOLATED' ? 0.95 : 0.98;
+                      const liqPrice = orderSide === 'LONG'
+                        ? order.price * (1 - (1 / order.leverage) * buffer)
+                        : order.price * (1 + (1 / order.leverage) * buffer);
+                      
+                      newPos.unshift({
+                        id: `pos-${Math.random().toString(36).substring(7)}`,
+                        symbol: order.symbol,
+                        side: orderSide,
+                        size: order.amount,
+                        entryPrice: order.price, 
+                        markPrice: markPrice,
+                        liqPrice: Number(liqPrice.toFixed(getPrecision(order.symbol))),
+                        margin: Number(margin.toFixed(2)),
+                        leverage: order.leverage,
+                        marginMode: order.marginMode,
+                        
+                        unrealizedPnl: 0,
+
+                      });
+                    }
+                  }
+                });
+                return newPos;
+              });
+
+              setHistory(prevHist => {
+                let newHist = [...prevHist];
+                executedOrders.forEach(order => {
+                  newHist.unshift({
+                    id: `tx-${Math.random().toString(36).substring(7)}`,
+                    time: new Date().toISOString().replace('T', ' ').substring(0, 19),
+                    pair: order.symbol,
+                    side: order.side === 'BUY' ? (order.isTpSlTrigger ? 'SELL' : 'BUY') : (order.isTpSlTrigger ? 'BUY' : 'SELL'),
+                    type: order.isTpSlTrigger ? 'TP/SL Triggered' : `${order.type} Filled`,
+                    size: `${order.amount} ${order.symbol.split('-')[0]}`,
+                    price: `$${(order.isTpSlTrigger ? (newMarkets.find(m => m.symbol === order.symbol)?.lastPrice || 0) : order.price).toLocaleString(undefined, { minimumFractionDigits: 2 })}`,
+                    fee: `$${((order.amount * (order.price || 1)) * 0.0006).toFixed(2)} USDC`,
+                    status: 'FILLED',
+                    realizedPnl: order.isTpSlTrigger ? order.tpSlPnl : undefined
+                  });
+                });
+                return newHist;
+              });
+            }
+
+            return remainingOrders;
+          });
+
+          setPositions(prevPos =>
+            prevPos.map(pos => {
+              const currentMarket = newMarkets.find(m => m.symbol === pos.symbol);
+              if (!currentMarket) return pos;
+
+              const markPrice = currentMarket.lastPrice;
+              const diff = pos.side === 'LONG' 
+                ? (markPrice - pos.entryPrice) 
+                : (pos.entryPrice - markPrice);
+              
+              const unrealizedPnl = Number((diff * pos.size).toFixed(2));
+              return {
+                ...pos,
+                markPrice,
+                unrealizedPnl
+              };
+            })
+          );
+
+          return newMarkets;
+        });
+      } catch (err) {
+        console.error('Error fetching live prices, falling back to simulated drift:', err);
+        // Fallback: apply mock drift
+        setMarkets(prevMarkets => {
+          const updated = prevMarkets.map(m => {
+            const changePercent = (Math.random() - 0.49) * 0.0015; // slightly positive drift
+            const priceChange = m.lastPrice * changePercent;
+            const newPrice = Number((m.lastPrice + priceChange).toFixed(m.symbol.includes('USDC') || m.symbol.includes('PERP') ? 2 : 4));
+            const high = Math.max(m.high24h, newPrice);
+            const low = Math.min(m.low24h, newPrice);
+            
+            // Re-calculate 24h percentage
+            const initialRef = m.prevPrice;
+            const newChange24h = Number((((newPrice - initialRef) / initialRef) * 100).toFixed(2));
+            
+            return {
+              ...m,
+              lastPrice: newPrice,
+              change24h: newChange24h,
+              high24h: high,
+              low24h: low,
+              volume24h: m.volume24h + Math.round(Math.random() * 5000)
+            };
+          });
+
+          // Trigger updates in positions PnL based on fallback prices
+          setPositions(prevPos =>
+            prevPos.map(pos => {
+              const currentMarket = updated.find(m => m.symbol === pos.symbol);
+              if (!currentMarket) return pos;
+
+              const markPrice = currentMarket.lastPrice;
+              const diff = pos.side === 'LONG' 
+                ? (markPrice - pos.entryPrice) 
+                : (pos.entryPrice - markPrice);
+              
+              const unrealizedPnl = Number((diff * pos.size).toFixed(2));
+              return {
+                ...pos,
+                markPrice,
+                unrealizedPnl
+              };
+            })
+          );
+
+          return updated;
+        });
+      }
+
+      // 2. Update current active candlestick
+      setCandleData(prevCandles => {
+        if (prevCandles.length === 0) return prevCandles;
+        const last = { ...prevCandles[prevCandles.length - 1] };
+        
+        // Find latest price from active pair ref
+        const currentActive = marketsRef.current.find(m => m.symbol === activePairSymbol) || activePairRef.current;
+        const latestPrice = currentActive.lastPrice;
+        last.close = latestPrice;
+        last.high = Math.max(last.high, latestPrice);
+        last.low = Math.min(last.low, latestPrice);
+        last.volume += Math.floor(Math.random() * 100);
+
+        // Every 20 ticks (approx 1 min if interval is 3s), append a new candle
+        tickCounter.current += 1;
+        if (tickCounter.current >= 20) {
+          tickCounter.current = 0;
+          const newTime = new Date();
+          const timeStr = newTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false });
+          return [
+            ...prevCandles.slice(1),
+            last,
+            {
+              time: timeStr,
+              open: latestPrice,
+              high: latestPrice,
+              low: latestPrice,
+              close: latestPrice,
+              volume: 0
+            }
+          ];
+        }
+
+        return [...prevCandles.slice(0, -1), last];
+      });
+    };
+
+    fetchPrices();
+    const interval = setInterval(fetchPrices, 1000); // Updated to 1 second for faster real-time feedback
+
+    return () => clearInterval(interval);
+  }, [activePairSymbol]);
