@@ -9,13 +9,44 @@ import { rpcCall, rpcGetReceipt } from './rpcClient';
  * Discovered from Tower tx 0x225198... decoded_input.
  */
 
-// ─── Token Registry ───────────────────────────────────────────────
 export const ARC_TOKENS: Record<string, { address: string; decimals: number; name: string }> = {
-  USDC: { address: '0x3600000000000000000000000000000000000000', decimals: 6, name: 'USD Coin' },
-  EURC: { address: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1', decimals: 6, name: 'EURC' },
-  USDT: { address: '0x0000000000000000000000000000000000000000', decimals: 6, name: 'Tether USD' }, // Placeholder if not on LI.FI yet
-  cirBTC: { address: '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0', decimals: 8, name: 'Circle BTC' },
-  'ARC-PERP': { address: '0x0000000000000000000000000000000000000000', decimals: 18, name: 'Arc Perpetual Token' }
+  "USDC": { "address": "0x3600000000000000000000000000000000000000", "decimals": 6, "name": "USDC" },
+  "cirBTC": { "address": "0x171A4217b86A807A64eB94757Db6849fb4bDbAA0", "decimals": 8, "name": "cirBTC" },
+  "EURC": { "address": "0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1", "decimals": 6, "name": "Eurc" },
+  "ARCASH": { "address": "0x0BFFa97f774824e9dA843699aEDd2835cb1b8022", "decimals": 18, "name": "ARCASH" },
+  "ARCANINE": { "address": "0xF3715bF5C2De299F08B81180ffb739A8372a175f", "decimals": 18, "name": "Arcanine" },
+  "ARCBAT": { "address": "0xbE0CaD585Ea2D13DE2f4E36376be755C0AfD8B97", "decimals": 18, "name": "ARC BAT" },
+  "ARCAT": { "address": "0x07704B06981eA962b87296362a1281484d160000", "decimals": 18, "name": "ARCAT" },
+  "arcUSDC": { "address": "0x8E357432CC12ff425c36432F312968aEb16112AF", "decimals": 18, "name": "Flagship USDC" },
+  "Architects": { "address": "0x8bcb94279FC2c984EC34e0C1f2192df8c69EA4F0", "decimals": 18, "name": "Architects" },
+  "BUILDOG": { "address": "0x4cb8382b9dAF7992d3b27D32f7dB650C57881DaA", "decimals": 18, "name": "BUILDOG" },
+  "TOLLY": { "address": "0xBc43CE8DEc648EA298C4275559b81D6261c90b67", "decimals": 18, "name": "Tolly" },
+  "STEVE": { "address": "0xA23632D6a32174fF4EE8E76aAcf9f244E10cFd73", "decimals": 18, "name": "STEVE" },
+  "BEANCAT": { "address": "0x41c8A71f630c636294009fa4FB0CC4c3bBE674fe", "decimals": 18, "name": "Bean Cat" },
+  "ARGUS": { "address": "0xeCe5cA8bf9220718E5727754026757512212cb3c", "decimals": 18, "name": "Argus" },
+  "dUSDC": { "address": "0x6bdfE1165D5165808d02dE05969c9a19e9b7cf30", "decimals": 18, "name": "Dialectic RWA USDC" },
+  "BARC": { "address": "0x4753C45Fb550FECAA143A47968659117E6FFc2cE", "decimals": 18, "name": "Barc" },
+  "LONGCAT": { "address": "0x79E4561edE9f21f5cb7D9445e0F8b20b9ad05A31", "decimals": 18, "name": "Longcat" },
+  "LONG": { "address": "0x2164bB17a2D38c1b5170E987b2c0416DF1EFc752", "decimals": 18, "name": "LONG" },
+  "steakUSDC": { "address": "0xbeef0016cb2Fd5C352ea7CA08a9f54739DFa7298", "decimals": 18, "name": "Steakhouse Prime USDC" },
+  "krUSDC": { "address": "0x5bEfAb92a5A3D60F578Cb51EEb4e4FD50a1e3123", "decimals": 18, "name": "Keyrock Prime USDC" },
+  "steakEURC": { "address": "0xbeef00be37BdE921BAE06fad223125BAB16c41D1", "decimals": 18, "name": "Steakhouse Prime EURC" },
+  "gtusdcp": { "address": "0xdECcd53BE5453215821184824B519E04C7e00bC7", "decimals": 18, "name": "Gauntlet USDC Prime" },
+  "CRCL": { "address": "0x2ba0f44BDfC17FbA30edA9cdBeCB908cA45B043B", "decimals": 18, "name": "Circle Internet Group • Arc Token" },
+  "COOL": { "address": "0xEb64987643db71c76b2a2BE7E723DECC995E5b37", "decimals": 18, "name": "usdc is cool" },
+  "arcEURC": { "address": "0x389abDf4355e0cF4f19298179991705a98f21c18", "decimals": 18, "name": "Galaxy EURC" },
+  "pUSDC": { "address": "0x9503d4Eccee1046610eC1467F58b6Bc23fce157e", "decimals": 18, "name": "Pangolins USDC" },
+  "gteurcp": { "address": "0x05863F54B05e96092069eF30c9Ca6060336e50B9", "decimals": 18, "name": "Gauntlet EURC Prime" },
+  "waCoreUSDC": { "address": "0x42EAB64310E1D1c66b4d8aF7C9C4ce253885eB83", "decimals": 6, "name": "Wrapped Aave Core USDC" },
+  "waCoreEURC": { "address": "0x5A10b1533C0f1f181DC8a428BF5Eb58B08fc8d2c", "decimals": 6, "name": "Wrapped Aave Core EURC" },
+  "waCorecirBTC": { "address": "0x83D364DbAf4e7018E0b87dB3FaB3d1d8535a6F13", "decimals": 8, "name": "Wrapped Aave Core cirBTC" },
+  "PEG": { "address": "0xD626630Dc244e50272017Cc55A361d096c3a9062", "decimals": 18, "name": "peg" },
+  "BANCOR": { "address": "0xc55A4468A3E1C2dfe58dDdaD0188c71D5dFFd740", "decimals": 18, "name": "BANCOR" },
+  "AROS": { "address": "0xcDF59E06DCbC3A6AE662F66B35aAeBd8DECCCB2C", "decimals": 18, "name": "Aros" },
+  "LAZY": { "address": "0xD6509e6B2c2C3494bEc027D81952E5079112adc6", "decimals": 18, "name": "Arc's Chameleon" },
+  "PI": { "address": "0x30aC39DeC8a854c5Fd03AA429E3BEF32a7E4c84a", "decimals": 18, "name": "3.141592653589793238462643383279" },
+  "AI": { "address": "0xcaC4098684Cc7FC6BeA101D9B9c641cfA7D783EA", "decimals": 18, "name": "ARC Investor" },
+  "wARS": { "address": "0x0DC4F92879B7670e5f4e4e6e3c801D229129D90D", "decimals": 18, "name": "Peso Argentino" }
 };
 
 // Arc Terminal Router on Arc Mainnet (Our custom protocol proxy contract)

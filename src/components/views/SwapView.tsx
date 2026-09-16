@@ -293,10 +293,6 @@ export default function SwapView() {
                
                txBytesToExecute = encodeExactInputSingle(fromData.addr, toData.addr, poolFee, amountInWei, minOut);
                targetRouter = SWAP_ROUTER_ADDRESS;
-               
-               if (fromToken === 'USDC') {
-                   txValue = '0x' + amountInWei.toString(16);
-               }
             } else {
                // SUCCESS: Use LI.FI route
                txBytesToExecute = lifiData.transactionRequest.data;
@@ -304,23 +300,21 @@ export default function SwapView() {
                txValue = lifiData.transactionRequest.value || '0x0';
             }
 
-            // 2. Check Allowance for the chosen router (skip if native USDC)
+            // 2. Check Allowance for the chosen router
             const { checkAllowance, encodeApprove } = await import('@/lib/swapRouter');
             
-            if (fromToken !== 'USDC') {
-                const currentAllowance = await checkAllowance(eth, fromData.addr, walletAddress, targetRouter);
-                
-                if (currentAllowance < amountInWei) {
-                   const approveData = encodeApprove(targetRouter, amountInWei);
-                   const approveTx = await eth.request({
-                     method: 'eth_sendTransaction',
-                     params: [{ from: walletAddress, to: fromData.addr, data: approveData }]
-                   });
-                   
-                   // WAIT FOR APPROVAL TO MINE ON-CHAIN BEFORE SWAPPING
-                   const { waitForTransaction } = await import('@/lib/swapRouter');
-                   await waitForTransaction(eth, approveTx);
-                }
+            const currentAllowance = await checkAllowance(eth, fromData.addr, walletAddress, targetRouter);
+            
+            if (currentAllowance < amountInWei) {
+               const approveData = encodeApprove(targetRouter, amountInWei);
+               const approveTx = await eth.request({
+                 method: 'eth_sendTransaction',
+                 params: [{ from: walletAddress, to: fromData.addr, data: approveData }]
+               });
+               
+               // WAIT FOR APPROVAL TO MINE ON-CHAIN BEFORE SWAPPING
+               const { waitForTransaction } = await import('@/lib/swapRouter');
+               await waitForTransaction(eth, approveTx);
             }
 
             // 3. Execute the optimal Swap!
