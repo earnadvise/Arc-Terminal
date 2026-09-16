@@ -217,6 +217,9 @@ export default function SwapView() {
   const [isSwapping, setIsSwapping] = useState(false);
   const [txModalData, setTxModalData] = useState<{ hash: string; from: string; to: string; fromAmt: number; toAmt: number } | null>(null);
 
+  const [realReceived, setRealReceived] = useState<number | null>(null);
+  const [isQuoting, setIsQuoting] = useState(false);
+
   // Derive prices and 24h change from global markets state
   const prices: Record<string, number> = {
     USDC: 1.0,
@@ -229,8 +232,56 @@ export default function SwapView() {
   const fromPrice = prices[fromToken] || 1;
   const toPrice   = prices[toToken]   || 1;
 
-  // Estimated output
-  const received = parsed > 0 ? Number(((parsed * fromPrice) / toPrice).toFixed(4)) : 0;
+  // Optimistic Estimated output
+  const optimisticReceived = parsed > 0 ? Number(((parsed * fromPrice) / toPrice).toFixed(4)) : 0;
+  const received = realReceived !== null ? realReceived : optimisticReceived;
+
+  // Debounced quote fetcher
+  useEffect(() => {
+    if (parsed <= 0) {
+      setRealReceived(null);
+      setIsQuoting(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsQuoting(true);
+      try {
+        const getAddrAndDec = (sym: string) => {
+          if (ARC_TOKENS[sym as keyof typeof ARC_TOKENS]) return { addr: ARC_TOKENS[sym as keyof typeof ARC_TOKENS].address, dec: ARC_TOKENS[sym as keyof typeof ARC_TOKENS].decimals };
+          const fromList = TOKENS.find(t => t.symbol === sym);
+          if (fromList && fromList.address) return { addr: fromList.address, dec: fromList.decimals };
+          if (sym.startsWith('0x') && sym.length === 42) return { addr: sym, dec: 18 };
+          return null;
+        };
+
+        const fromData = getAddrAndDec(fromToken);
+        const toData = getAddrAndDec(toToken);
+
+        if (fromData && toData) {
+          const { toWei, formatUnits } = await import('@/lib/swapRouter');
+          const amountInWei = toWei(parsed, fromData.dec);
+          
+          const lifiUrl = `https://li.quest/v1/quote?fromChain=5042&toChain=5042&fromToken=${fromData.addr}&toToken=${toData.addr}&fromAmount=${amountInWei.toString()}`;
+          const res = await fetch(lifiUrl);
+          const data = await res.json();
+
+          if (data.estimate?.toAmount) {
+            setRealReceived(Number(formatUnits(data.estimate.toAmount, toData.dec)));
+          } else {
+            setRealReceived(null);
+          }
+        }
+      } catch (e) {
+        console.warn('Quote fetch failed:', e);
+        setRealReceived(null);
+      } finally {
+        setIsQuoting(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [parsed, fromToken, toToken]);
 
   // Wallet balance of current fromToken
   const fromBalance = (balances as any)[fromToken] ?? 0;
