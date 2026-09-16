@@ -85,7 +85,6 @@ export default function BridgeView() {
     return {
       integrator: 'ArcTerminal',
       appearance: isDarkMode ? 'dark' : 'light',
-      hiddenUI: ['walletMenu'] as any, // Hides the top right wallet button on the widget
       containerStyle: {
         border: isDarkMode ? '1px solid #1f1f2e' : '1px solid rgb(234, 234, 234)',
         borderRadius: '16px',
@@ -106,26 +105,19 @@ export default function BridgeView() {
         allow: [5042, 1, 42161, 8453, 10, 137, 43114],
       },
       toChain: 5042,
+      walletConfig: {
+        onConnect: () => {
+          connectWallet();
+        },
+      },
     };
-  }, [isDarkMode]);
+  }, [isDarkMode, connectWallet]);
 
   const [config] = useState(() => getWagmiConfig());
 
   return (
     <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 flex items-center justify-center min-h-[calc(100vh-140px)] select-none animate-fadeIn">
       <div className="w-full max-w-[480px] space-y-4 my-auto relative">
-        {/* If the main app wallet isn't connected, we can render an overlay here instead of showing the widget's connect button */}
-        {!walletConnected && (
-          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 dark:bg-[#13131a]/80 backdrop-blur-sm rounded-[24px]">
-            <button
-              onClick={connectWallet}
-              className="px-6 py-3 rounded-[12px] bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-lg shadow-blue-500/25"
-            >
-              Connect Wallet to Bridge
-            </button>
-          </div>
-        )}
-
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-wide">Bridge</h1>
