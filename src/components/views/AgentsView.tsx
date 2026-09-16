@@ -103,23 +103,39 @@ export default function AgentsView() {
 
       const amountInWei = toWei(parsed, tokenIn.decimals);
 
-      // Fetch exchange rate
-      const currentPoolRate = await getPoolExchangeRate(eth, chatSwapFromToken, chatSwapToToken);
-      const minOutput = calculateMinOutput(
-        parsed,
-        tokenIn.decimals,
-        tokenOut.decimals,
-        0.5, // 0.5% slippage
-        currentPoolRate || 1.0,
-      );
+      // 1. Fetch exact Quote & Tx Bytes from LI.FI API for Arc Mainnet (Chain 5042)
+      const lifiUrl = `https://li.quest/v1/quote?fromChain=5042&toChain=5042&fromToken=${tokenIn.address}&toToken=${tokenOut.address}&fromAmount=${amountInWei.toString()}&fromAddress=${fromAddress}&slippage=0.005`;
+      
+      const lifiRes = await fetch(lifiUrl);
+      const lifiData = await lifiRes.json();
+      let txBytesToExecute: any = null;
+      let targetRouter: string = '';
+      let txValue: string = '0x0';
+      
+      if (!lifiRes.ok || !lifiData.transactionRequest) {
+          console.warn('LI.FI rejected quote. Falling back to local Arc Router.');
+          
+          // FALLBACK: Execute direct Swap
+          const currentPoolRate = await getPoolExchangeRate(eth, chatSwapFromToken, chatSwapToToken);
+          const minOutput = calculateMinOutput(parsed, tokenIn.decimals, tokenOut.decimals, 0.5, currentPoolRate || 1.0);
+          const poolFee = getPoolFee(chatSwapFromToken, chatSwapToToken);
+          
+          txBytesToExecute = encodeExactInputSingle(tokenIn.address, tokenOut.address, poolFee, amountInWei, minOutput);
+          targetRouter = SWAP_ROUTER_ADDRESS;
+      } else {
+          // SUCCESS: Use LI.FI route
+          txBytesToExecute = lifiData.transactionRequest.data;
+          targetRouter = lifiData.transactionRequest.to;
+          txValue = lifiData.transactionRequest.value || '0x0';
+      }
 
-      // Check allowance
-      const allowance = await checkAllowance(eth, tokenIn.address, fromAddress, SWAP_ROUTER_ADDRESS);
+      // Check allowance for the target router
+      const allowance = await checkAllowance(eth, tokenIn.address, fromAddress, targetRouter);
 
       if (allowance < amountInWei) {
         setChatSwapStatus('approving');
         addNotification('info', 'Approval Required', `Approve ${chatSwapFromToken} spending in your wallet…`);
-        const approveData = encodeApprove(SWAP_ROUTER_ADDRESS, MAX_UINT256);
+        const approveData = encodeApprove(targetRouter, amountInWei);
         const approvalTxHash = await eth.request({
           method: 'eth_sendTransaction',
           params: [{ from: fromAddress, to: tokenIn.address, data: approveData }],
@@ -133,17 +149,9 @@ export default function AgentsView() {
       setChatSwapStatus('swapping');
       addNotification('info', 'Executing Swap', 'Confirm the swap transaction in your wallet…');
 
-      const swapData = encodeExactInputSingle(
-        tokenIn.address,
-        tokenOut.address,
-        getPoolFee(chatSwapFromToken, chatSwapToToken),
-        amountInWei,
-        minOutput
-      );
-
       const txHash: string = await eth.request({
         method: 'eth_sendTransaction',
-        params: [{ from: fromAddress, to: SWAP_ROUTER_ADDRESS, data: swapData }],
+        params: [{ from: fromAddress, to: targetRouter, data: txBytesToExecute, value: txValue }],
       });
 
       setChatSwapTxHash(txHash);
@@ -201,11 +209,14 @@ export default function AgentsView() {
       let responseContent = '';
       let action: 'swap_tokens' | undefined;
 
+      const availableTokens = Object.keys(ARC_TOKENS).map(t => t.toLowerCase());
+      const hasToken = availableTokens.some(t => query.includes(t));
+      
       const isSwapQuery = query.startsWith('/swap') || 
                           query === 'swap' || 
                           query.includes('swap tokens') || 
                           query.includes('exchange') ||
-                          ((query.includes('usdc') || query.includes('eurc') || query.includes('usdt') || query.includes('cirbtc')) && query.includes('to'));
+                          (hasToken && query.includes('to'));
 
       if (isSwapQuery) {
         let parsedAmount = '10';
@@ -218,25 +229,29 @@ export default function AgentsView() {
           parsedAmount = amountMatch[1];
         }
 
-        // Extract tokens
-        const tokensFound = ['usdc', 'usdt', 'eurc', 'cirbtc'].filter(t => query.includes(t));
+        // Extract tokens dynamically from ARC_TOKENS
+        const tokensFound = availableTokens.filter(t => query.includes(t));
+        
         if (tokensFound.length >= 2) {
           const toIndex = query.indexOf('to');
           if (toIndex !== -1) {
             const beforeTo = query.substring(0, toIndex);
             const afterTo = query.substring(toIndex + 2);
             
-            const fromTokenMatch = tokensFound.find(t => beforeTo.includes(t));
-            const toTokenMatch = tokensFound.find(t => afterTo.includes(t));
+            // Match the longest token name first to avoid partial matches
+            const sortedFound = [...tokensFound].sort((a, b) => b.length - a.length);
             
-            if (fromTokenMatch) parsedFrom = fromTokenMatch.toUpperCase();
-            if (toTokenMatch) parsedTo = toTokenMatch.toUpperCase();
+            const fromTokenMatch = sortedFound.find(t => beforeTo.includes(t));
+            const toTokenMatch = sortedFound.find(t => afterTo.includes(t));
+            
+            if (fromTokenMatch) parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === fromTokenMatch) || fromTokenMatch.toUpperCase();
+            if (toTokenMatch) parsedTo = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === toTokenMatch) || toTokenMatch.toUpperCase();
           } else {
-            parsedFrom = tokensFound[0].toUpperCase();
-            parsedTo = tokensFound[1].toUpperCase();
+            parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[0]) || tokensFound[0].toUpperCase();
+            parsedTo = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[1]) || tokensFound[1].toUpperCase();
           }
         } else if (tokensFound.length === 1) {
-          parsedFrom = tokensFound[0].toUpperCase();
+          parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[0]) || tokensFound[0].toUpperCase();
           parsedTo = parsedFrom === 'USDC' ? 'EURC' : 'USDC';
         }
 
