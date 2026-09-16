@@ -29,11 +29,11 @@ interface TokenMeta {
 }
 
 const TOKENS: TokenMeta[] = [
-  { symbol: 'USDC', name: 'USD Coin (Native)', decimals: 6,  color: '#8b5cf6', address: '' },
+  { symbol: 'USDC', name: 'USD Coin', decimals: 6,  color: '#8b5cf6', address: '' },
   { symbol: 'EURC', name: 'Euro Coin',  decimals: 6,  color: '#3b82f6', address: '' },
-  { symbol: 'USDT', name: 'Tether USD', decimals: 18, color: '#10b981', address: '' },
+  { symbol: 'cirBTC', name: 'Circle BTC', decimals: 8, color: '#F7931A', address: '' },
+  { symbol: 'USDT', name: 'Tether USD', decimals: 6, color: '#10b981', address: '' },
   { symbol: 'WETH', name: 'Wrapped Ether', decimals: 18, color: '#627EEA', address: '' },
-  { symbol: 'WBTC', name: 'Wrapped Bitcoin', decimals: 8, color: '#F7931A', address: '' },
   { symbol: 'LINK', name: 'Chainlink', decimals: 18, color: '#2A5ADA', address: '' },
   { symbol: 'UNI',  name: 'Uniswap', decimals: 18, color: '#FF007A', address: '' },
   { symbol: 'ARB',  name: 'Arbitrum', decimals: 18, color: '#28A0F0', address: '' },
