@@ -98,7 +98,7 @@ export default function AgentsView() {
       const tokenOut = ARC_TOKENS[chatSwapToToken];
       
       if (!tokenIn || !tokenOut) {
-        throw new Error('Unsupported swap pair.');
+        throw new Error(`Unsupported token pair: ${chatSwapFromToken} to ${chatSwapToToken}. Only Arc Mainnet tokens are supported (e.g. ${Object.keys(ARC_TOKENS).join(', ')}).`);
       }
 
       const amountInWei = toWei(parsed, tokenIn.decimals);
@@ -229,30 +229,30 @@ export default function AgentsView() {
           parsedAmount = amountMatch[1];
         }
 
-        // Extract tokens dynamically from ARC_TOKENS
-        const tokensFound = availableTokens.filter(t => query.includes(t));
-        
-        if (tokensFound.length >= 2) {
-          const toIndex = query.indexOf('to');
-          if (toIndex !== -1) {
-            const beforeTo = query.substring(0, toIndex);
-            const afterTo = query.substring(toIndex + 2);
-            
-            // Match the longest token name first to avoid partial matches
-            const sortedFound = [...tokensFound].sort((a, b) => b.length - a.length);
-            
-            const fromTokenMatch = sortedFound.find(t => beforeTo.includes(t));
-            const toTokenMatch = sortedFound.find(t => afterTo.includes(t));
-            
-            if (fromTokenMatch) parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === fromTokenMatch) || fromTokenMatch.toUpperCase();
-            if (toTokenMatch) parsedTo = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === toTokenMatch) || toTokenMatch.toUpperCase();
-          } else {
-            parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[0]) || tokensFound[0].toUpperCase();
-            parsedTo = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[1]) || tokensFound[1].toUpperCase();
+        const toIndex = query.indexOf('to');
+        if (toIndex !== -1) {
+          const beforeTo = query.substring(0, toIndex).trim();
+          const afterTo = query.substring(toIndex + 2).trim();
+          
+          // Try to find the exact token requested from the string
+          const fromParts = beforeTo.split(' ');
+          const rawFromToken = fromParts[fromParts.length - 1]; // last word before 'to'
+          const toParts = afterTo.split(' ');
+          const rawToToken = toParts[0]; // first word after 'to'
+          
+          // Match against ARC_TOKENS or just use what they typed
+          parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === rawFromToken) || rawFromToken.toUpperCase();
+          parsedTo = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === rawToToken) || rawToToken.toUpperCase();
+        } else {
+          // Fallback if 'to' is missing
+          const tokensFound = availableTokens.filter(t => query.includes(t));
+          if (tokensFound.length >= 2) {
+             parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[0]) || tokensFound[0].toUpperCase();
+             parsedTo = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[1]) || tokensFound[1].toUpperCase();
+          } else if (tokensFound.length === 1) {
+             parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[0]) || tokensFound[0].toUpperCase();
+             parsedTo = parsedFrom === 'USDC' ? 'EURC' : 'USDC';
           }
-        } else if (tokensFound.length === 1) {
-          parsedFrom = Object.keys(ARC_TOKENS).find(k => k.toLowerCase() === tokensFound[0]) || tokensFound[0].toUpperCase();
-          parsedTo = parsedFrom === 'USDC' ? 'EURC' : 'USDC';
         }
 
         setChatSwapFromToken(parsedFrom);
