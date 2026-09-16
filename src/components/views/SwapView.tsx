@@ -283,42 +283,49 @@ export default function SwapView() {
             const lifiRes = await fetch(lifiUrl);
             const lifiData = await lifiRes.json();
             
-            if (lifiData.message && lifiData.message.includes('not supported')) {
-               addNotification('error', 'LI.FI Integration Pending', 'LI.FI has not officially activated Arc Mainnet (Chain 5042) API routing yet. Awaiting their update!');
-               setIsSwapping(false);
-               return;
-            }
+            let txBytesToExecute: any = null;
+            let targetRouter: string = '';
+            
             if (!lifiRes.ok || !lifiData.transactionRequest) {
-               addNotification('error', 'Quote Failed', lifiData.message || 'Failed to fetch route from LI.FI.');
-               setIsSwapping(false);
-               return;
+               console.warn('LI.FI API rejected quote (likely token not whitelisted). Falling back to local SynthraV3 Router:', lifiData.message);
+               addNotification('warning', 'LI.FI API Pending', 'LI.FI has not whitelisted this pair yet. Falling back to direct SynthraV3 swap...');
+               
+               // FALLBACK: Execute direct SynthraV3 Swap
+               const { SWAP_ROUTER_ADDRESS, calculateMinOutput, encodeExactInputSingle } = await import('@/lib/swapRouter');
+               const minOut = calculateMinOutput(parsed, fromData.dec, toData.dec, parseFloat(slippage), (fromPrice/toPrice));
+               const poolFee = (fromToken.includes('USD') && toToken.includes('USD')) || (fromToken.includes('EUR') && toToken.includes('USD')) ? 500 : 3000;
+               
+               txBytesToExecute = encodeExactInputSingle(fromData.addr, toData.addr, poolFee, amountInWei, minOut);
+               targetRouter = SWAP_ROUTER_ADDRESS;
+            } else {
+               // SUCCESS: Use LI.FI route
+               txBytesToExecute = lifiData.transactionRequest.data;
+               targetRouter = lifiData.transactionRequest.to;
             }
 
-            // 2. Check Allowance for LI.FI router
+            // 2. Check Allowance for the chosen router
             const { checkAllowance, encodeApprove } = await import('@/lib/swapRouter');
-            const spender = lifiData.transactionRequest.to;
-            const currentAllowance = await checkAllowance(eth, fromData.addr, walletAddress, spender);
+            const currentAllowance = await checkAllowance(eth, fromData.addr, walletAddress, targetRouter);
             
             if (currentAllowance < amountInWei) {
-               addNotification('info', 'Approve Required', `Approving ${fromToken} for LI.FI Router...`);
-               const approveData = encodeApprove(spender, amountInWei);
+               addNotification('info', 'Approve Required', `Approving ${fromToken} for Router...`);
+               const approveData = encodeApprove(targetRouter, amountInWei);
                const approveTx = await eth.request({
                  method: 'eth_sendTransaction',
                  params: [{ from: walletAddress, to: fromData.addr, data: approveData }]
                });
                addNotification('success', 'Approval Submitted', 'Waiting for network confirmation...');
-               // In a real prod app, you would wait for the approveTx to mine here
             }
 
-            // 3. Execute the optimal Swap via LI.FI!
-            addNotification('info', 'Executing Swap', 'Please confirm the LI.FI optimized swap in MetaMask.');
+            // 3. Execute the optimal Swap!
+            addNotification('info', 'Executing Swap', 'Please confirm the swap in MetaMask.');
             realTxHash = await eth.request({
                method: 'eth_sendTransaction',
                params: [{
                   from: walletAddress,
-                  to: lifiData.transactionRequest.to,
-                  data: lifiData.transactionRequest.data,
-                  value: lifiData.transactionRequest.value || '0x0'
+                  to: targetRouter,
+                  data: txBytesToExecute,
+                  value: lifiData?.transactionRequest?.value || '0x0'
                }]
             });
             
