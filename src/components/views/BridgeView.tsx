@@ -18,7 +18,7 @@ const LiFiWidget = dynamic(
 
 import { WagmiProvider, createConfig, http, useConnect, useDisconnect, useAccount } from 'wagmi';
 import { mainnet, arbitrum, optimism, base, polygon, avalanche } from 'wagmi/chains';
-import { injected } from 'wagmi/connectors';
+import { injected, metaMask, safe } from 'wagmi/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useEffect } from 'react';
 
@@ -36,6 +36,8 @@ const wagmiConfig = createConfig({
   chains: [arcMainnet, mainnet, arbitrum, optimism, base, polygon, avalanche],
   connectors: [
     injected(),
+    metaMask(),
+    safe(),
   ],
   transports: {
     [arcMainnet.id]: http(),
@@ -54,13 +56,14 @@ function WalletSync() {
   const { disconnect } = useDisconnect();
   const { isConnected } = useAccount();
 
+  const hasAttemptedConnect = React.useRef(false);
+
   useEffect(() => {
-    if (walletConnected && !isConnected) {
-      const injectedConnector = connectors.find(c => c.type === 'injected' || c.id === 'injected');
-      if (injectedConnector) {
-        connect({ connector: injectedConnector });
-      }
+    if (walletConnected && !isConnected && connectors.length > 0 && !hasAttemptedConnect.current) {
+      hasAttemptedConnect.current = true;
+      connect({ connector: connectors[0] });
     } else if (!walletConnected && isConnected) {
+      hasAttemptedConnect.current = false;
       disconnect();
     }
   }, [walletConnected, isConnected, connectors, connect, disconnect]);
