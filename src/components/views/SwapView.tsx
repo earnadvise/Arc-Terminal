@@ -574,6 +574,7 @@ export default function SwapView() {
                 value={fromToken}
                 onChange={setFromToken}
                 exclude={toToken}
+                tokens={dynamicTokens}
               />
             </div>
 
@@ -619,6 +620,7 @@ export default function SwapView() {
                 value={toToken}
                 onChange={setToToken}
                 exclude={fromToken}
+                tokens={dynamicTokens}
               />
             </div>
 
