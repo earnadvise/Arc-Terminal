@@ -16,10 +16,11 @@ const LiFiWidget = dynamic(
   }
 );
 
-import { WagmiProvider, createConfig, http } from 'wagmi';
+import { WagmiProvider, createConfig, http, useConnect, useDisconnect, useAccount } from 'wagmi';
 import { mainnet, arbitrum, optimism, base, polygon, avalanche } from 'wagmi/chains';
 import { injected } from 'wagmi/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { useEffect } from 'react';
 
 const arcMainnet = {
   id: 5042,
@@ -47,13 +48,34 @@ const wagmiConfig = createConfig({
   },
 });
 
+function WalletSync() {
+  const { walletConnected } = useAppState();
+  const { connect, connectors } = useConnect();
+  const { disconnect } = useDisconnect();
+  const { isConnected } = useAccount();
+
+  useEffect(() => {
+    if (walletConnected && !isConnected) {
+      const injectedConnector = connectors.find(c => c.type === 'injected' || c.id === 'injected');
+      if (injectedConnector) {
+        connect({ connector: injectedConnector });
+      }
+    } else if (!walletConnected && isConnected) {
+      disconnect();
+    }
+  }, [walletConnected, isConnected, connectors, connect, disconnect]);
+
+  return null;
+}
+
 export default function BridgeView() {
-  const { isDarkMode } = useAppState();
+  const { isDarkMode, walletConnected, connectWallet } = useAppState();
 
   const widgetConfig = useMemo<WidgetConfig>(() => {
     return {
       integrator: 'ArcTerminal',
       appearance: isDarkMode ? 'dark' : 'light',
+      hiddenUI: ['walletMenu'] as any, // Hides the top right wallet button on the widget
       containerStyle: {
         border: isDarkMode ? '1px solid #1f1f2e' : '1px solid rgb(234, 234, 234)',
         borderRadius: '16px',
@@ -79,7 +101,19 @@ export default function BridgeView() {
 
   return (
     <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 flex items-center justify-center min-h-[calc(100vh-140px)] select-none animate-fadeIn">
-      <div className="w-full max-w-[480px] space-y-4 my-auto">
+      <div className="w-full max-w-[480px] space-y-4 my-auto relative">
+        {/* If the main app wallet isn't connected, we can render an overlay here instead of showing the widget's connect button */}
+        {!walletConnected && (
+          <div className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 dark:bg-[#13131a]/80 backdrop-blur-sm rounded-[24px]">
+            <button
+              onClick={connectWallet}
+              className="px-6 py-3 rounded-[12px] bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-lg shadow-blue-500/25"
+            >
+              Connect Wallet to Bridge
+            </button>
+          </div>
+        )}
+
         <div className="flex items-center justify-between mb-4">
           <div>
             <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-wide">Bridge</h1>
@@ -90,6 +124,7 @@ export default function BridgeView() {
         <div className="bg-white dark:bg-[#13131a] rounded-[24px] border border-slate-100 dark:border-[#1f1f2e] shadow-[0_2px_20px_rgba(0,0,0,0.04)] overflow-hidden min-h-[500px]">
           <WagmiProvider config={wagmiConfig}>
             <QueryClientProvider client={queryClient}>
+              <WalletSync />
               <LiFiWidget integrator="ArcTerminal" config={widgetConfig} />
             </QueryClientProvider>
           </WagmiProvider>
