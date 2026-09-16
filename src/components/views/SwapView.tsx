@@ -276,7 +276,11 @@ export default function SwapView() {
             const amountInWei = toWei(parsed, fromData.dec);
 
             // 1. Fetch exact Quote & Tx Bytes from LI.FI API for Arc Mainnet (Chain 5042)
-            const lifiUrl = `https://li.quest/v1/quote?fromChain=5042&toChain=5042&fromToken=${fromData.addr}&toToken=${toData.addr}&fromAmount=${amountInWei.toString()}&fromAddress=${walletAddress}&slippage=${parseFloat(slippage) / 100}`;
+            // Note: If USDC is the native gas token, LI.FI expects the zero address!
+            const lifiFromAddr = fromToken === 'USDC' ? '0x0000000000000000000000000000000000000000' : fromData.addr;
+            const lifiToAddr = toToken === 'USDC' ? '0x0000000000000000000000000000000000000000' : toData.addr;
+
+            const lifiUrl = `https://li.quest/v1/quote?fromChain=5042&toChain=5042&fromToken=${lifiFromAddr}&toToken=${lifiToAddr}&fromAmount=${amountInWei.toString()}&fromAddress=${walletAddress}&slippage=${parseFloat(slippage) / 100}`;
             
             addNotification('info', 'LI.FI Aggregator', 'Fetching the best route across Arc Mainnet AMMs...');
             
@@ -296,23 +300,26 @@ export default function SwapView() {
             txBytesToExecute = lifiData.transactionRequest.data;
             targetRouter = lifiData.transactionRequest.to;
 
-            // 2. Check Allowance for the chosen router
+            // 2. Check Allowance for the chosen router (skip if native USDC)
             const { checkAllowance, encodeApprove } = await import('@/lib/swapRouter');
-            const currentAllowance = await checkAllowance(eth, fromData.addr, walletAddress, targetRouter);
             
-            if (currentAllowance < amountInWei) {
-               addNotification('info', 'Approve Required', `Approving ${fromToken} for Router...`);
-               const approveData = encodeApprove(targetRouter, amountInWei);
-               const approveTx = await eth.request({
-                 method: 'eth_sendTransaction',
-                 params: [{ from: walletAddress, to: fromData.addr, data: approveData }]
-               });
-               addNotification('success', 'Approval Submitted', 'Waiting for network confirmation...');
-               
-               // WAIT FOR APPROVAL TO MINE ON-CHAIN BEFORE SWAPPING
-               const { waitForTransaction } = await import('@/lib/swapRouter');
-               await waitForTransaction(eth, approveTx);
-               addNotification('success', 'Approval Confirmed', 'Proceeding with swap...');
+            if (fromToken !== 'USDC') {
+                const currentAllowance = await checkAllowance(eth, fromData.addr, walletAddress, targetRouter);
+                
+                if (currentAllowance < amountInWei) {
+                   addNotification('info', 'Approve Required', `Approving ${fromToken} for Router...`);
+                   const approveData = encodeApprove(targetRouter, amountInWei);
+                   const approveTx = await eth.request({
+                     method: 'eth_sendTransaction',
+                     params: [{ from: walletAddress, to: fromData.addr, data: approveData }]
+                   });
+                   addNotification('success', 'Approval Submitted', 'Waiting for network confirmation...');
+                   
+                   // WAIT FOR APPROVAL TO MINE ON-CHAIN BEFORE SWAPPING
+                   const { waitForTransaction } = await import('@/lib/swapRouter');
+                   await waitForTransaction(eth, approveTx);
+                   addNotification('success', 'Approval Confirmed', 'Proceeding with swap...');
+                }
             }
 
             // 3. Execute the optimal Swap!
