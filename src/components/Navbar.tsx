@@ -261,13 +261,6 @@ export default function Navbar() {
                   </button>
                 ))}
               </div>
-
-              <div className="flex gap-2 items-center mt-6 px-3 py-3 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/15">
-                <ShieldAlert size={16} className="text-[#ef4444] shrink-0" />
-                <p className="text-[10px] text-[#ef4444]/90 leading-normal">
-                  Make sure you are on the <strong>Arc Mainnet</strong>. Never deposit real funds.
-                </p>
-              </div>
             </motion.div>
           </div>
         )}

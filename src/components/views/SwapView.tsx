@@ -270,7 +270,6 @@ export default function SwapView() {
         const toData = getAddrAndDec(toToken);
 
         if (fromData && toData) {
-          addNotification('info', 'Arc Router', 'Routing swap through Arc Unified Liquidity Layer...');
           try {
             const { toWei } = await import('@/lib/swapRouter');
             const amountInWei = toWei(parsed, fromData.dec);
@@ -340,7 +339,7 @@ export default function SwapView() {
             });
             
           } catch (onChainErr: any) {
-            console.warn('LI.FI execution error:', onChainErr);
+            console.warn('Execution error:', onChainErr);
             addNotification('error', 'Swap Failed', onChainErr.message || 'Transaction rejected or failed.');
             setIsSwapping(false);
             return;
