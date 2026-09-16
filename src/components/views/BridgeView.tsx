@@ -186,7 +186,7 @@ export default function BridgeView() {
             if (allowance < BigInt(amountInWei)) {
                 setStep('APPROVING');
                 console.log('[LI.FI] Approving USDC...');
-                const tx = await usdcContract.approve(approvalAddress, ethers.MaxUint256);
+                const tx = await usdcContract.approve(approvalAddress, amountInWei);
                 await tx.wait();
             }
         }
@@ -208,7 +208,16 @@ export default function BridgeView() {
         
         setStep('SUCCESS');
         setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
-        setCompletedSteps([{ name: 'burn', txHash: tx.hash, explorerUrl: `https://arcscan.io/tx/${tx.hash}` }] as any);
+        
+        let explorerBase = 'https://arcscan.io/tx/';
+        if (fromNet === 'Ethereum') explorerBase = 'https://etherscan.io/tx/';
+        if (fromNet === 'Arbitrum') explorerBase = 'https://arbiscan.io/tx/';
+        if (fromNet === 'Optimism') explorerBase = 'https://optimistic.etherscan.io/tx/';
+        if (fromNet === 'Base') explorerBase = 'https://basescan.org/tx/';
+        if (fromNet === 'Polygon') explorerBase = 'https://polygonscan.com/tx/';
+        if (fromNet === 'Avalanche') explorerBase = 'https://snowtrace.io/tx/';
+
+        setCompletedSteps([{ name: 'burn', txHash: tx.hash, explorerUrl: `${explorerBase}${tx.hash}` }] as any);
         addNotification('success', 'Bridge Complete', 'USDC successfully bridged via LI.FI!');
         setTimeout(() => resetState(), 10000);
 
