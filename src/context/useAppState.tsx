@@ -238,7 +238,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [balances, setBalances] = useState({
     USDC: 0,
     walletUSDC: 0,
-    marginUSDC: prev.marginUSDC,
+    marginUSDC: 0,
     BTC: 0,
     ETH: 0,
     SOL: 0,
@@ -391,7 +391,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         return {
           USDC: nextWalletUSDC,
           walletUSDC: nextWalletUSDC,
-          marginUSDC: prev.marginUSDC,
+          marginUSDC: 0,
           BTC: nextCirBTC,
           ETH: 0,
           SOL: 0,
