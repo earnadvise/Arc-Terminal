@@ -16,6 +16,37 @@ const LiFiWidget = dynamic(
   }
 );
 
+import { WagmiProvider, createConfig, http } from 'wagmi';
+import { mainnet, arbitrum, optimism, base, polygon, avalanche } from 'wagmi/chains';
+import { injected } from 'wagmi/connectors';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const arcMainnet = {
+  id: 5042,
+  name: 'Arc Mainnet',
+  nativeCurrency: { name: 'USDC', symbol: 'USDC', decimals: 18 },
+  rpcUrls: { default: { http: ['https://rpc.mainnet.arc.io'] } },
+  blockExplorers: { default: { name: 'ArcScan', url: 'https://arcscan.io' } },
+} as any;
+
+const queryClient = new QueryClient();
+
+const wagmiConfig = createConfig({
+  chains: [arcMainnet, mainnet, arbitrum, optimism, base, polygon, avalanche],
+  connectors: [
+    injected(),
+  ],
+  transports: {
+    [arcMainnet.id]: http(),
+    [mainnet.id]: http(),
+    [arbitrum.id]: http(),
+    [optimism.id]: http(),
+    [base.id]: http(),
+    [polygon.id]: http(),
+    [avalanche.id]: http(),
+  },
+});
+
 export default function BridgeView() {
   const { isDarkMode } = useAppState();
 
@@ -57,7 +88,11 @@ export default function BridgeView() {
         </div>
 
         <div className="bg-white dark:bg-[#13131a] rounded-[24px] border border-slate-100 dark:border-[#1f1f2e] shadow-[0_2px_20px_rgba(0,0,0,0.04)] overflow-hidden min-h-[500px]">
-          <LiFiWidget integrator="ArcTerminal" config={widgetConfig} />
+          <WagmiProvider config={wagmiConfig}>
+            <QueryClientProvider client={queryClient}>
+              <LiFiWidget integrator="ArcTerminal" config={widgetConfig} />
+            </QueryClientProvider>
+          </WagmiProvider>
         </div>
       </div>
     </main>
