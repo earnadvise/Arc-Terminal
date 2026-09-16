@@ -231,6 +231,21 @@ export default function SwapView() {
     fetch('https://li.quest/v1/tokens?chains=5042')
       .then(res => res.json())
       .then(data => {
+        let mergedTokens: TokenMeta[] = [];
+        
+        // Add hardcoded Arc tokens first
+        Object.entries(ARC_TOKENS).forEach(([symbol, info]) => {
+          mergedTokens.push({
+            symbol: info.name === symbol ? symbol : info.name,
+            name: info.name,
+            decimals: info.decimals,
+            color: '#64748b',
+            address: info.address,
+            icon: ''
+          });
+        });
+
+        // Add LI.FI tokens, skipping duplicates
         if (data.tokens && data.tokens['5042']) {
           const lifiTokens = data.tokens['5042'].map((t: any) => ({
             symbol: t.symbol,
@@ -240,8 +255,19 @@ export default function SwapView() {
             address: t.address,
             icon: t.logoURI
           }));
-          setDynamicTokens(lifiTokens);
+          
+          lifiTokens.forEach((lt: TokenMeta) => {
+             const exists = mergedTokens.find(mt => mt.address.toLowerCase() === lt.address.toLowerCase());
+             if (exists) {
+                exists.icon = lt.icon || exists.icon;
+                exists.symbol = lt.symbol;
+             } else {
+                mergedTokens.push(lt);
+             }
+          });
         }
+        
+        setDynamicTokens(mergedTokens);
       })
       .catch(e => console.warn('Failed to load LI.FI tokens:', e));
   }, []);
@@ -295,12 +321,23 @@ export default function SwapView() {
           if (data.estimate?.toAmount) {
             setRealReceived(Number(formatUnits(data.estimate.toAmount, toData.dec)));
           } else {
-            setRealReceived(null);
+            // Fallback to on-chain pool exchange rate if LI.FI quote fails
+            const { getPoolExchangeRate } = await import('@/lib/swapRouter');
+            const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+            const rate = await getPoolExchangeRate(eth, fromToken, toToken);
+            setRealReceived(parsed * rate);
           }
         }
       } catch (e) {
-        console.warn('Quote fetch failed:', e);
-        setRealReceived(null);
+        console.warn('Quote fetch failed, using fallback:', e);
+        try {
+          const { getPoolExchangeRate } = await import('@/lib/swapRouter');
+          const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+          const rate = await getPoolExchangeRate(eth, fromToken, toToken);
+          setRealReceived(parsed * rate);
+        } catch (e2) {
+          setRealReceived(null);
+        }
       } finally {
         setIsQuoting(false);
       }
