@@ -20,7 +20,7 @@ import { WagmiProvider, createConfig, http, useConnect, useDisconnect, useAccoun
 import { mainnet, arbitrum, optimism, base, polygon, avalanche } from 'wagmi/chains';
 import { injected, metaMask, safe } from 'wagmi/connectors';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const arcMainnet = {
   id: 5042,
@@ -32,13 +32,14 @@ const arcMainnet = {
 
 const queryClient = new QueryClient();
 
-const wagmiConfig = createConfig({
+// Create config outside but don't export it yet, we will recreate it in a state
+const getWagmiConfig = () => createConfig({
   chains: [arcMainnet, mainnet, arbitrum, optimism, base, polygon, avalanche],
-  connectors: [
+  connectors: typeof window !== 'undefined' ? [
+    injected({ target: 'rabby' }),
+    injected({ target: 'metaMask' }),
     injected(),
-    metaMask(),
-    safe(),
-  ],
+  ] : [],
   transports: {
     [arcMainnet.id]: http(),
     [mainnet.id]: http(),
@@ -61,7 +62,13 @@ function WalletSync() {
   useEffect(() => {
     if (walletConnected && !isConnected && connectors.length > 0 && !hasAttemptedConnect.current) {
       hasAttemptedConnect.current = true;
-      connect({ connector: connectors[0] });
+      const rabby = connectors.find(c => c.id.toLowerCase().includes('rabby'));
+      const metaMask = connectors.find(c => c.id.toLowerCase().includes('metamask'));
+      const injected = connectors.find(c => c.id === 'injected' || c.type === 'injected');
+      const targetConnector = rabby || metaMask || injected || connectors[0];
+      
+      console.log('WalletSync connecting with:', targetConnector);
+      connect({ connector: targetConnector });
     } else if (!walletConnected && isConnected) {
       hasAttemptedConnect.current = false;
       disconnect();
@@ -102,6 +109,8 @@ export default function BridgeView() {
     };
   }, [isDarkMode]);
 
+  const [config] = useState(() => getWagmiConfig());
+
   return (
     <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 flex items-center justify-center min-h-[calc(100vh-140px)] select-none animate-fadeIn">
       <div className="w-full max-w-[480px] space-y-4 my-auto relative">
@@ -125,7 +134,7 @@ export default function BridgeView() {
         </div>
 
         <div className="bg-white dark:bg-[#13131a] rounded-[24px] border border-slate-100 dark:border-[#1f1f2e] shadow-[0_2px_20px_rgba(0,0,0,0.04)] overflow-hidden min-h-[500px]">
-          <WagmiProvider config={wagmiConfig}>
+          <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
               <WalletSync />
               <LiFiWidget integrator="ArcTerminal" config={widgetConfig} />
