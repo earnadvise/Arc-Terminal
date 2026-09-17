@@ -791,7 +791,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
           addNotification('success', 'Transaction Submitted', `Open Position sent: ${txHash.slice(0, 10)}...`, txHash);
   
-          // Optimistically deduct margin
+          // Deduct margin
           setBalances(prev => ({
             ...prev,
             marginUSDC: prev.marginUSDC - requiredMargin
@@ -904,7 +904,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           
           addNotification('success', 'Limit Order Placed', `Transaction sent: ${txHash.slice(0, 10)}...`, txHash);
           
-          // Optimistically deduct margin
+          // Deduct margin
           setBalances(prev => ({
             ...prev,
             marginUSDC: prev.marginUSDC - requiredMargin
@@ -1201,12 +1201,21 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     addNotification('info', 'Initiating Deposit', 'Checking allowance and preparing transactions...');
     try {
-      // Get collateral token address
-      const tokenRes = await eth.request({
-        method: 'eth_call',
-        params: [{ to: MARGIN_ADDRESS, data: '0xb2016bd4' }, 'latest']
-      });
-      const tokenAddress = '0x' + tokenRes.slice(-40);
+      // Fallback USDC address on Arc Mainnet (Synthra USDG)
+      let tokenAddress = '0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168';
+      
+      try {
+        // Get collateral token address from Margin contract
+        const tokenRes = await eth.request({
+          method: 'eth_call',
+          params: [{ to: MARGIN_ADDRESS, data: '0xb2016bd4' }, 'latest']
+        });
+        if (tokenRes && tokenRes !== '0x' && tokenRes.length >= 40) {
+          tokenAddress = '0x' + tokenRes.slice(-40);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch collateral token from margin contract, using fallback');
+      }
 
       // Check allowance
       const allowanceData = '0xdd62ed3e' + padAddress(walletAddress) + padAddress(MARGIN_ADDRESS);
