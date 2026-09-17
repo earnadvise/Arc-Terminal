@@ -391,7 +391,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         return {
           USDC: nextWalletUSDC,
           walletUSDC: nextWalletUSDC,
-          marginUSDC: 0,
+          marginUSDC: prev.marginUSDC,
           BTC: nextCirBTC,
           ETH: 0,
           SOL: 0,
