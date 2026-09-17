@@ -238,6 +238,7 @@ export default function SwapView() {
   const [dynamicTokens, setDynamicTokens] = useState<TokenMeta[]>(TOKENS);
   
   const [isProMode, setIsProMode] = useState(false);
+  const [timeframe, setTimeframe] = useState('1D');
   const [isMevProtected, setIsMevProtected] = useState(true);
 
 
@@ -594,8 +595,8 @@ export default function SwapView() {
                   </div>
                 </div>
                 <div className="flex gap-2 p-1 bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] rounded-xl">
-                  {['1H', '1D', '1W', '1M'].map((tf, i) => (
-                    <button key={tf} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${i===1 ? 'bg-white dark:bg-[#1f1f2e] shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>{tf}</button>
+                  {['1H', '1D', '1W', '1M'].map((tf) => (
+                    <button key={tf} onClick={() => setTimeframe(tf)} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${timeframe === tf ? 'bg-white dark:bg-[#1f1f2e] shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>{tf}</button>
                   ))}
                 </div>
               </div>
