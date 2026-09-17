@@ -170,17 +170,17 @@ export async function getPoolExchangeRate(
   tokenOutSymbol: string,
 ): Promise<number> {
   const poolAddress = getPoolAddress(tokenInSymbol, tokenOutSymbol);
-  if (!poolAddress) return 1.0;
+  if (!poolAddress) return 0;
 
   try {
     // slot0() selector: 0x3850c7bd
     const result = await rpcCall(poolAddress, '0x3850c7bd');
-    if (!result) return 1.0;
+    if (!result) return 0;
 
     const raw = result.replace('0x', '');
     const sqrtPriceX96Hex = raw.substring(0, 64);
     const sqrtPriceX96 = BigInt('0x' + sqrtPriceX96Hex);
-    if (sqrtPriceX96 === BigInt(0)) return 1.0;
+    if (sqrtPriceX96 === BigInt(0)) return 0;
 
     const Q96 = BigInt(2) ** BigInt(96);
     const priceRatio = Number(sqrtPriceX96) / Number(Q96);
@@ -188,7 +188,7 @@ export async function getPoolExchangeRate(
     
     const tIn = ARC_TOKENS[tokenInSymbol];
     const tOut = ARC_TOKENS[tokenOutSymbol];
-    if (!tIn || !tOut) return 1.0;
+    if (!tIn || !tOut) return 0;
 
     const isTokenInToken0 = tIn.address.toLowerCase().localeCompare(tOut.address.toLowerCase()) < 0;
     
@@ -207,7 +207,7 @@ export async function getPoolExchangeRate(
   } catch (e) {
     console.error('Error fetching pool price:', e);
   }
-  return 1.0; // fallback to 1:1 if RPC fails
+  return 0; // fallback to 0 if RPC fails
 }
 
 // ─── Calculate Minimum Output ─────────────────────────────────────
