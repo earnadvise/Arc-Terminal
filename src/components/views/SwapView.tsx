@@ -216,6 +216,11 @@ function TokenSelector({
 }
 
 export default function SwapView() {
+  const formatTokenAmount = (amount: number) => {
+    if (!amount || amount === 0) return '0';
+    if (amount < 0.0001) return amount.toExponential(2);
+    return amount.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  };
   const { walletConnected, walletAddress, balances, setBalances, addNotification, addHistoryItem, claimFaucet, markets, getProvider } = useAppState();
 
   const [fromToken, setFromToken] = useState('USDC');
@@ -314,7 +319,7 @@ export default function SwapView() {
     : effectiveExchangeRate.toFixed(4);
 
   // Optimistic Estimated output
-  const optimisticReceived = parsed > 0 ? Number(((parsed * fromPrice) / toPrice).toFixed(4)) : 0;
+  const optimisticReceived = parsed > 0 ? (parsed * fromPrice) / toPrice : 0;
   const received = realReceived !== null ? realReceived : optimisticReceived;
 
   // Debounced quote fetcher
@@ -781,7 +786,7 @@ export default function SwapView() {
 
                 <div className="flex items-center justify-between gap-4">
                   <div className={`text-4xl font-black number-mono truncate ${isQuoting ? 'text-slate-300 dark:text-slate-700 animate-pulse' : 'text-slate-900 dark:text-white'}`}>
-                    {received > 0 ? received.toLocaleString(undefined, { maximumFractionDigits: 4 }) : '0'}
+                    {received > 0 ? formatTokenAmount(received) : '0'}
                   </div>
                   <div className="shrink-0">
                     <TokenSelector value={toToken} onChange={setToToken} exclude={fromToken} tokens={dynamicTokens} />
@@ -855,7 +860,7 @@ export default function SwapView() {
                     <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
                       <span className="font-medium">Minimum Received</span>
                       <span className="text-slate-900 dark:text-white number-mono font-bold">
-                        {(received * (1 - parseFloat(slippage)/100)).toFixed(4)} {toToken}
+                        {formatTokenAmount(received * (1 - parseFloat(slippage)/100))} {toToken}
                       </span>
                     </div>
                     <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
