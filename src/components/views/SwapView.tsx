@@ -5,6 +5,8 @@ import { createPortal } from 'react-dom';
 import { useAppState } from '@/context/useAppState';
 import { ArrowUpDown, ChevronDown, Settings, Info, Zap, CircleAlert, RefreshCw, ExternalLink, CheckCircle2, X, Search, Star, BadgeCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart as LucideLineChart, Activity, ShieldCheck } from 'lucide-react';
 import { AppKit } from '@circle-fin/app-kit';
 import { createEthersAdapterFromProvider } from '@circle-fin/adapter-ethers-v6';
 
@@ -225,7 +227,18 @@ export default function SwapView() {
   const [realReceived, setRealReceived] = useState<number | null>(null);
   const [isQuoting, setIsQuoting] = useState(false);
   
+  
   const [dynamicTokens, setDynamicTokens] = useState<TokenMeta[]>(TOKENS);
+  
+  const [isProMode, setIsProMode] = useState(false);
+  const [isMevProtected, setIsMevProtected] = useState(true);
+
+  // Mock chart data for Pro mode
+  const mockChartData = Array.from({ length: 24 }).map((_, i) => ({
+    time: `${i}:00`,
+    price: fromPrice > 0 ? (fromPrice / toPrice) * (1 + (Math.random() - 0.5) * 0.05) : 1
+  }));
+
   
   useEffect(() => {
     fetch('https://li.quest/v1/tokens?chains=5042')
@@ -514,291 +527,416 @@ export default function SwapView() {
   const fromToken_ = TOKENS.find(t => t.symbol === fromToken)!;
 
   return (
-    <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 flex items-center justify-center min-h-[calc(100vh-140px)] select-none animate-fadeIn">
+    <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 min-h-[calc(100vh-140px)] select-none animate-fadeIn flex flex-col">
+      {/* PRO MODE TOGGLE */}
+      <div className="w-full flex justify-end mb-4 lg:mb-6">
+        <button
+          onClick={() => setIsProMode(!isProMode)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all border shadow-sm cursor-pointer ${
+            isProMode 
+            ? 'bg-[#8b5cf6]/10 border-[#8b5cf6]/30 text-[#8b5cf6]' 
+            : 'bg-white dark:bg-[#13131a] border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white'
+          }`}
+        >
+          <LucideLineChart size={16} />
+          {isProMode ? 'Pro Mode Active' : 'Enable Pro Mode'}
+        </button>
+      </div>
 
-      {/* ── CENTERED SWAP CARD ─────────────────────────────────────────── */}
-      <div className="w-full max-w-[480px] space-y-4 my-auto">
-
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-wide">Swap</h1>
-            <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-0.5">Instant token swaps on Arc Mainnet</p>
-          </div>
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-xl border transition-all ${showSettings ? 'bg-[#8b5cf6]/15 border-[#8b5cf6]/40 text-[#8b5cf6]' : 'bg-white dark:bg-[#13131a] border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white'}`}
-          >
-            <Settings size={16} />
-          </button>
-        </div>
-
-        {/* Settings Drawer */}
-        <AnimatePresence>
-          {showSettings && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden"
-            >
-              <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-2xl p-4 space-y-3">
-                <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wide">Swap Settings</div>
+      <div className={`w-full flex-1 flex flex-col ${isProMode ? 'lg:flex-row items-start' : 'items-center justify-center'} gap-6`}>
+        
+        {/* LEFT COLUMN: PRO CHART (ONLY IN PRO MODE) */}
+        {isProMode && (
+          <div className="flex-[2] flex flex-col gap-4 w-full">
+            <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-3xl p-6 shadow-2xl flex-1 flex flex-col min-h-[500px]">
+              <div className="flex justify-between items-start mb-6">
                 <div>
-                  <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mb-2">Max Slippage</div>
-                  <div className="flex gap-2">
-                    {['0.1', '0.5', '1.0'].map(s => (
-                      <button
-                        key={s}
-                        onClick={() => setSlippage(s)}
-                        className={`px-3 py-1.5 text-xs font-bold rounded-lg border transition-all ${
-                          slippage === s ? 'bg-[#8b5cf6]/20 border-[#8b5cf6]/50 text-[#8b5cf6]' : 'bg-slate-50 dark:bg-[#0c0c10] border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e]'
-                        }`}
-                      >
-                        {s}%
-                      </button>
-                    ))}
-                    <div className="relative flex-1">
-                      <input
-                        value={slippage}
-                        onChange={e => setSlippage(e.target.value)}
-                        className="w-full bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/40 rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white number-mono outline-none text-right pr-6"
-                      />
-                      <span className="absolute right-2.5 top-1.5 text-xs text-slate-500 dark:text-[#8a8a9e]">%</span>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex -space-x-2">
+                      <div className="w-8 h-8 rounded-full bg-[#8b5cf6] border-2 border-white dark:border-[#13131a] flex items-center justify-center text-[10px] font-bold text-white z-10">{fromToken.substring(0,2)}</div>
+                      <div className="w-8 h-8 rounded-full bg-[#3b82f6] border-2 border-white dark:border-[#13131a] flex items-center justify-center text-[10px] font-bold text-white">{toToken.substring(0,2)}</div>
                     </div>
+                    <h2 className="text-2xl font-black text-slate-900 dark:text-white">{fromToken} / {toToken}</h2>
+                    <span className="px-2 py-1 rounded bg-[#10b981]/10 text-[#10b981] text-xs font-bold">+2.45%</span>
+                  </div>
+                  <div className="text-4xl font-mono font-black text-slate-900 dark:text-white">
+                    {(fromPrice / toPrice).toFixed(4)}
                   </div>
                 </div>
+                <div className="flex gap-2 p-1 bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] rounded-xl">
+                  {['1H', '1D', '1W', '1M'].map((tf, i) => (
+                    <button key={tf} className={`px-4 py-1.5 text-xs font-bold rounded-lg transition-colors cursor-pointer ${i===1 ? 'bg-white dark:bg-[#1f1f2e] shadow-sm text-slate-900 dark:text-white' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}>{tf}</button>
+                  ))}
+                </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              
+              <div className="flex-1 w-full min-h-[350px] -ml-4">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={mockChartData}>
+                    <defs>
+                      <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fill: '#8a8a9e', fontSize: 12}} dy={10} />
+                    <YAxis domain={['auto', 'auto']} orientation="right" axisLine={false} tickLine={false} tick={{fill: '#8a8a9e', fontSize: 12}} dx={10} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#13131a', border: '1px solid #1f1f2e', borderRadius: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
+                      itemStyle={{ color: '#8b5cf6', fontWeight: 'bold' }}
+                      formatter={(value: any) => [Number(value).toFixed(4), 'Price']}
+                      labelStyle={{ color: '#8a8a9e', marginBottom: '4px' }}
+                    />
+                    <Area type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorPrice)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+          </div>
+        )}
 
-        {/* Swap Box Container */}
-        <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-2xl p-5 shadow-2xl space-y-3 relative">
+        {/* RIGHT COLUMN: SWAP CARD */}
+        <div className={`w-full max-w-[480px] ${isProMode ? 'flex-shrink-0' : 'mx-auto'} space-y-4`}>
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-wide">Swap</h1>
+              <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-0.5">Instant token swaps on Arc Mainnet</p>
+            </div>
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${showSettings ? 'bg-[#8b5cf6]/15 border-[#8b5cf6]/40 text-[#8b5cf6]' : 'bg-white dark:bg-[#13131a] border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white hover:border-[#8b5cf6]/40 shadow-sm'}`}
+            >
+              <Settings size={18} />
+            </button>
+          </div>
 
-          {/* Top subtle glow */}
-          <div className="absolute -top-12 -left-12 w-40 h-40 bg-[#8b5cf6]/10 rounded-full blur-2xl pointer-events-none" />
+          {/* Settings Drawer */}
+          <AnimatePresence>
+            {showSettings && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-3xl p-5 space-y-5 shadow-lg">
+                  <div className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Advanced Settings</div>
+                  
+                  {/* Slippage */}
+                  <div>
+                    <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mb-2 font-bold uppercase tracking-wide">Max Slippage</div>
+                    <div className="flex gap-2">
+                      {['0.1', '0.5', '1.0'].map(s => (
+                        <button
+                          key={s}
+                          onClick={() => setSlippage(s)}
+                          className={`flex-1 py-2 text-xs font-bold rounded-xl border transition-all cursor-pointer ${
+                            slippage === s ? 'bg-[#8b5cf6]/20 border-[#8b5cf6]/50 text-[#8b5cf6] shadow-[0_0_10px_rgba(139,92,246,0.1)]' : 'bg-slate-50 dark:bg-[#0c0c10] border-slate-200 dark:border-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] hover:bg-slate-100 dark:hover:bg-[#1f1f2e]'
+                          }`}
+                        >
+                          {s}%
+                        </button>
+                      ))}
+                      <div className="relative flex-[1.5]">
+                        <input
+                          value={slippage}
+                          onChange={e => setSlippage(e.target.value)}
+                          className="w-full h-full bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] focus:border-[#8b5cf6]/40 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white number-mono outline-none text-right pr-6 focus:ring-2 focus:ring-[#8b5cf6]/10 transition-all"
+                        />
+                        <span className="absolute right-3 top-[50%] -translate-y-[50%] text-xs text-slate-500 dark:text-[#8a8a9e] font-bold">%</span>
+                      </div>
+                    </div>
+                  </div>
 
-          {/* YOU PAY PANEL */}
-          <div className="relative z-20 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 space-y-2 focus-within:border-[#8b5cf6]/40 transition-all">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-500 dark:text-[#8a8a9e] font-semibold">You Pay</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 dark:text-[#8a8a9e]">Balance:</span>
-                <span className="text-slate-900 dark:text-white font-bold number-mono">
-                  {fromBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })} {fromToken}
-                </span>
-                {fromBalance > 0 && (
-                  <button
-                    onClick={() => setFromAmount(fromBalance.toString())}
-                    className="text-[10px] font-bold text-[#8b5cf6] hover:text-[#a78bfa] bg-[#8b5cf6]/10 px-1.5 py-0.5 rounded transition-all ml-1 cursor-pointer"
-                  >
-                    MAX
-                  </button>
+                  {/* MEV Protection */}
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-[#1f1f2e]">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck size={16} className={isMevProtected ? "text-[#10b981]" : "text-slate-400"} />
+                      <div>
+                        <div className="text-xs font-bold text-slate-700 dark:text-slate-300">MEV Protection</div>
+                        <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e]">Hide trade from public mempool</div>
+                      </div>
+                    </div>
+                    <button 
+                      onClick={() => setIsMevProtected(!isMevProtected)}
+                      className={`relative w-12 h-6 rounded-full transition-colors cursor-pointer ${isMevProtected ? 'bg-[#10b981]' : 'bg-slate-300 dark:bg-[#1f1f2e]'}`}
+                    >
+                      <div className={`absolute top-1 left-1 w-4 h-4 rounded-full bg-white transition-transform ${isMevProtected ? 'translate-x-6' : ''} shadow-sm`} />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Swap Box Container */}
+          <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] rounded-[32px] p-2 shadow-2xl relative overflow-hidden group/swapbox">
+            
+            {/* Background glow effects */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-[#3b82f6]/5 rounded-full blur-3xl pointer-events-none group-hover/swapbox:bg-[#3b82f6]/10 transition-colors duration-700" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-[#8b5cf6]/5 rounded-full blur-3xl pointer-events-none group-hover/swapbox:bg-[#8b5cf6]/10 transition-colors duration-700" />
+
+            <div className="relative z-10 flex flex-col gap-1">
+              {/* YOU PAY PANEL */}
+              <div className="bg-slate-50/80 dark:bg-[#0c0c10]/80 border border-transparent focus-within:border-[#8b5cf6]/30 focus-within:bg-white dark:focus-within:bg-[#13131a] rounded-[24px] p-5 transition-all hover:bg-slate-100/50 dark:hover:bg-[#1f1f2e]/30">
+                <div className="flex justify-between items-center text-xs mb-4">
+                  <span className="text-slate-500 dark:text-[#8a8a9e] font-bold tracking-widest uppercase text-[10px]">You Pay</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-400 dark:text-slate-500">Balance:</span>
+                    <span className="text-slate-900 dark:text-white font-bold number-mono">
+                      {fromBalance.toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                    </span>
+                    {fromBalance > 0 && (
+                      <button
+                        onClick={() => setFromAmount(fromBalance.toString())}
+                        className="text-[10px] font-bold text-[#8b5cf6] hover:text-[#a78bfa] bg-[#8b5cf6]/10 px-2 py-0.5 rounded-md transition-all ml-1 cursor-pointer hover:bg-[#8b5cf6]/20"
+                      >
+                        MAX
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <input
+                    type="number"
+                    placeholder="0"
+                    value={fromAmount}
+                    onChange={e => setFromAmount(e.target.value)}
+                    className="w-full bg-transparent text-4xl font-black text-slate-900 dark:text-white number-mono outline-none placeholder-slate-300 dark:placeholder-[#2a2a3a]"
+                  />
+                  <div className="shrink-0">
+                    <TokenSelector value={fromToken} onChange={setFromToken} exclude={toToken} tokens={dynamicTokens} />
+                  </div>
+                </div>
+
+                {parsed > 0 && (
+                  <div className="text-[12px] font-medium text-slate-500 dark:text-[#8a8a9e] number-mono mt-3">
+                    ≈ ${(parsed * fromPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                )}
+              </div>
+
+              {/* SWAP FLIP BUTTON */}
+              <div className="absolute left-[50%] top-[calc(50%-18px)] -translate-x-[50%] -translate-y-[50%] z-30">
+                <button
+                  onClick={() => {
+                    const prev = fromToken;
+                    setFromToken(toToken);
+                    setToToken(prev);
+                    setFromAmount('');
+                  }}
+                  className="p-2.5 rounded-2xl bg-white dark:bg-[#1f1f2e] border-4 border-white dark:border-[#13131a] hover:bg-slate-50 dark:hover:bg-[#2a2a3a] text-slate-400 hover:text-[#8b5cf6] transition-all cursor-pointer shadow-md hover:shadow-xl hover:scale-105 active:scale-95 group"
+                >
+                  <ArrowUpDown size={18} className="group-hover:rotate-180 transition-transform duration-500 ease-out" />
+                </button>
+              </div>
+
+              {/* YOU RECEIVE PANEL */}
+              <div className="bg-slate-50/80 dark:bg-[#0c0c10]/80 border border-transparent rounded-[24px] p-5 transition-all hover:bg-slate-100/50 dark:hover:bg-[#1f1f2e]/30 mt-1">
+                <div className="flex justify-between items-center text-xs mb-4">
+                  <span className="text-slate-500 dark:text-[#8a8a9e] font-bold tracking-widest uppercase text-[10px]">You Receive</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-slate-400 dark:text-slate-500">Balance:</span>
+                    <span className="text-slate-900 dark:text-white font-bold number-mono">
+                      {((balances as any)[toToken] ?? 0).toLocaleString(undefined, { maximumFractionDigits: 4 })}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-4">
+                  <div className={`text-4xl font-black number-mono truncate ${isQuoting ? 'text-slate-300 dark:text-slate-700 animate-pulse' : 'text-slate-900 dark:text-white'}`}>
+                    {received > 0 ? received.toLocaleString(undefined, { maximumFractionDigits: 4 }) : '0'}
+                  </div>
+                  <div className="shrink-0">
+                    <TokenSelector value={toToken} onChange={setToToken} exclude={fromToken} tokens={dynamicTokens} />
+                  </div>
+                </div>
+
+                {received > 0 && (
+                  <div className="text-[12px] font-medium text-slate-500 dark:text-[#8a8a9e] number-mono mt-3">
+                    ≈ ${(received * toPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center justify-between gap-3">
-              <input
-                type="number"
-                placeholder="0.0"
-                value={fromAmount}
-                onChange={e => setFromAmount(e.target.value)}
-                className="w-full bg-transparent dark:text-white text-2xl font-black text-slate-900 dark:text-white number-mono outline-none placeholder-[#3a3a4a]"
-              />
-              <TokenSelector
-                value={fromToken}
-                onChange={setFromToken}
-                exclude={toToken}
-                tokens={dynamicTokens}
-              />
-            </div>
-
-            {parsed > 0 && (
-              <div className="text-[11px] text-slate-500 dark:text-[#8a8a9e] number-mono">
-                ≈ ${(parsed * fromPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
-              </div>
-            )}
-          </div>
-
-          {/* SWAP FLIP BUTTON */}
-          <div className="flex justify-center -my-1 relative z-10">
-            <button
-              onClick={() => {
-                const prev = fromToken;
-                setFromToken(toToken);
-                setToToken(prev);
-                setFromAmount('');
-              }}
-              className="p-2.5 rounded-xl bg-slate-100 dark:bg-[#1f1f2e] hover:bg-[#1c1c28] border border-[#232330] hover:border-[#8b5cf6]/40 text-[#8b5cf6] hover:text-slate-900 dark:hover:text-white dark:text-white transition-all cursor-pointer shadow-lg hover:rotate-180 duration-300"
-            >
-              <ArrowUpDown size={16} />
-            </button>
-          </div>
-
-          {/* YOU RECEIVE PANEL */}
-          <div className="relative z-10 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] rounded-xl p-4 space-y-2">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-slate-500 dark:text-[#8a8a9e] font-semibold">You Receive (Est.)</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-500 dark:text-[#8a8a9e]">Balance:</span>
-                <span className="text-slate-900 dark:text-white font-bold number-mono">
-                  {((balances as any)[toToken] ?? 0).toLocaleString(undefined, { maximumFractionDigits: 4 })} {toToken}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between gap-3">
-              <div className="text-2xl font-black text-slate-900 dark:text-white number-mono opacity-90">
-                {received > 0 ? received.toLocaleString(undefined, { maximumFractionDigits: 4 }) : '0.0'}
-              </div>
-              <TokenSelector
-                value={toToken}
-                onChange={setToToken}
-                exclude={fromToken}
-                tokens={dynamicTokens}
-              />
-            </div>
-
-            {received > 0 && (
-              <div className="text-[11px] text-slate-500 dark:text-[#8a8a9e] number-mono">
-                ≈ ${(received * toPrice).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
-              </div>
-            )}
-          </div>
-
-          {/* RATE & DETAILS SUMMARY */}
-          {parsed > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 bg-slate-50/50 dark:bg-[#0c0c10]/50 border border-slate-200 dark:border-[#1f1f2e] rounded-xl text-xs space-y-1.5"
-            >
-              <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
-                <span>Exchange Rate</span>
-                <span className="text-slate-900 dark:text-white number-mono font-semibold">
-                  1 {fromToken} = {(fromPrice / toPrice).toFixed(4)} {toToken}
-                </span>
-              </div>
-              <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
-                <span>Price Impact</span>
-                <span className="text-[#10b981] font-semibold">&lt; 0.01%</span>
-              </div>
-              <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
-                <span>Max Slippage</span>
-                <span className="text-slate-900 dark:text-white font-semibold">{slippage}%</span>
-              </div>
-              <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
-                <span>Network Fee</span>
-                <span className="text-slate-900 dark:text-white font-semibold">~0.001 ARC</span>
-              </div>
-            </motion.div>
-          )}
-
-          {/* SWAP ACTION BUTTON */}
-          {walletConnected ? (
-            <button
-              onClick={handleSwap}
-              disabled={isSwapping || parsed <= 0 || parsed > fromBalance}
-              className={`w-full py-4 rounded-xl font-bold text-sm transition-all shadow-xl cursor-pointer ${
-                isSwapping
-                  ? 'bg-sky-100 text-slate-500 dark:text-[#8a8a9e] border border-slate-200 dark:border-[#1f1f2e] cursor-not-allowed'
-                  : parsed > fromBalance
-                  ? 'bg-red-500/10 border border-red-500/30 text-[#ef4444] cursor-not-allowed'
-                  : parsed <= 0
-                  ? 'bg-slate-100 dark:bg-[#1f1f2e] border border-[#232330] text-slate-400 dark:text-slate-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 dark:text-white shadow-[0_0_25px_rgba(139,92,246,0.35)]'
-              }`}
-            >
-              {isSwapping ? (
-                <span className="flex items-center justify-center gap-2">
-                  <RefreshCw size={15} className="animate-spin" /> Swapping...
-                </span>
-              ) : parsed > fromBalance ? (
-                `Insufficient ${fromToken} Balance`
-              ) : parsed <= 0 ? (
-                'Enter Amount'
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <Zap size={15} />
-                  Swap {fromToken} → {toToken}
-                </span>
+            {/* ROUTING PATH (PRO MODE ONLY) */}
+            <AnimatePresence>
+              {isProMode && parsed > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="px-4 pb-2 pt-4"
+                >
+                  <div className="flex flex-col gap-3 p-3 rounded-2xl bg-slate-50/50 dark:bg-[#0c0c10]/50 border border-slate-100 dark:border-[#1f1f2e]">
+                    <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-[#8a8a9e]">
+                      <span className="uppercase font-bold tracking-wider">Best Route</span>
+                      <span className="text-[#10b981] font-bold">Save ~$1.45</span>
+                    </div>
+                    <div className="flex items-center gap-2 font-mono text-xs font-bold">
+                      <div className="flex items-center gap-1.5 bg-white dark:bg-[#13131a] px-2 py-1 rounded-lg border border-slate-200 dark:border-[#1f1f2e] shadow-sm">
+                        <span className="text-slate-900 dark:text-white">{fromToken}</span>
+                      </div>
+                      <span className="text-[#8b5cf6]">→</span>
+                      {fromToken !== 'ARC' && toToken !== 'ARC' && (
+                        <>
+                          <div className="flex items-center gap-1.5 bg-white dark:bg-[#13131a] px-2 py-1 rounded-lg border border-slate-200 dark:border-[#1f1f2e] shadow-sm text-slate-500 dark:text-slate-400">
+                            ARC
+                          </div>
+                          <span className="text-[#8b5cf6]">→</span>
+                        </>
+                      )}
+                      <div className="flex items-center gap-1.5 bg-white dark:bg-[#13131a] px-2 py-1 rounded-lg border border-slate-200 dark:border-[#1f1f2e] shadow-sm">
+                        <span className="text-slate-900 dark:text-white">{toToken}</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
               )}
-            </button>
-          ) : (
-            <div className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-[#ef4444]/5 border border-[#ef4444]/20 text-[#ef4444] text-xs font-semibold mt-1">
-              <CircleAlert size={14} className="animate-bounce shrink-0" />
-              Connect wallet to swap on Arc Mainnet
+            </AnimatePresence>
+
+            {/* RATE DETAILS EXPANDABLE */}
+            <AnimatePresence>
+              {parsed > 0 && !isQuoting && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="px-4"
+                >
+                  <div className="py-4 text-xs space-y-3">
+                    <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
+                      <span className="font-medium">Exchange Rate</span>
+                      <span className="text-slate-900 dark:text-white number-mono font-bold">
+                        1 {fromToken} = {(fromPrice / toPrice).toFixed(4)} {toToken}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
+                      <span className="font-medium">Price Impact</span>
+                      <span className="text-[#10b981] font-bold">&lt; 0.05%</span>
+                    </div>
+                    <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
+                      <span className="font-medium">Minimum Received</span>
+                      <span className="text-slate-900 dark:text-white number-mono font-bold">
+                        {(received * (1 - parseFloat(slippage)/100)).toFixed(4)} {toToken}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
+                      <span className="font-medium">Network Fee</span>
+                      <span className="text-slate-900 dark:text-white number-mono font-bold flex items-center gap-1">
+                        <Zap size={12} className="text-[#8b5cf6]"/> ~0.0012 ARC
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* SWAP ACTION BUTTON */}
+            <div className="mt-2 p-1">
+              {walletConnected ? (
+                <button
+                  onClick={handleSwap}
+                  disabled={isSwapping || parsed <= 0 || parsed > fromBalance || isQuoting}
+                  className={`relative w-full py-4 rounded-[20px] font-black text-sm transition-all overflow-hidden cursor-pointer ${
+                    isSwapping || isQuoting
+                      ? 'bg-slate-100 dark:bg-[#1f1f2e] text-slate-500 dark:text-[#8a8a9e] cursor-not-allowed'
+                      : parsed > fromBalance
+                      ? 'bg-red-500/10 text-[#ef4444] cursor-not-allowed border border-red-500/20'
+                      : parsed <= 0
+                      ? 'bg-slate-100 dark:bg-[#1f1f2e] text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                      : 'bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-white shadow-[0_0_25px_rgba(139,92,246,0.35)] hover:shadow-[0_0_35px_rgba(139,92,246,0.5)] transform hover:-translate-y-0.5'
+                  }`}
+                >
+                  {isSwapping ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <RefreshCw size={18} className="animate-spin" /> Swapping...
+                    </span>
+                  ) : isQuoting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <Activity size={18} className="animate-pulse" /> Finding optimal route...
+                    </span>
+                  ) : parsed > fromBalance ? (
+                    `Insufficient ${fromToken}`
+                  ) : parsed <= 0 ? (
+                    'Enter Amount'
+                  ) : (
+                    <span className="flex items-center justify-center gap-2 text-base">
+                      Swap {fromToken} <ArrowUpDown size={14} className="rotate-90 opacity-70" /> {toToken}
+                    </span>
+                  )}
+                </button>
+              ) : (
+                <div className="flex items-center justify-center gap-2 p-4 rounded-[20px] bg-[#ef4444]/10 border border-[#ef4444]/20 text-[#ef4444] text-xs font-bold shadow-inner">
+                  <CircleAlert size={14} className="animate-bounce shrink-0" />
+                  Connect wallet to swap
+                </div>
+              )}
             </div>
-          )}
+          </div>
+
+          {/* Powered by */}
+          <div className="flex items-center justify-center gap-2 text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mt-4">
+            <Zap size={10} className="text-[#8b5cf6]" />
+            Powered by Arc Mainnet
+          </div>
         </div>
 
-        {/* Powered by */}
-        <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 dark:text-slate-500">
-          <Zap size={11} className="text-[#8b5cf6]" />
-          Powered by Arc Mainnet AMM
-        </div>
       </div>
 
-      {/* ── TRANSACTION SUCCESS POPUP MODAL ───────────────────────── */}
+      {/* TRANSACTION SUCCESS MODAL */}
       <AnimatePresence>
         {txModalData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setTxModalData(null)}
-              className="fixed inset-0 bg-black/70 backdrop-blur-md"
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.95, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="relative w-full max-w-md rounded-2xl bg-white dark:bg-[#13131a] border border-[#8b5cf6]/40 p-6 shadow-[0_0_50px_rgba(139,92,246,0.25)] z-10 text-center space-y-4"
+              exit={{ scale: 0.95, opacity: 0, y: 20 }}
+              className="relative w-full max-w-sm rounded-3xl bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] p-6 shadow-2xl z-10 text-center flex flex-col items-center overflow-hidden"
             >
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6]" />
+              
               <button
                 onClick={() => setTxModalData(null)}
-                className="absolute top-4 right-4 text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white transition-colors"
+                className="absolute top-4 right-4 p-1 rounded-full text-slate-400 hover:text-slate-700 dark:hover:text-white transition-colors cursor-pointer"
               >
-                <X size={18} />
+                <X size={16} />
               </button>
 
-              <div className="w-14 h-14 rounded-full bg-[#10b981]/15 border border-[#10b981]/40 flex items-center justify-center mx-auto text-[#10b981]">
-                <CheckCircle2 size={32} />
+              <div className="w-16 h-16 rounded-full bg-[#10b981]/10 flex items-center justify-center text-[#10b981] mb-4 mt-2 shadow-inner">
+                <CheckCircle2 size={36} />
               </div>
 
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-900 dark:text-white tracking-wide">Swap Successful</h3>
-                <p className="text-xs text-slate-500 dark:text-[#8a8a9e] mt-1">
-                  Swapped <span className="text-slate-900 dark:text-white font-bold">{txModalData.fromAmt} {txModalData.from}</span> → <span className="text-[#10b981] font-bold">{txModalData.toAmt} {txModalData.to}</span>
-                </p>
-              </div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight mb-1">Swap Successful</h3>
+              <p className="text-sm text-slate-500 dark:text-[#8a8a9e] mb-6">
+                <span className="font-bold text-slate-900 dark:text-white">{txModalData.fromAmt} {txModalData.from}</span> has been converted to <span className="font-bold text-[#10b981]">{txModalData.toAmt} {txModalData.to}</span>
+              </p>
 
-              <div className="bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1f1f2e] p-3 rounded-xl text-left space-y-1">
-                <div className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-bold">Transaction Hash</div>
-                <div className="number-mono text-xs text-[#8b5cf6] break-all select-all font-semibold">
+              <div className="w-full bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] p-3 rounded-2xl text-left mb-6 shadow-sm">
+                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Transaction Hash</div>
+                <div className="text-xs text-[#8b5cf6] font-mono break-all font-medium">
                   {txModalData.hash}
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-2">
-                <a
-                  href={`https://arcscan.io/tx/${txModalData.hash}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#4f8ff7] hover:to-[#996cf7] text-slate-900 dark:text-white text-xs font-bold transition-all shadow-[0_0_15px_rgba(139,92,246,0.4)]"
-                >
-                  View on Arc Explorer <ExternalLink size={14} />
-                </a>
-                <button
-                  onClick={() => setTxModalData(null)}
-                  className="px-4 py-3 rounded-xl bg-slate-100 dark:bg-[#1f1f2e] hover:bg-[#1c1c28] text-xs font-semibold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:hover:text-white dark:text-white transition-colors"
-                >
-                  Close
-                </button>
-              </div>
+              <a
+                href={`https://arcscan.io/tx/${txModalData.hash}`}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full py-3.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg"
+              >
+                View on Arc Explorer <ExternalLink size={14} />
+              </a>
             </motion.div>
           </div>
         )}
