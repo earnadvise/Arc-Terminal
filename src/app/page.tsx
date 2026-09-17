@@ -95,7 +95,7 @@ export default function Home() {
                 <p className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mt-1 leading-normal">{n.message}</p>
                 {n.txHash && (
                   <a
-                    href={n.explorerUrl ? `${n.explorerUrl}/tx/${n.txHash}` : `https://arcscan.io/tx/${n.txHash}`}
+                    href={n.explorerUrl ? `${n.explorerUrl}/tx/${n.txHash}` : `https://explorer.arc.io/tx/${n.txHash}`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center gap-1 mt-2 text-[10px] font-bold text-[#8b5cf6] hover:text-[#a78bfa] transition-colors"

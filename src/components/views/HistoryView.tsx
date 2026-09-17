@@ -220,7 +220,7 @@ export default function HistoryView() {
                     <td className="px-4 text-right">
                       {item.txHash ? (
                         <a
-                          href={`https://arcscan.io/tx/${item.txHash}`}
+                          href={`https://explorer.arc.io/tx/${item.txHash}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-xs font-bold text-[#10b981] hover:underline"

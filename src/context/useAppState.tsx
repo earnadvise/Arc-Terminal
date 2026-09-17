@@ -665,7 +665,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
                 chainName: 'Arc Mainnet',
                 rpcUrls: ['https://rpc.mainnet.arc.io', 'https://rpc.quicknode.mainnet.arc.network/'],
                 nativeCurrency: { name: 'ARC', symbol: 'ARC', decimals: 18 },
-                blockExplorerUrls: ['https://arcscan.io']
+                blockExplorerUrls: ['https://explorer.arc.io']
               }]
             });
             await eth.request({

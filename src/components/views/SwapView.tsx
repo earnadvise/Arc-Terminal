@@ -611,13 +611,7 @@ export default function SwapView() {
               
               <div className="flex-1 w-full min-h-[350px] -ml-4">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={mockChartData}>
-                    <defs>
-                      <linearGradient id="colorPrice" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
-                        <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
+                  <LineChart data={mockChartData}>
                     <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fill: '#8a8a9e', fontSize: 12}} dy={10} />
                     <YAxis domain={['auto', 'auto']} orientation="right" axisLine={false} tickLine={false} tick={{fill: '#8a8a9e', fontSize: 12}} dx={10} />
                     <Tooltip 
@@ -635,8 +629,8 @@ export default function SwapView() {
                         return null;
                       }}
                     />
-                    <Area type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorPrice)" />
-                  </AreaChart>
+                    <Line type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={3} dot={false} activeDot={{ r: 6, fill: "#8b5cf6", stroke: "#fff", strokeWidth: 2 }} />
+                  </LineChart>
                 </ResponsiveContainer>
               </div>
             </div>
@@ -978,7 +972,7 @@ export default function SwapView() {
               </div>
 
               <a
-                href={`https://arcscan.io/tx/${txModalData.hash}`}
+                href={`https://explorer.arc.io/tx/${txModalData.hash}`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full py-3.5 rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-sm font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity shadow-lg"

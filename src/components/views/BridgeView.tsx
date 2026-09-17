@@ -209,7 +209,7 @@ export default function BridgeView() {
         setStep('SUCCESS');
         setBalances(prev => ({ ...prev, USDC: Math.max(0, prev.USDC - val) }));
         
-        let explorerBase = 'https://arcscan.io/tx/';
+        let explorerBase = 'https://explorer.arc.io/tx/';
         if (fromNet === 'Ethereum') explorerBase = 'https://etherscan.io/tx/';
         if (fromNet === 'Arbitrum') explorerBase = 'https://arbiscan.io/tx/';
         if (fromNet === 'Optimism') explorerBase = 'https://optimistic.etherscan.io/tx/';
@@ -460,7 +460,7 @@ export default function BridgeView() {
                           <div key={idx} className="flex justify-between items-center text-xs">
                             <span className="text-slate-500 dark:text-[#8a8a9e] font-medium capitalize">Transaction Hash</span>
                             <a 
-                              href={s.explorerUrl || `https://arcscan.io/tx/${s.txHash}`} 
+                              href={s.explorerUrl || `https://explorer.arc.io/tx/${s.txHash}`} 
                               target="_blank" 
                               rel="noreferrer"
                               className="text-blue-500 hover:underline flex items-center gap-1 font-semibold"
