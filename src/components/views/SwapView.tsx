@@ -233,11 +233,7 @@ export default function SwapView() {
   const [isProMode, setIsProMode] = useState(false);
   const [isMevProtected, setIsMevProtected] = useState(true);
 
-  // Mock chart data for Pro mode
-  const mockChartData = Array.from({ length: 24 }).map((_, i) => ({
-    time: `${i}:00`,
-    price: fromPrice > 0 ? (fromPrice / toPrice) * (1 + (Math.random() - 0.5) * 0.05) : 1
-  }));
+
 
   
   useEffect(() => {
@@ -525,6 +521,15 @@ export default function SwapView() {
 
   const toToken_ = TOKENS.find(t => t.symbol === toToken)!;
   const fromToken_ = TOKENS.find(t => t.symbol === fromToken)!;
+
+  
+  // Mock chart data for Pro mode
+  const mockChartData = React.useMemo(() => {
+    return Array.from({ length: 24 }).map((_, i) => ({
+      time: `${i}:00`,
+      price: fromPrice > 0 ? (fromPrice / toPrice) * (1 + (Math.random() - 0.5) * 0.05) : 1
+    }));
+  }, [fromPrice, toPrice]);
 
   return (
     <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 min-h-[calc(100vh-140px)] select-none animate-fadeIn flex flex-col">
