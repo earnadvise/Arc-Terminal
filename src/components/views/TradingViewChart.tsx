@@ -151,12 +151,14 @@ useEffect(() => {
   }, [tvSymbol, timeframe, isDarkMode]);
 
   return (
-    <div className={"w-full h-full relative"}>
-      
+    <div className={"w-full h-full relative flex flex-col"}>
       <div
-        className="tradingview-widget-container w-full h-full rounded-xl overflow-hidden"
+        className="tradingview-widget-container w-full flex-grow rounded-xl overflow-hidden"
         ref={containerRef}
       />
+      <div className="w-full text-right pr-2 pt-1 pb-1 text-xs text-gray-500">
+        Charts powered by <a href="https://www.tradingview.com/" target="_blank" rel="noopener noreferrer" className="hover:text-blue-500 underline">TradingView</a>
+      </div>
     </div>
   );
 }
