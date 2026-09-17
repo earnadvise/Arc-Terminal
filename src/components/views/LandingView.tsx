@@ -24,13 +24,28 @@ export default function LandingView() {
     },
     {
       title: '20x Leverage',
-      desc: 'Trade with high leverage, zero price impact, and deep liquidity.',
+      desc: 'Trade with high leverage, deep liquidity, and optimal pricing.',
       icon: <TrendingUp size={20} className="text-[#3b82f6]" />
     },
     {
-      title: 'Auto-Compounding',
-      desc: 'Deposit to Vaults and let agents optimize your APY on-chain.',
-      icon: <Landmark size={20} className="text-[#10b981]" />
+      title: 'Sub-Millisecond Execution',
+      desc: 'Lightning fast matching engine for high-frequency orderbook trading.',
+      icon: <Zap size={20} className="text-[#10b981]" />
+    },
+    {
+      title: 'Self-Custodial',
+      desc: 'Retain 100% control of your funds with Arc Smart Contracts.',
+      icon: <ShieldCheck size={20} className="text-amber-500" />
+    },
+    {
+      title: 'Chain-Abstracted',
+      desc: 'Deposit USDC and trade natively without complex bridging steps.',
+      icon: <Box size={20} className="text-pink-500" />
+    },
+    {
+      title: 'Real-Time Oracles',
+      desc: 'Millisecond price feeds ensuring fair liquidations and zero slippage.',
+      icon: <Activity size={20} className="text-cyan-500" />
     }
   ];
 
