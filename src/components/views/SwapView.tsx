@@ -32,9 +32,10 @@ interface TokenMeta {
 }
 
 const TOKENS: TokenMeta[] = [
-  { symbol: 'USDC', name: 'USD Coin', decimals: 6,  color: '#8b5cf6', address: '0x3600000000000000000000000000000000000000' },
-  { symbol: 'EURC', name: 'Euro Coin',  decimals: 6,  color: '#3b82f6', address: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1' },
-  { symbol: 'cirBTC', name: 'Circle BTC', decimals: 8, color: '#F7931A', address: '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0' }
+  { symbol: 'USDC', name: 'USD Coin', decimals: 6,  color: '#8b5cf6', address: '0x3600000000000000000000000000000000000000', priceUSD: '1.00' },
+  { symbol: 'EURC', name: 'Euro Coin',  decimals: 6,  color: '#3b82f6', address: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1', priceUSD: '1.08' },
+  { symbol: 'cirBTC', name: 'Circle BTC', decimals: 8, color: '#F7931A', address: '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0', priceUSD: '76000.0' },
+  { symbol: 'ARCAT', name: 'ARCAT', decimals: 18, color: '#F7931A', address: '0x07704B06981eA962b87296362a1281484d160000', priceUSD: '0.0007' }
 ];
 
 function TokenSelector({
@@ -308,6 +309,10 @@ export default function SwapView() {
     ? realReceived / parsed 
     : (fromPrice / toPrice);
 
+  const displayExchangeRate = effectiveExchangeRate < 0.0001 
+    ? effectiveExchangeRate.toExponential(2) 
+    : effectiveExchangeRate.toFixed(4);
+
   // Optimistic Estimated output
   const optimisticReceived = parsed > 0 ? Number(((parsed * fromPrice) / toPrice).toFixed(4)) : 0;
   const received = realReceived !== null ? realReceived : optimisticReceived;
@@ -508,7 +513,7 @@ export default function SwapView() {
       side: 'SWAP',
       type: 'AMM Swap',
       size: `${parsed} ${fromToken}`,
-      price: `1 ${fromToken} = ${effectiveExchangeRate.toFixed(4)} ${toToken}`,
+      price: `1 ${fromToken} = ${displayExchangeRate} ${toToken}`,
       fee: '0.30%',
       status: 'SUCCESS',
       category: 'Swap',
@@ -580,7 +585,7 @@ export default function SwapView() {
                     <span className="px-2 py-1 rounded bg-[#10b981]/10 text-[#10b981] text-xs font-bold">+2.45%</span>
                   </div>
                   <div className="text-4xl font-mono font-black text-slate-900 dark:text-white">
-                    {effectiveExchangeRate.toFixed(4)}
+                    {displayExchangeRate}
                   </div>
                 </div>
                 <div className="flex gap-2 p-1 bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] rounded-xl">
@@ -831,7 +836,7 @@ export default function SwapView() {
                     <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
                       <span className="font-medium">Exchange Rate</span>
                       <span className="text-slate-900 dark:text-white number-mono font-bold">
-                        1 {fromToken} = {effectiveExchangeRate.toFixed(4)} {toToken}
+                        1 {fromToken} = {displayExchangeRate} {toToken}
                       </span>
                     </div>
                     <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
