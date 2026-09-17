@@ -607,10 +607,19 @@ export default function SwapView() {
                     <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fill: '#8a8a9e', fontSize: 12}} dy={10} />
                     <YAxis domain={['auto', 'auto']} orientation="right" axisLine={false} tickLine={false} tick={{fill: '#8a8a9e', fontSize: 12}} dx={10} />
                     <Tooltip 
-                      contentStyle={{ backgroundColor: '#13131a', border: '1px solid #1f1f2e', borderRadius: '12px', color: '#fff', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}
-                      itemStyle={{ color: '#8b5cf6', fontWeight: 'bold' }}
-                      formatter={(value: any) => [Number(value).toFixed(4), 'Price']}
-                      labelStyle={{ color: '#8a8a9e', marginBottom: '4px' }}
+                      content={({ active, payload, label }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] p-3 rounded-xl shadow-lg">
+                              <p className="text-slate-500 dark:text-[#8a8a9e] text-xs mb-1">{label}</p>
+                              <p className="text-[#8b5cf6] font-bold">
+                                Price: {Number(payload[0].value).toFixed(4)}
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
                     />
                     <Area type="monotone" dataKey="price" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorPrice)" />
                   </AreaChart>
