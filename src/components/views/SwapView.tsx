@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useAppState } from '@/context/useAppState';
 import { ArrowUpDown, ChevronDown, Settings, Info, Zap, CircleAlert, RefreshCw, ExternalLink, CheckCircle2, X, Search, Star, BadgeCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { LineChart as LucideLineChart, Activity, ShieldCheck } from 'lucide-react';
 import { AppKit } from '@circle-fin/app-kit';
 import { createEthersAdapterFromProvider } from '@circle-fin/adapter-ethers-v6';
