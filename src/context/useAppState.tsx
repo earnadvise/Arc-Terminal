@@ -339,7 +339,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const tickCounter = useRef<number>(0);
 
-  const MARGIN_ADDRESS = '0x1b31f6abFA626378096a73727830329BEECE5262';
+  const MARGIN_ADDRESS = '0x2bD48D871D19222464295677e06C45210594b1C0';
   const DECIMALS = 18;
 
   const padAddress = (addr: string) => addr.toLowerCase().replace('0x', '').padStart(64, '0');
