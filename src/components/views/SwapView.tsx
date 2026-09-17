@@ -360,16 +360,24 @@ export default function SwapView() {
             const { getPoolExchangeRate } = await import('@/lib/swapRouter');
             const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
             const rate = await getPoolExchangeRate(eth, fromToken, toToken);
-            setRealReceived(parsed * rate);
+            if (rate > 0) {
+              setRealReceived(parsed * rate);
+            } else {
+              setRealReceived(null);
+            }
           }
         }
       } catch (e) {
         console.warn('Quote fetch failed, using fallback:', e);
         try {
-          const { getPoolExchangeRate } = await import('@/lib/swapRouter');
-          const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
-          const rate = await getPoolExchangeRate(eth, fromToken, toToken);
-          setRealReceived(parsed * rate);
+            const { getPoolExchangeRate } = await import('@/lib/swapRouter');
+            const eth = typeof window !== 'undefined' ? (window as any).ethereum : null;
+            const rate = await getPoolExchangeRate(eth, fromToken, toToken);
+            if (rate > 0) {
+              setRealReceived(parsed * rate);
+            } else {
+              setRealReceived(null);
+            }
         } catch (e2) {
           setRealReceived(null);
         }
