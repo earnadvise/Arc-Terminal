@@ -609,7 +609,7 @@ export default function SwapView() {
                 </div>
               </div>
               
-              <div className="flex-1 w-full min-h-[350px] -ml-4">
+              <div className="flex-1 w-full h-[350px] min-h-[350px] -ml-4">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={mockChartData}>
                     <XAxis dataKey="time" axisLine={false} tickLine={false} tick={{fill: '#8a8a9e', fontSize: 12}} dy={10} />
