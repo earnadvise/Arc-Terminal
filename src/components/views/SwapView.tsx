@@ -28,6 +28,7 @@ interface TokenMeta {
   decimals: number;
   color: string;
   address?: string;
+  priceUSD?: string;
 }
 
 const TOKENS: TokenMeta[] = [
@@ -262,7 +263,8 @@ export default function SwapView() {
             decimals: t.decimals,
             color: '#64748b',
             address: t.address,
-            icon: t.logoURI
+            icon: t.logoURI,
+            priceUSD: t.priceUSD
           }));
           
           lifiTokens.forEach((lt: TokenMeta) => {
@@ -270,6 +272,7 @@ export default function SwapView() {
              if (exists) {
                 exists.icon = lt.icon || exists.icon;
                 exists.symbol = lt.symbol;
+                exists.priceUSD = lt.priceUSD || exists.priceUSD;
              } else {
                 mergedTokens.push(lt);
              }
@@ -290,8 +293,20 @@ export default function SwapView() {
   };
 
   const parsed = parseFloat(fromAmount) || 0;
-  const fromPrice = prices[fromToken] || 1;
-  const toPrice   = prices[toToken]   || 1;
+  
+  const getPrice = (sym: string) => {
+    if (prices[sym]) return prices[sym];
+    const t = dynamicTokens.find(t => t.symbol === sym);
+    if (t && t.priceUSD) return parseFloat(t.priceUSD) || 1;
+    return 1;
+  };
+  
+  const fromPrice = getPrice(fromToken);
+  const toPrice   = getPrice(toToken);
+  
+  const effectiveExchangeRate = (parsed > 0 && realReceived !== null && realReceived > 0) 
+    ? realReceived / parsed 
+    : effectiveExchangeRate;
 
   // Optimistic Estimated output
   const optimisticReceived = parsed > 0 ? Number(((parsed * fromPrice) / toPrice).toFixed(4)) : 0;
@@ -493,7 +508,7 @@ export default function SwapView() {
       side: 'SWAP',
       type: 'AMM Swap',
       size: `${parsed} ${fromToken}`,
-      price: `1 ${fromToken} = ${(fromPrice / toPrice).toFixed(4)} ${toToken}`,
+      price: `1 ${fromToken} = ${effectiveExchangeRate.toFixed(4)} ${toToken}`,
       fee: '0.30%',
       status: 'SUCCESS',
       category: 'Swap',
@@ -527,7 +542,7 @@ export default function SwapView() {
   const mockChartData = React.useMemo(() => {
     return Array.from({ length: 24 }).map((_, i) => ({
       time: `${i}:00`,
-      price: fromPrice > 0 ? (fromPrice / toPrice) * (1 + (Math.random() - 0.5) * 0.05) : 1
+      price: fromPrice > 0 ? effectiveExchangeRate * (1 + (Math.random() - 0.5) * 0.05) : 1
     }));
   }, [fromPrice, toPrice]);
 
@@ -565,7 +580,7 @@ export default function SwapView() {
                     <span className="px-2 py-1 rounded bg-[#10b981]/10 text-[#10b981] text-xs font-bold">+2.45%</span>
                   </div>
                   <div className="text-4xl font-mono font-black text-slate-900 dark:text-white">
-                    {(fromPrice / toPrice).toFixed(4)}
+                    {effectiveExchangeRate.toFixed(4)}
                   </div>
                 </div>
                 <div className="flex gap-2 p-1 bg-slate-50 dark:bg-[#0c0c10] border border-slate-100 dark:border-[#1f1f2e] rounded-xl">
@@ -816,7 +831,7 @@ export default function SwapView() {
                     <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
                       <span className="font-medium">Exchange Rate</span>
                       <span className="text-slate-900 dark:text-white number-mono font-bold">
-                        1 {fromToken} = {(fromPrice / toPrice).toFixed(4)} {toToken}
+                        1 {fromToken} = {effectiveExchangeRate.toFixed(4)} {toToken}
                       </span>
                     </div>
                     <div className="flex justify-between text-slate-500 dark:text-[#8a8a9e]">
