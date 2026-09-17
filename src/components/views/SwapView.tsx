@@ -306,7 +306,7 @@ export default function SwapView() {
   
   const effectiveExchangeRate = (parsed > 0 && realReceived !== null && realReceived > 0) 
     ? realReceived / parsed 
-    : effectiveExchangeRate;
+    : (fromPrice / toPrice);
 
   // Optimistic Estimated output
   const optimisticReceived = parsed > 0 ? Number(((parsed * fromPrice) / toPrice).toFixed(4)) : 0;
