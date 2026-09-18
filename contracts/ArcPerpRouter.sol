@@ -106,4 +106,25 @@ contract ArcPerpRouter {
         
         emit PositionClosed(user, symbol, closeSize, realizedPnl);
     }
+
+    /**
+     * @dev User submits an intent to close their position
+     */
+    function closePosition(string memory symbol, uint256 closeSize, uint256 leverage, int256 realizedPnl) external {
+        // In a real decentralized model, backend listens to this intent.
+    }
+
+    /**
+     * @dev User deposits additional margin into their specific position
+     */
+    function addMargin(string memory symbol, uint256 amount) external {
+        require(amount > 0, "Amount must be greater than 0");
+        bool success = IERC20(marginToken).transferFrom(msg.sender, address(this), amount);
+        require(success, "Transfer failed");
+        userMargin[msg.sender] += amount;
+    }
+    function cancelLimitOrder(string memory symbol, uint256 size, uint256 leverage) external {}
+    function setTPSL(string memory symbol, uint256 takeProfit, uint256 stopLoss) external {}
+    function placeLimitOrder(string memory symbol, bool isLong, uint256 size, uint256 targetPrice, uint256 leverage) external {}
 }
+
