@@ -1203,7 +1203,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     
     try {
       addNotification('info', 'Approve USDC', 'Please approve USDC spending in your wallet first...');
-      const approveHex = '0x095ea7b3' + padAddress(MARGIN_ADDRESS) + 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      const amountHex = BigInt(Math.floor(amount * 1e6)).toString(16).padStart(64, '0');
+      const approveHex = '0x095ea7b3' + padAddress(MARGIN_ADDRESS) + amountHex;
       const approveTxHash = await eth.request({
         method: 'eth_sendTransaction',
         params: [{
@@ -1213,11 +1214,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         }]
       });
 
-      addNotification('info', 'Waiting for Approval', `Approval sent (${approveTxHash.slice(0, 8)}...). Waiting 5 seconds for confirmation...`);
-      await new Promise(resolve => setTimeout(resolve, 5000));
-
       addNotification('info', 'Deposit Collateral', 'Please confirm the deposit transaction in your wallet...');
-      const amountHex = BigInt(Math.floor(amount * 1e6)).toString(16).padStart(64, '0');
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
         params: [{
