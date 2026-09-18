@@ -762,7 +762,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               );
               txHash = await spend({ 
                 amount: requiredMargin, 
-                to: walletAddress, 
+                to: MARGIN_ADDRESS, 
                 chain: "Arc_Mainnet"
               });
             } else {
@@ -783,7 +783,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
               method: 'eth_sendTransaction',
               params: [{
                 from: walletAddress,
-                to: walletAddress,
+                to: MARGIN_ADDRESS,
                 data: calldata
               }]
             });
@@ -884,7 +884,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           if (balances.marginUSDC < requiredMargin) {
             await spend({ 
               amount: requiredMargin, 
-              to: walletAddress, 
+              to: MARGIN_ADDRESS, 
               chain: "Arc_Mainnet"
             });
             addNotification('warning', 'Margin Depositing', 'Margin deposit initiated. Please wait 10 seconds for it to confirm, then click Place Order again.');
@@ -1066,7 +1066,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
             method: 'eth_sendTransaction',
             params: [{
               from: walletAddress,
-              to: walletAddress,
+              to: MARGIN_ADDRESS,
               data: calldata
             }]
           });
@@ -1123,7 +1123,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           method: 'eth_sendTransaction',
           params: [{
             from: walletAddress,
-            to: walletAddress,
+            to: MARGIN_ADDRESS,
             data: calldata
           }]
         });
@@ -1209,8 +1209,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         method: 'eth_sendTransaction',
         params: [{
           from: walletAddress,
-          to: walletAddress,
-          data: '0xbad4a01f' + amountHex
+          to: MARGIN_ADDRESS,
+          data: '0xb6b55f25' + amountHex
         }]
       });
 
@@ -1247,8 +1247,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         method: 'eth_sendTransaction',
         params: [{
           from: walletAddress,
-          to: walletAddress,
-          data: '0x6112fe2e' + amountHex
+          to: MARGIN_ADDRESS,
+          data: '0x2e1a7d4d' + amountHex
         }]
       });
 
