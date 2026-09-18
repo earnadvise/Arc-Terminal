@@ -10,7 +10,7 @@ const EDGEX_ACCOUNT_ID = process.env.EDGEX_ACCOUNT_ID || 790273066352509653;
 const EDGEX_TRADING_KEY = process.env.EDGEX_TRADING_KEY; // Your private SDK Signer key
 
 // The address of our ArcPerpRouter (or edgeX official deposit contract)
-const ROUTER_ADDRESS = 0x2bD48D871D19222464295677e06C45210594b1C0;
+const ROUTER_ADDRESS = 0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7;
 const ROUTER_ABI = [
     event PositionOpened(address indexed user, string symbol, bool isLong, uint256 amount, uint256 entryPrice, uint256 leverage)
 ];
