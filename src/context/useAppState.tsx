@@ -1202,8 +1202,18 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     addNotification('info', 'Deposit Collateral', 'Please confirm the deposit transaction in your wallet...');
     
     try {
-      // Simulate real transaction by sending a 0 ETH transaction to self with deposit calldata
-      // This forces a real wallet signature without failing gas estimation on missing contracts
+      addNotification('info', 'Approve USDC', 'Please approve USDC spending in your wallet first...');
+      const approveHex = '0x095ea7b3' + padAddress(MARGIN_ADDRESS) + 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      await eth.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: walletAddress,
+          to: '0x3600000000000000000000000000000000000000', // Arc USDC
+          data: approveHex
+        }]
+      });
+
+      addNotification('info', 'Deposit Collateral', 'Please confirm the deposit transaction in your wallet...');
       const amountHex = BigInt(Math.floor(amount * 1e6)).toString(16).padStart(64, '0');
       const txHash = await eth.request({
         method: 'eth_sendTransaction',
