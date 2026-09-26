@@ -89,6 +89,15 @@ export default function Navbar() {
               );
             })}
             
+            {/* Buy USDC / Onramp Button */}
+            <button
+              onClick={() => alert("Initializing Arc Direct Onramp Kit...")}
+              className="ml-2 relative px-4 py-1.5 rounded-md text-sm font-bold tracking-wide flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-[#10b981] text-white hover:from-emerald-400 hover:to-[#10b981] shadow-sm hover:shadow-emerald-500/20 transition-all duration-200"
+            >
+              <DollarSign size={14} />
+              Buy USDC
+            </button>
+            
             {/* More Dropdown */}
             <div className="relative">
               <button
