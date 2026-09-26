@@ -91,6 +91,50 @@ export default function PortfolioView() {
         ))}
       </section>
 
+      {/* 1.5. ACTION BAR: DEPOSIT & FIAT ONRAMP */}
+      <section className="flex flex-col sm:flex-row gap-4 w-full">
+        <button className="flex-1 bg-white dark:bg-[#13131a] border border-slate-200 dark:border-[#1f1f2e] hover:border-[#8b5cf6]/50 dark:hover:border-[#8b5cf6]/50 rounded-xl p-4 flex items-center justify-between transition-colors group shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#1f1f2e] flex items-center justify-center group-hover:bg-[#8b5cf6]/10 transition-colors">
+              <Wallet size={18} className="text-slate-600 dark:text-slate-400 group-hover:text-[#8b5cf6]" />
+            </div>
+            <div className="text-left">
+              <h4 className="text-sm font-bold text-slate-900 dark:text-white">Deposit Web3 Crypto</h4>
+              <p className="text-xs text-slate-500 dark:text-[#8a8a9e]">Transfer USDC from your wallet</p>
+            </div>
+          </div>
+          <span className="text-xs font-bold text-[#8b5cf6] bg-[#8b5cf6]/10 px-3 py-1 rounded-full">Web3</span>
+        </button>
+
+        <button 
+          onClick={() => alert("Initializing Arc Direct Onramp Kit...")}
+          className="flex-1 bg-gradient-to-r from-slate-900 to-slate-800 dark:from-[#13131a] dark:to-[#1a1a24] border border-transparent hover:border-[#3b82f6]/50 rounded-xl p-4 flex items-center justify-between transition-all group shadow-md hover:shadow-[#3b82f6]/10 relative overflow-hidden"
+        >
+          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-[#3b82f6]/20 to-transparent rounded-bl-full -mr-10 -mt-10 pointer-events-none" />
+          <div className="flex items-center gap-4 relative z-10">
+            <div className="w-10 h-10 rounded-full bg-slate-800/50 dark:bg-[#0c0c10]/80 flex items-center justify-center border border-slate-700 dark:border-[#2a2a35] group-hover:bg-[#3b82f6]/20 transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white group-hover:text-[#3b82f6]">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <line x1="2" y1="10" x2="22" y2="10" />
+              </svg>
+            </div>
+            <div className="text-left">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                Arc Direct: Fiat-to-Fast-Lane
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </h4>
+              <p className="text-xs text-slate-300 dark:text-[#8a8a9e]">Buy USDC with Apple Pay or Card</p>
+            </div>
+          </div>
+          <span className="relative z-10 text-[10px] uppercase font-bold text-[#3b82f6] bg-[#3b82f6]/10 border border-[#3b82f6]/20 px-3 py-1.5 rounded-full tracking-wider group-hover:bg-[#3b82f6] group-hover:text-white transition-colors">
+            Instant
+          </span>
+        </button>
+      </section>
+
       {/* 2. ASSET ALLOCATION & MARGIN UTILIZATION SPLIT */}
       <section className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         
