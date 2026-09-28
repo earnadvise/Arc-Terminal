@@ -13,6 +13,7 @@
     "@ai-sdk/openai": "^4.0.27",
     "@circle-fin/adapter-ethers-v6": "^1.10.0",
     "@circle-fin/app-kit": "^1.12.0",
+    "@circle-fin/onramp-kit": "^1.0.2",
     "@lifi/wallet-management": "^4.2.0",
     "@lifi/widget": "^4.6.0",
     "@tanstack/react-query": "^5.103.1",

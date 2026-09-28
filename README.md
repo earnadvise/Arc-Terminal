@@ -1,16 +1,16 @@
 # ⚡ Arc Terminal
 
-> **Next-Generation Agentic Derivatives, Spot AMM & Real-Yield Vault Interface on Arc Network.**
+> **Next-Generation Agentic Derivatives, Spot AMM & Real-Yield Vault Interface on Arc Mainnet.**
 
 [![Live Web App](https://img.shields.io/badge/Web_App-arcterminalai.xyz-01C38E?style=for-the-badge&logo=vercel)](https://arcterminalai.xyz)
 [![X / Twitter](https://img.shields.io/badge/Follow-@arcterminalai-0052FF?style=for-the-badge&logo=x)](https://x.com/arcterminalai)
-[![Network](https://img.shields.io/badge/Network-Arc_Testnet-0A786A?style=for-the-badge)](https://rpc.testnet.arc.network)
+[![Network](https://img.shields.io/badge/Network-Arc_Mainnet-0A786A?style=for-the-badge)](https://arc.io)
 
 ---
 
 ## 🌟 Project Overview
 
-**Arc Terminal** is a unified decentralized trading terminal designed for active traders and autonomous AI agents. Built natively on **Arc Network**, it combines agentic natural language trade execution via **Arc AI**, zero price-impact perpetual derivatives, and autocompounding ERC-4626 stablecoin **Vault** liquidity pools into a high-performance, non-custodial Web3 interface.
+**Arc Terminal** is a unified decentralized trading terminal designed for active traders and autonomous AI agents. Built natively on **Arc Mainnet**, it combines agentic natural language trade execution via **Arc AI**, zero price-impact perpetual derivatives, fiat-to-crypto onramping via the **Arc Onramp Kit**, and autocompounding ERC-4626 stablecoin **Vault** liquidity pools into a high-performance, non-custodial Web3 interface.
 
 ---
 
@@ -45,36 +45,49 @@
 - **4.5% - 5.0% APY:** Generates organic, non-inflationary yield from perpetual trading fees, borrowing interest (funding rates), liquidations, and AMM swap fees.
 - **Autocompounding Shares:** Tokenized vault shares (`aUSDC`, `aEURC`) automatically accrue value relative to underlying `totalAssets()`.
 
-### 🛡️ 4. Direct RPC Failover Architecture
-- **Zero-Latency Reads:** Routes read queries directly to `rpc.testnet.arc.network`, bypassing browser wallet read timeouts.
+### 💳 4. Fiat-to-Crypto Onramp (Arc Onramp Kit)
+- **Buy USDC with Fiat:** Users can purchase USDC directly within the terminal using Apple Pay, Google Pay, debit cards, and bank transfers (SEPA).
+- **Built-in Identity Verification:** KYC flow is handled entirely within the embedded widget — no external redirects.
+- **Transparent Pricing:** Clear transaction costs displayed before purchase confirmation.
+- **Pre-built Widget:** Powered by `@circle-fin/onramp-kit` with a secure server-side session minting flow via Next.js API routes.
+
+### 🌉 5. Cross-Chain Bridge (Circle CCTP)
+- **Seamless USDC Bridging:** Transfer USDC between Arc Mainnet and other supported EVM chains using Circle's Cross-Chain Transfer Protocol.
+- **Real-Time UI Tracking:** Live status updates for cross-chain transfers directly within the terminal.
+
+### 🛡️ 6. Direct RPC Failover Architecture
+- **Zero-Latency Reads:** Routes read queries directly to the Arc Mainnet RPC, bypassing browser wallet read timeouts.
 - **Resilient Polling:** 2-second fast balance polling, staggered post-transaction refreshes, and state synchronization to prevent UI flickering.
 
 ---
 
 ## 🔄 Recent Updates (Latest)
-- **AppKit Cross-Chain Bridge:** Implemented a seamless cross-chain USDC bridge using Circle's AppKit and CCTP, enabling transfers between Arc Testnet and 6 major EVM testnets with real-time UI tracking.
+
+- **Arc Mainnet Migration:** Fully migrated the entire platform from Arc Testnet to Arc Mainnet — all contracts, RPC endpoints, and configurations now operate on the live production network.
+- **Fiat Onramp Integration:** Added "Buy USDC" button powered by Arc Onramp Kit (`@circle-fin/onramp-kit`) enabling fiat-to-USDC purchases via Apple Pay, Google Pay, debit cards, and bank transfers directly inside the terminal.
+- **AppKit Cross-Chain Bridge:** Implemented a seamless cross-chain USDC bridge using Circle's AppKit and CCTP, enabling transfers between Arc Mainnet and supported EVM chains with real-time UI tracking.
 - **Premium Light Mode Overhaul:** Fully migrated the decentralized application to a stunning, modern light theme featuring vivid sky blue gradients, frosted glassmorphism panels, and crisp charcoal text for enhanced professional aesthetics.
 - **Client-Side Oracle Synchronization:** Resolved Vercel geo-blocking issues by migrating price fetching directly to the client side, ensuring 100% accurate real-time index prices for Perpetuals.
 - **UI Legibility Enhancements:** Improved contrast and text visibility across the Arc AI Terminal and Yield Vaults to guarantee readability.
-- **Contract Architecture Preserved:** All Arc Testnet smart contracts remain unchanged and fully functional without disruption.
+- **Contract Architecture Preserved:** All Arc Mainnet smart contracts remain unchanged and fully functional without disruption.
 
 ---
 
 ## 🔵 Circle Products Used
 
-Arc Terminal heavily relies on Circle's stablecoin infrastructure for routing, settlement, and yield generation:
-- **Circle AppKit & CCTP:** Powers the native cross-chain bridging infrastructure between Arc Testnet and EVM testnets.
-- **USDC:** Used as the primary base currency for swap routing, perpetual margin collateral, and our primary ERC-4626 Yield Vault.
+Arc Terminal heavily relies on Circle's stablecoin infrastructure for routing, settlement, yield generation, and fiat onramping:
+
+- **Arc Onramp Kit (`@circle-fin/onramp-kit`):** Enables fiat-to-USDC purchases directly inside the terminal via Apple Pay, Google Pay, debit cards, and bank transfers. Session tokens are minted server-side using a secure Next.js API route.
+- **Circle AppKit & CCTP:** Powers the native cross-chain bridging infrastructure between Arc Mainnet and supported EVM chains.
+- **USDC:** Used as the primary base currency for swap routing, perpetual margin collateral, fiat onramp destination token, and our primary ERC-4626 Yield Vault.
 - **EURC:** Supported for FX swaps against USDC and has its own dedicated Yield Vault.
 
 ---
 
-## 📜 Smart Contracts (Arc Testnet)
+## 📜 Smart Contracts (Arc Mainnet)
 
-- **ArcPerpVault (Perpetual Trading):** `0x1b31f6abFA626378096a73727830329BEECE5262`
-- **ArcReversiblePayment (ArcSafePay Escrow):** `0x95D00C1B48218e44Be6fF1e90D2f473A646191f0`
-- **USDC Yield Vault (ERC-4626):** `0xB5dAd4840ef25d6A7Ea8c19E8C6d438197F5AfB9`
-- **EURC Yield Vault (ERC-4626):** `0xC2752C4e2c6FFaf4f8aBA432d98A9d2ae216BD8E`
+- **ArcPerpRouter:** [`0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7`](https://explorer.arc.io/address/0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7)
+- **ArcSafePay:** [`0xCA51920257DD503150F3eF9a3fE4a34B2176C866`](https://explorer.arc.io/address/0xCA51920257DD503150F3eF9a3fE4a34B2176C866)
 
 ---
 
@@ -91,13 +104,26 @@ cd Arc-Terminal
 npm install
 ```
 
-### 3. Run Development Server
+### 3. Set Environment Variables
+```bash
+cp .env.example .env.local
+```
+Add the following to your `.env.local`:
+```env
+# Arc Onramp Kit — secret API key (server-side only, never expose to client)
+ARC_API_KEY=YOUR_CIRCLE_API_KEY
+
+# Arc Onramp Kit — public App ID (safe for client-side)
+NEXT_PUBLIC_ONRAMP_APP_ID=YOUR_ONRAMP_APP_ID
+```
+
+### 4. Run Development Server
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 4. Build for Production
+### 5. Build for Production
 ```bash
 npm run build
 ```
@@ -109,6 +135,10 @@ npm run build
 Arc Terminal functions as a **Smart Routing DEX Aggregator**.
 
 ### Smart Contract Integrations
-- **ArcRouter (Custom Deployment):** [`0x2de601bE529C4D59DC2b11725a2c75e06aC4cDBa`](https://testnet.arcscan.app/address/0x2de601bE529C4D59DC2b11725a2c75e06aC4cDBa)
+- **ArcRouter (Custom Deployment):** [`0x2de601bE529C4D59DC2b11725a2c75e06aC4cDBa`](https://arcscan.app/address/0x2de601bE529C4D59DC2b11725a2c75e06aC4cDBa)
   - All token swaps on Arc Terminal are routed through our own custom deployed smart contract which acts as a pass-through proxy to capture a 0.1% protocol fee for the treasury.
 - **Synthra V3 SwapRouter:** Underlying AMM liquidity pools used to solve the "cold-start" liquidity problem.
+
+### Onramp Architecture
+- **Server Route (`/api/onramp`):** Securely mints short-lived session tokens using the Circle API key. Never exposes the secret key to the browser.
+- **Client Widget (`@circle-fin/onramp-kit`):** Mounts an iframe-based onramp widget inside the terminal. Handles payment flows, identity verification, and deposit settlement events.
