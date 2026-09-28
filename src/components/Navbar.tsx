@@ -89,72 +89,7 @@ export default function Navbar() {
               );
             })}
             
-            {/* Buy USDC / Onramp Button */}
-            <button
-              onClick={async () => {
-                if (!walletConnected || !walletAddress) {
-                  alert("Please connect your wallet first to buy USDC.");
-                  return;
-                }
-                
-                try {
-                  // Dynamically import OnrampKit to avoid SSR issues
-                  const { AppKit } = await import('@circle-fin/app-kit');
-                  const kit = new AppKit();
-                  
-                  const session = await kit.onramp.fetchSession({
-                    url: '/api/onramp',
-                    body: {
-                      appUserId: walletAddress,
-                      destinationAddress: walletAddress
-                    }
-                  });
-                  
-                  // Create a modal container dynamically
-                  let container = document.getElementById('onramp-modal-overlay');
-                  if (!container) {
-                    container = document.createElement('div');
-                    container.id = 'onramp-modal-overlay';
-                    container.className = 'fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 sm:p-6';
-                    
-                    const inner = document.createElement('div');
-                    inner.className = 'relative w-full max-w-[420px] bg-white dark:bg-[#0c0c10] rounded-2xl shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800 flex flex-col';
-                    
-                    const header = document.createElement('div');
-                    header.className = 'flex justify-between items-center p-4 border-b border-slate-200 dark:border-slate-800';
-                    header.innerHTML = '<h3 class="font-bold text-slate-900 dark:text-white">Buy USDC</h3><button id="close-onramp" class="text-slate-500 hover:text-slate-900 dark:hover:text-white">&times; Close</button>';
-                    
-                    const root = document.createElement('div');
-                    root.id = 'onramp-root';
-                    root.className = 'w-full h-[720px]';
-                    
-                    inner.appendChild(header);
-                    inner.appendChild(root);
-                    container.appendChild(inner);
-                    document.body.appendChild(container);
-                    
-                    document.getElementById('close-onramp')?.addEventListener('click', () => {
-                      document.getElementById('onramp-modal-overlay')?.remove();
-                    });
-                  }
-                  
-                  kit.onramp.mountIframe({
-                    session,
-                    container: document.getElementById('onramp-root')!,
-                    onDepositSettled: (payload: any) => console.log('Settled', payload)
-                  });
-                  
-                } catch (e) {
-                  console.error(e);
-                  alert("Error initializing Onramp.");
-                }
-              }}
-              className="ml-2 relative px-4 py-1.5 rounded-md text-sm font-bold tracking-wide flex items-center gap-1.5 bg-gradient-to-r from-emerald-500 to-[#10b981] text-white hover:from-emerald-400 hover:to-[#10b981] shadow-sm hover:shadow-emerald-500/20 transition-all duration-200"
-            >
-              <DollarSign size={14} />
-              Buy USDC
-            </button>
-            
+
             {/* More Dropdown */}
             <div className="relative">
               <button
