@@ -98,22 +98,17 @@ export default function Navbar() {
                 }
                 
                 try {
-                  const res = await fetch('/api/onramp', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ address: walletAddress })
-                  });
-                  
-                  if (!res.ok) {
-                    alert("Failed to initialize Onramp. Please ensure ARC_API_KEY is set in .env");
-                    return;
-                  }
-                  
-                  const data = await res.json();
-                  
                   // Dynamically import OnrampKit to avoid SSR issues
-                  const { OnrampKit } = await import('@circle-fin/onramp-kit');
-                  const kit = new OnrampKit({ appId: process.env.NEXT_PUBLIC_ONRAMP_APP_ID || 'd280fc016ed11b08c28f56f7c7db326f:75ade498bb77bcaf2d60aba4f3cdd785' });
+                  const { AppKit } = await import('@circle-fin/app-kit');
+                  const kit = new AppKit();
+                  
+                  const session = await kit.onramp.fetchSession({
+                    url: '/api/onramp',
+                    body: {
+                      appUserId: walletAddress,
+                      destinationAddress: walletAddress
+                    }
+                  });
                   
                   // Create a modal container dynamically
                   let container = document.getElementById('onramp-modal-overlay');
@@ -144,7 +139,7 @@ export default function Navbar() {
                   }
                   
                   kit.onramp.mountIframe({
-                    session: { token: data.session },
+                    session,
                     container: document.getElementById('onramp-root')!,
                     onDepositSettled: (payload: any) => console.log('Settled', payload)
                   });
