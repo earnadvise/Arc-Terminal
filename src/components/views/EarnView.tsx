@@ -2,9 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAppState } from '@/context/useAppState';
-import { Layers, Activity, TrendingUp, Search, RefreshCw, CheckCircle2, ArrowDownCircle, ArrowUpCircle, ExternalLink, Loader2 } from 'lucide-react';
-import { AppKit, isKitError, getErrorMessage, EarnError } from "@circle-fin/app-kit";
-import { createEthersAdapterFromProvider } from "@circle-fin/adapter-ethers-v6";
+import { Layers, Activity, TrendingUp, Search, RefreshCw, CheckCircle2, ArrowDownCircle, ArrowUpCircle, ExternalLink, Loader2, AlertTriangle } from 'lucide-react';
 
 export default function EarnView() {
   const { walletConnected, addNotification } = useAppState();
@@ -29,6 +27,7 @@ export default function EarnView() {
     try {
       setLoading(true);
       setFetchError('');
+      const { AppKit } = await import('@circle-fin/app-kit');
       const kit = new AppKit();
       const { vaults: fetchedVaults } = await kit.earn.exploreVaults({
         chain: "Arc_Mainnet",
@@ -38,6 +37,7 @@ export default function EarnView() {
       
       // If wallet is connected, fetch positions for all active vaults
       if (walletConnected && typeof window !== 'undefined' && (window as any).ethereum) {
+        const { createEthersAdapterFromProvider } = await import('@circle-fin/adapter-ethers-v6');
         const adapter = await createEthersAdapterFromProvider({ provider: (window as any).ethereum });
         
         const posPromises = (fetchedVaults || []).map((v: any) => 
@@ -52,9 +52,14 @@ export default function EarnView() {
       }
     } catch (e: any) {
       console.error("Failed to fetch Earn data", e);
-      if (isKitError(e)) {
-        setFetchError(getErrorMessage(e));
-      } else {
+      try {
+        const { isKitError, getErrorMessage } = await import('@circle-fin/app-kit');
+        if (isKitError(e)) {
+          setFetchError(getErrorMessage(e));
+        } else {
+          setFetchError(e?.message || 'Unknown error');
+        }
+      } catch (err) {
         setFetchError(e?.message || 'Unknown error');
       }
     } finally {
@@ -77,6 +82,8 @@ export default function EarnView() {
       }
       
       try {
+        const { AppKit } = await import('@circle-fin/app-kit');
+        const { createEthersAdapterFromProvider } = await import('@circle-fin/adapter-ethers-v6');
         const kit = new AppKit();
         const adapter = await createEthersAdapterFromProvider({ provider: (window as any).ethereum });
         
@@ -124,6 +131,8 @@ export default function EarnView() {
 
     try {
       setProcessing(true);
+      const { AppKit, isKitError, getErrorMessage } = await import('@circle-fin/app-kit');
+      const { createEthersAdapterFromProvider } = await import('@circle-fin/adapter-ethers-v6');
       const kit = new AppKit();
       const adapter = await createEthersAdapterFromProvider({ provider: (window as any).ethereum });
       const formattedAmount = Number(amount).toFixed(2);
@@ -152,9 +161,14 @@ export default function EarnView() {
       
     } catch (error: any) {
       console.error("Action error:", error);
-      if (isKitError(error)) {
-        addNotification('Earn Error', getErrorMessage(error), 'error');
-      } else {
+      try {
+        const { isKitError, getErrorMessage } = await import('@circle-fin/app-kit');
+        if (isKitError(error)) {
+          addNotification('Earn Error', getErrorMessage(error), 'error');
+        } else {
+          addNotification('Error', error?.message || 'An unknown error occurred.', 'error');
+        }
+      } catch(e) {
         addNotification('Error', error?.message || 'An unknown error occurred.', 'error');
       }
     } finally {
