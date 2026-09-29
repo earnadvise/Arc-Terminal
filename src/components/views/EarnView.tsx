@@ -5,7 +5,7 @@ import { useAppState } from '@/context/useAppState';
 import { Layers, Activity, TrendingUp, Search, RefreshCw, CheckCircle2, ArrowDownCircle, ArrowUpCircle, ExternalLink, Loader2, AlertTriangle } from 'lucide-react';
 
 export default function EarnView() {
-  const { walletConnected, addNotification } = useAppState();
+  const { walletConnected, addNotification, balances } = useAppState();
 
   const [vaults, setVaults] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
@@ -390,9 +390,26 @@ export default function EarnView() {
               </div>
               
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-[#8a8a9e] mb-1.5 uppercase tracking-wider">
-                  Amount
-                </label>
+                <div className="flex justify-between items-center mb-1.5">
+                  <label className="block text-xs font-bold text-slate-500 dark:text-[#8a8a9e] uppercase tracking-wider">
+                    Amount
+                  </label>
+                  <button 
+                    onClick={() => {
+                      if (modalType === 'Deposit') {
+                        if (selectedVault?.asset === 'USDC') setAmount(balances?.walletUSDC?.toString() || '0');
+                        else if (selectedVault?.asset === 'EURC') setAmount(balances?.EURC?.toString() || '0');
+                        else setAmount('0');
+                      } else {
+                        const pos = positions.find(p => p.vaultAddress === selectedVault?.vaultAddress);
+                        setAmount(pos?.currentBalance || '0');
+                      }
+                    }}
+                    className="text-[10px] font-bold text-[#8b5cf6] bg-[#8b5cf6]/10 px-2 py-0.5 rounded hover:bg-[#8b5cf6]/20 transition-colors"
+                  >
+                    MAX
+                  </button>
+                </div>
                 <div className="relative">
                   <input 
                     type="number"
@@ -452,6 +469,12 @@ export default function EarnView() {
                   <>Confirm {modalType}</>
                 )}
               </button>
+              
+              <div className="text-center">
+                <p className="text-[10px] text-slate-400 dark:text-[#6e6e7f]">
+                  Note: Some wallets (like Rabby) may show a "Simulation Failed" warning when signing. As long as the quote succeeded, this is normal and the transaction will go through.
+                </p>
+              </div>
             </div>
           </div>
         </div>
