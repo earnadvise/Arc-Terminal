@@ -26,12 +26,20 @@ export default function PortfolioView() {
         const { vaults } = await kit.earn.exploreVaults({ chain: "Arc" });
         if (!active) return;
         
-        const posPromises = (vaults || []).map((v: any) => 
-          kit.earn.getPosition({
-            from: { adapter, chain: "Arc" },
-            vaultAddress: v.vaultAddress
-          }).catch(() => null)
-        );
+        const posPromises = (vaults || []).map(async (v: any) => {
+          try {
+            const pos = await kit.earn.getPosition({
+              from: { adapter, chain: "Arc" },
+              vaultAddress: v.vaultAddress
+            });
+            if (pos) {
+              pos.mappedAsset = v.asset;
+            }
+            return pos;
+          } catch (err) {
+            return null;
+          }
+        });
         
         const results = await Promise.all(posPromises);
         if (active) setEarnPositions(results.filter(r => r !== null && Number(r.currentBalance) > 0));
@@ -55,9 +63,8 @@ export default function PortfolioView() {
   const totalMarginLocked = positions.reduce((acc, pos) => acc + pos.margin, 0);
   const unrealizedPnL = positions.reduce((acc, pos) => acc + pos.unrealizedPnl, 0);
   
-  const totalEarnPrincipal = earnPositions.reduce((acc, p) => acc + Number(p.pnl?.principalDeposited || 0) * (p.asset === 'EURC' ? eurcPrice : 1.0), 0);
-  const totalEarnYield = earnPositions.reduce((acc, p) => acc + Number(p.pnl?.totalYieldEarned || 0) * (p.asset === 'EURC' ? eurcPrice : 1.0), 0);
-  const totalEarnBalance = totalEarnPrincipal + totalEarnYield;
+  const totalEarnBalance = earnPositions.reduce((acc, p) => acc + Number(p.currentBalance || 0) * (p.mappedAsset === 'EURC' || p.asset === 'EURC' ? eurcPrice : 1.0), 0);
+  const totalEarnYield = earnPositions.reduce((acc, p) => acc + Number(p.pnl?.totalYieldEarned || 0) * (p.mappedAsset === 'EURC' || p.asset === 'EURC' ? eurcPrice : 1.0), 0);
 
   // Total equity = Collateral Value + Unrealized PnL + Earn Balance
   const collateralValue = assetDetails.reduce((acc, asset) => acc + asset.value, 0);
