@@ -12,6 +12,7 @@ export default function EarnView() {
   const [vaults, setVaults] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetchError, setFetchError] = useState('');
   const [activeTab, setActiveTab] = useState<'Discover' | 'Portfolio'>('Discover');
   
   // Deposit/Withdraw Modal State
@@ -27,6 +28,7 @@ export default function EarnView() {
   const fetchVaults = useCallback(async () => {
     try {
       setLoading(true);
+      setFetchError('');
       const kit = new AppKit();
       const { vaults: fetchedVaults } = await kit.earn.exploreVaults({
         chain: "Arc_Mainnet",
@@ -50,6 +52,11 @@ export default function EarnView() {
       }
     } catch (e: any) {
       console.error("Failed to fetch Earn data", e);
+      if (isKitError(e)) {
+        setFetchError(getErrorMessage(e));
+      } else {
+        setFetchError(e?.message || 'Unknown error');
+      }
     } finally {
       setLoading(false);
     }
@@ -207,9 +214,22 @@ export default function EarnView() {
           <Loader2 className="animate-spin" size={24} />
           <span className="text-sm font-medium">Fetching Arc Mainnet Vaults...</span>
         </div>
+      ) : fetchError ? (
+        <div className="py-20 flex flex-col items-center justify-center gap-3 text-red-500">
+          <AlertTriangle size={32} />
+          <span className="text-sm font-bold">Failed to load vaults</span>
+          <span className="text-xs text-red-400">{fetchError}</span>
+        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           
+          {activeTab === 'Discover' && vaults.length === 0 && (
+             <div className="col-span-full py-20 flex flex-col items-center justify-center gap-3 text-slate-400 border border-dashed rounded-2xl border-slate-300 dark:border-[#2a2a3b]">
+               <Activity size={32} className="opacity-50" />
+               <span className="text-sm font-medium text-slate-500">No vaults currently found on Arc Mainnet.</span>
+             </div>
+          )}
+
           {activeTab === 'Discover' && vaults.map((v, i) => (
             <div key={i} className="bg-white dark:bg-[#13131a] rounded-2xl border border-slate-200 dark:border-[#1f1f2e] p-5 shadow-sm flex flex-col justify-between">
               <div>
