@@ -30,7 +30,7 @@ export default function EarnView() {
       const { AppKit } = await import('@circle-fin/app-kit');
       const kit = new AppKit();
       const { vaults: fetchedVaults } = await kit.earn.exploreVaults({
-        chain: "Arc_Mainnet",
+        chain: "Arc",
         sortBy: "apy"
       });
       setVaults(fetchedVaults || []);
@@ -42,7 +42,7 @@ export default function EarnView() {
         
         const posPromises = (fetchedVaults || []).map((v: any) => 
           kit.earn.getPosition({
-            from: { adapter, chain: "Arc_Mainnet" },
+            from: { adapter, chain: "Arc" },
             vaultAddress: v.vaultAddress
           }).catch(() => null)
         );
@@ -92,14 +92,14 @@ export default function EarnView() {
         
         if (modalType === 'Deposit') {
           const q = await kit.earn.getDepositQuote({
-            from: { adapter, chain: "Arc_Mainnet" },
+            from: { adapter, chain: "Arc" },
             vaultAddress: selectedVault.vaultAddress,
             amount: formattedAmount
           });
           setQuote(q);
         } else {
           const q = await kit.earn.getWithdrawalQuote({
-            from: { adapter, chain: "Arc_Mainnet" },
+            from: { adapter, chain: "Arc" },
             vaultAddress: selectedVault.vaultAddress,
             amount: formattedAmount
           });
@@ -140,14 +140,14 @@ export default function EarnView() {
       let result;
       if (modalType === 'Deposit') {
         result = await kit.earn.deposit({
-          from: { adapter, chain: "Arc_Mainnet" },
+          from: { adapter, chain: "Arc" },
           vaultAddress: selectedVault.vaultAddress,
           amount: formattedAmount
         });
         addNotification('Deposit Successful', `Successfully deposited ${formattedAmount} into ${selectedVault.name}`, 'success', result.txHash);
       } else {
         result = await kit.earn.withdraw({
-          from: { adapter, chain: "Arc_Mainnet" },
+          from: { adapter, chain: "Arc" },
           vaultAddress: selectedVault.vaultAddress,
           amount: formattedAmount
         });
