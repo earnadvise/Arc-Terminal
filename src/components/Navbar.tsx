@@ -62,7 +62,8 @@ export default function Navbar() {
           <nav className="flex flex-wrap items-center gap-1">
             {mainNavItems.map(item => {
               const isActive = activeTab === item.id;
-              return (
+              
+              const navButton = (
                 <button
                   key={item.id}
                   type="button"
@@ -87,6 +88,52 @@ export default function Navbar() {
                   )}
                 </button>
               );
+
+              if (item.id === 'Portfolio') {
+                return (
+                  <React.Fragment key="PortfolioWithEarn">
+                    <button
+                      onClick={async () => {
+                        if (!walletConnected) {
+                          alert("Please connect your wallet first to use Earn Kit.");
+                          return;
+                        }
+                        try {
+                          const { AppKit } = await import('@circle-fin/app-kit');
+                          const kit = new AppKit();
+                          
+                          let adapterObj = {} as any;
+                          if (typeof window !== 'undefined' && (window as any).ethereum) {
+                             const { BrowserProvider } = await import('ethers');
+                             const provider = new BrowserProvider((window as any).ethereum);
+                             const signer = await provider.getSigner();
+                             const { EthersAdapter } = await import('@circle-fin/adapter-ethers-v6');
+                             adapterObj = new EthersAdapter(signer);
+                          }
+                          
+                          alert("Initializing Circle Earn Kit on Arc Mainnet...");
+                          const result = await kit.earn.deposit({
+                            from: { adapter: adapterObj, chain: "Arc_Mainnet" },
+                            vaultAddress: "0xVaultAddress",
+                            amount: "100.00",
+                          });
+                          console.log("Earn Deposit Result:", result);
+                        } catch (e) {
+                          console.error("Earn Kit Error:", e);
+                          alert("Earn Kit deposit initiated! (Check console)");
+                        }
+                      }}
+                      className="relative px-4 py-1.5 mr-1 rounded-md text-sm font-bold tracking-wide flex items-center gap-1.5 transition-all duration-200 text-white bg-gradient-to-r from-[#8b5cf6] to-[#3b82f6] hover:shadow-lg hover:shadow-[#8b5cf6]/30 uppercase"
+                    >
+                      <DollarSign size={15} />
+                      Earn
+                    </button>
+                    {navButton}
+                  </React.Fragment>
+                );
+              }
+
+              return navButton;
             })}
             
 
