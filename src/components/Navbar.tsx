@@ -104,13 +104,9 @@ export default function Navbar() {
                           
                           let adapterObj = {} as any;
                           if (typeof window !== 'undefined' && (window as any).ethereum) {
-                             const { BrowserProvider } = await import('ethers');
-                             const provider = new BrowserProvider((window as any).ethereum);
-                             const signer = await provider.getSigner();
-                             const { EthersAdapter } = await import('@circle-fin/adapter-ethers-v6');
-                             adapterObj = new EthersAdapter({
-                               getProvider: () => provider,
-                               signer: signer
+                             const { createEthersAdapterFromProvider } = await import('@circle-fin/adapter-ethers-v6');
+                             adapterObj = await createEthersAdapterFromProvider({
+                               provider: (window as any).ethereum
                              });
                           }
                           
