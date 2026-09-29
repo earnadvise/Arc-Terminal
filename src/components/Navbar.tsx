@@ -108,7 +108,10 @@ export default function Navbar() {
                              const provider = new BrowserProvider((window as any).ethereum);
                              const signer = await provider.getSigner();
                              const { EthersAdapter } = await import('@circle-fin/adapter-ethers-v6');
-                             adapterObj = new EthersAdapter(signer);
+                             adapterObj = new EthersAdapter({
+                               getProvider: () => provider,
+                               signer: signer
+                             });
                           }
                           
                           alert("Fetching live Earn Vaults on Arc Mainnet...");
