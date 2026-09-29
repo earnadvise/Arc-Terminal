@@ -12,6 +12,37 @@ export default function PortfolioView() {
     walletConnected
   } = useAppState();
 
+  const [earnPositions, setEarnPositions] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    let active = true;
+    const fetchEarn = async () => {
+      if (!walletConnected || typeof window === 'undefined' || !(window as any).ethereum) return;
+      try {
+        const { AppKit } = await import('@circle-fin/app-kit');
+        const { createEthersAdapterFromProvider } = await import('@circle-fin/adapter-ethers-v6');
+        const kit = new AppKit();
+        const adapter = await createEthersAdapterFromProvider({ provider: (window as any).ethereum });
+        const { vaults } = await kit.earn.exploreVaults({ chain: "Arc" });
+        if (!active) return;
+        
+        const posPromises = (vaults || []).map((v: any) => 
+          kit.earn.getPosition({
+            from: { adapter, chain: "Arc" },
+            vaultAddress: v.vaultAddress
+          }).catch(() => null)
+        );
+        
+        const results = await Promise.all(posPromises);
+        if (active) setEarnPositions(results.filter(r => r !== null && Number(r.currentBalance) > 0));
+      } catch (e) {
+        console.error("Failed to fetch Earn positions for portfolio", e);
+      }
+    };
+    fetchEarn();
+    return () => { active = false; };
+  }, [walletConnected]);
+
   const eurcPrice = 1.085;
   const arcPrice  = 1.245;
 
@@ -24,9 +55,13 @@ export default function PortfolioView() {
   const totalMarginLocked = positions.reduce((acc, pos) => acc + pos.margin, 0);
   const unrealizedPnL = positions.reduce((acc, pos) => acc + pos.unrealizedPnl, 0);
   
-  // Total equity = Collateral Value + Unrealized PnL
+  const totalEarnPrincipal = earnPositions.reduce((acc, p) => acc + Number(p.pnl?.principalDeposited || 0) * (p.asset === 'EURC' ? eurcPrice : 1.0), 0);
+  const totalEarnYield = earnPositions.reduce((acc, p) => acc + Number(p.pnl?.totalYieldEarned || 0) * (p.asset === 'EURC' ? eurcPrice : 1.0), 0);
+  const totalEarnBalance = totalEarnPrincipal + totalEarnYield;
+
+  // Total equity = Collateral Value + Unrealized PnL + Earn Balance
   const collateralValue = assetDetails.reduce((acc, asset) => acc + asset.value, 0);
-  const totalBalance = collateralValue + unrealizedPnL;
+  const totalBalance = collateralValue + unrealizedPnL + totalEarnBalance;
   const availableMargin = Math.max(0, collateralValue - totalMarginLocked);
   const marginUsagePercent = collateralValue > 0 ? Math.min(100, (totalMarginLocked / collateralValue) * 100) : 0;
 
@@ -34,13 +69,18 @@ export default function PortfolioView() {
     <main className="w-full flex-1 max-w-[1600px] mx-auto p-4 lg:p-6 space-y-6 select-none animate-fadeIn">
       
       {/* 1. PORTFOLIO METRICS CARDS */}
-      <section className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <section className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           {
             label: 'Total Equity',
             value: `$${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-            desc: 'Wallet Collateral + Active PnL',
+            desc: 'Collateral + PnL + Earn',
             isPrimary: true
+          },
+          {
+            label: 'Earn Balance',
+            value: `$${totalEarnBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+            desc: `+$${totalEarnYield.toFixed(2)} total yield`
           },
           {
             label: 'Available Margin',
