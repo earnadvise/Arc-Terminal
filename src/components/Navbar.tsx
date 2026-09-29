@@ -111,19 +111,32 @@ export default function Navbar() {
                              adapterObj = new EthersAdapter(signer);
                           }
                           
-                          alert("Initializing Circle Earn Kit on Arc Mainnet...");
+                          alert("Fetching live Earn Vaults on Arc Mainnet...");
                           
-                          // TODO: Uncomment this once you get the real Morpho Vault address
-                          /*
+                          // 1. Dynamically fetch available vaults
+                          const { vaults } = await kit.earn.exploreVaults({
+                            chain: "Arc_Mainnet"
+                          });
+
+                          if (!vaults || vaults.length === 0) {
+                            alert("No live vaults found on Arc Mainnet yet.");
+                            return;
+                          }
+
+                          // 2. Select the first available vault (usually a USDC Morpho vault)
+                          const targetVault = vaults[0];
+                          console.log("Selected Vault:", targetVault);
+                          
+                          alert(`Depositing into vault: ${targetVault.name || targetVault.vaultAddress}`);
+
+                          // 3. Initiate the deposit using the real dynamically fetched address
                           const result = await kit.earn.deposit({
                             from: { adapter: adapterObj, chain: "Arc_Mainnet" },
-                            vaultAddress: "YOUR_REAL_VAULT_ADDRESS_HERE", 
-                            amount: "100.00",
+                            vaultAddress: targetVault.vaultAddress, 
+                            amount: "100.00", // Example amount, can be dynamic later
                           });
-                          console.log("Earn Deposit Result:", result);
-                          */
                           
-                          alert("Earn Kit is ready! Waiting for real Vault Address to be plugged into the code.");
+                          console.log("Earn Deposit Result:", result);
                         } catch (e) {
                           console.error("Earn Kit Error:", e);
                           alert("Earn Kit deposit initiated! (Check console)");
