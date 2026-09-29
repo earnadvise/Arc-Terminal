@@ -137,9 +137,9 @@ export default function Navbar() {
                           });
                           
                           console.log("Earn Deposit Result:", result);
-                        } catch (e) {
+                        } catch (e: any) {
                           console.error("Earn Kit Error:", e);
-                          alert("Earn Kit deposit initiated! (Check console)");
+                          alert("Earn Kit Error: " + (e?.message || JSON.stringify(e) || String(e)));
                         }
                       }}
                       className="relative px-4 py-1.5 mr-1 rounded-md text-sm font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 text-slate-500 dark:text-[#8a8a9e] hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/50"
