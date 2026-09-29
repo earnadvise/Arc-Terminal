@@ -112,12 +112,18 @@ export default function Navbar() {
                           }
                           
                           alert("Initializing Circle Earn Kit on Arc Mainnet...");
+                          
+                          // TODO: Uncomment this once you get the real Morpho Vault address
+                          /*
                           const result = await kit.earn.deposit({
                             from: { adapter: adapterObj, chain: "Arc_Mainnet" },
-                            vaultAddress: "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7", // Using ArcPerpRouter as a dummy valid hex address to pass ethers validation
+                            vaultAddress: "YOUR_REAL_VAULT_ADDRESS_HERE", 
                             amount: "100.00",
                           });
                           console.log("Earn Deposit Result:", result);
+                          */
+                          
+                          alert("Earn Kit is ready! Waiting for real Vault Address to be plugged into the code.");
                         } catch (e) {
                           console.error("Earn Kit Error:", e);
                           alert("Earn Kit deposit initiated! (Check console)");
