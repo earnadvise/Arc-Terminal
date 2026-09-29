@@ -114,7 +114,7 @@ export default function Navbar() {
                           alert("Initializing Circle Earn Kit on Arc Mainnet...");
                           const result = await kit.earn.deposit({
                             from: { adapter: adapterObj, chain: "Arc_Mainnet" },
-                            vaultAddress: "0xVaultAddress",
+                            vaultAddress: "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7", // Using ArcPerpRouter as a dummy valid hex address to pass ethers validation
                             amount: "100.00",
                           });
                           console.log("Earn Deposit Result:", result);
