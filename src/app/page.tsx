@@ -13,6 +13,7 @@ import BridgeView     from '@/components/views/BridgeView';
 import ArcSafePayView from '@/components/views/ArcSafePayView';
 import AgentsView     from '@/components/views/AgentsView';
 import PortfolioView  from '@/components/views/PortfolioView';
+import EarnView       from '@/components/views/EarnView';
 
 import { Info, CheckCircle2, AlertTriangle, XCircle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -30,6 +31,7 @@ export default function Home() {
       case 'Agents':     return <AgentsView />;
       case 'History':    return <HistoryView />;
       case 'Portfolio':  return <PortfolioView />;
+      case 'Earn':       return <EarnView />;
       default:           return <LandingView />;
     }
   };

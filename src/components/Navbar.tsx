@@ -93,58 +93,15 @@ export default function Navbar() {
                 return (
                   <React.Fragment key="PortfolioWithEarn">
                     <button
-                      onClick={async () => {
-                        if (!walletConnected) {
-                          alert("Please connect your wallet first to use Earn Kit.");
-                          return;
-                        }
-                        try {
-                          const { AppKit } = await import('@circle-fin/app-kit');
-                          const kit = new AppKit();
-                          
-                          let adapterObj = {} as any;
-                          if (typeof window !== 'undefined' && (window as any).ethereum) {
-                             const { createEthersAdapterFromProvider } = await import('@circle-fin/adapter-ethers-v6');
-                             adapterObj = await createEthersAdapterFromProvider({
-                               provider: (window as any).ethereum
-                             });
-                          }
-                          
-                          alert("Fetching live Earn Vaults on Arc Mainnet...");
-                          
-                          // 1. Dynamically fetch available vaults
-                          const { vaults } = await kit.earn.exploreVaults({
-                            chain: "Arc_Mainnet"
-                          });
-
-                          if (!vaults || vaults.length === 0) {
-                            alert("No live vaults found on Arc Mainnet yet.");
-                            return;
-                          }
-
-                          // 2. Select the first available vault (usually a USDC Morpho vault)
-                          const targetVault = vaults[0];
-                          console.log("Selected Vault:", targetVault);
-                          
-                          alert(`Depositing into vault: ${targetVault.name || targetVault.vaultAddress}`);
-
-                          // 3. Initiate the deposit using the real dynamically fetched address
-                          const result = await kit.earn.deposit({
-                            from: { adapter: adapterObj, chain: "Arc_Mainnet" },
-                            vaultAddress: targetVault.vaultAddress, 
-                            amount: "100.00", // Example amount, can be dynamic later
-                          });
-                          
-                          console.log("Earn Deposit Result:", result);
-                        } catch (e: any) {
-                          console.error("Earn Kit Error:", e);
-                          alert("Earn Kit Error: " + (e?.message || JSON.stringify(e) || String(e)));
-                        }
-                      }}
-                      className="relative px-4 py-1.5 mr-1 rounded-md text-sm font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 text-slate-500 dark:text-[#8a8a9e] hover:text-slate-700 dark:hover:text-slate-300 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-[#1f1f2e] dark:bg-[#1f1f2e]/50"
+                      onClick={() => setActiveTab('Earn')}
+                      className={`relative px-4 py-1.5 mr-1 rounded-md text-sm font-medium tracking-wide flex items-center gap-1.5 transition-all duration-200 ${
+                        activeTab === 'Earn'
+                          ? 'bg-slate-100 dark:bg-[#1f1f2e] text-slate-900 dark:text-white'
+                          : 'text-slate-500 dark:text-[#8a8a9e] hover:text-slate-700 dark:hover:text-slate-300 dark:hover:bg-slate-100 dark:hover:bg-[#1f1f2e]/50'
+                      }`}
                     >
-                      <DollarSign size={15} />
-                      Earn
+                      <DollarSign size={15} className={activeTab === 'Earn' ? "text-[#8b5cf6]" : ""} />
+                      <span>Earn</span>
                     </button>
                     {navButton}
                   </React.Fragment>
