@@ -57,9 +57,18 @@ export default function PortfolioView() {
   const eurcPrice = 1.085;
   const arcPrice  = 1.245;
 
+  const unifiedAssets = (crossChainDetails || []).map(detail => ({
+    name: `USDC (${detail.chain})`,
+    symbol: 'USDC',
+    amount: detail.amount,
+    price: 1.0,
+    value: detail.amount,
+    color: '#f59e0b'
+  }));
+
   const assetDetails = [
-    { name: 'USD Coin',   symbol: 'USDC', amount: balances.USDC, price: 1.0,       value: balances.USDC,            color: '#8b5cf6' },
-    { name: 'Cross-Chain USDC', symbol: 'USDC (Unified)', amount: unifiedBalances?.USDC || 0, price: 1.0, value: unifiedBalances?.USDC || 0, color: '#f59e0b' },
+    { name: 'USD Coin (Arc)', symbol: 'USDC', amount: balances.USDC, price: 1.0, value: balances.USDC, color: '#8b5cf6' },
+    ...unifiedAssets,
     { name: 'Euro Coin',  symbol: 'EURC', amount: balances.EURC, price: eurcPrice, value: balances.EURC * eurcPrice, color: '#3b82f6' },
     { name: 'Tether USD', symbol: 'USDT', amount: balances.USDT, price: 1.0,       value: balances.USDT,            color: '#10b981' },
   ];
