@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useAppState } from '@/context/useAppState';
+import { useUnifiedBalance } from '@/lib/circle-unified-balance-kit';
 import { Wallet, Info, Coins, ShieldAlert, Activity } from 'lucide-react';
 
 export default function PortfolioView() {
@@ -11,6 +12,8 @@ export default function PortfolioView() {
     closePosition,
     walletConnected
   } = useAppState();
+
+  const { balances: unifiedBalances, crossChainDetails } = useUnifiedBalance();
 
   const [earnPositions, setEarnPositions] = React.useState<any[]>([]);
 
@@ -56,6 +59,7 @@ export default function PortfolioView() {
 
   const assetDetails = [
     { name: 'USD Coin',   symbol: 'USDC', amount: balances.USDC, price: 1.0,       value: balances.USDC,            color: '#8b5cf6' },
+    { name: 'Cross-Chain USDC', symbol: 'USDC (Unified)', amount: unifiedBalances?.USDC || 0, price: 1.0, value: unifiedBalances?.USDC || 0, color: '#f59e0b' },
     { name: 'Euro Coin',  symbol: 'EURC', amount: balances.EURC, price: eurcPrice, value: balances.EURC * eurcPrice, color: '#3b82f6' },
     { name: 'Tether USD', symbol: 'USDT', amount: balances.USDT, price: 1.0,       value: balances.USDT,            color: '#10b981' },
   ];
