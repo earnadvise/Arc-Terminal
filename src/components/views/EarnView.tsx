@@ -2,10 +2,12 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAppState } from '@/context/useAppState';
+import { useUnifiedBalance } from '@/lib/circle-unified-balance-kit';
 import { Layers, Activity, TrendingUp, Search, RefreshCw, CheckCircle2, ArrowDownCircle, ArrowUpCircle, ExternalLink, Loader2, AlertTriangle } from 'lucide-react';
 
 export default function EarnView() {
-  const { walletConnected, addNotification, balances } = useAppState();
+  const { walletConnected, walletAddress, addNotification, balances } = useAppState();
+  const { spend, balances: unifiedBalances } = useUnifiedBalance();
 
   const [vaults, setVaults] = useState<any[]>([]);
   const [positions, setPositions] = useState<any[]>([]);
@@ -139,6 +141,28 @@ export default function EarnView() {
       
       let result;
       if (modalType === 'Deposit') {
+        const numAmount = Number(formattedAmount);
+        const tokenName = selectedVault.asset || 'USDC';
+        
+        // Unified Balance Logic: Bridge if short on native Arc USDC
+        if (tokenName === 'USDC' && balances.USDC < numAmount) {
+          if (unifiedBalances?.USDC >= numAmount) {
+            addNotification('info', 'Unified Balance', 'Bridging cross-chain USDC to Arc Mainnet...');
+            try {
+              await spend({ amount: numAmount, to: walletAddress, chain: "Arc" });
+              addNotification('success', 'Bridge Complete', 'Cross-chain USDC bridged! Proceeding to deposit...');
+            } catch (err: any) {
+              addNotification('error', 'Bridge Failed', err.message || 'Failed to bridge cross-chain USDC.');
+              setProcessing(false);
+              return;
+            }
+          } else {
+            addNotification('warning', 'Insufficient Balance', 'Not enough USDC across any network.');
+            setProcessing(false);
+            return;
+          }
+        }
+
         result = await kit.earn.deposit({
           from: { adapter, chain: "Arc" },
           vaultAddress: selectedVault.vaultAddress,
