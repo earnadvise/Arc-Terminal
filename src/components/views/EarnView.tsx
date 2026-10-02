@@ -399,10 +399,7 @@ export default function EarnView() {
                   <button 
                     onClick={() => {
                       if (modalType === 'Deposit') {
-                        if (selectedVault?.asset === 'USDC') {
-                          const total = (balances?.USDC || 0) + (unifiedBalances?.USDC || 0);
-                          setAmount(total.toString());
-                        }
+                        if (selectedVault?.asset === 'USDC') setAmount(balances?.walletUSDC?.toString() || '0');
                         else if (selectedVault?.asset === 'EURC') setAmount(balances?.EURC?.toString() || '0');
                         else setAmount('0');
                       } else {
@@ -427,12 +424,6 @@ export default function EarnView() {
                     {selectedVault?.asset}
                   </div>
                 </div>
-                {modalType === 'Deposit' && selectedVault?.asset === 'USDC' && (
-                  <div className="text-[11px] font-medium text-slate-500 text-right mt-1.5 flex items-center justify-end gap-1">
-                    Available: {((balances?.USDC || 0) + (unifiedBalances?.USDC || 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
-                    {unifiedBalances?.USDC > 0 && <span className="text-[#f59e0b] ml-1">(Cross-Chain Enabled)</span>}
-                  </div>
-                )}
               </div>
               
               {/* QUOTE PREVIEW */}
