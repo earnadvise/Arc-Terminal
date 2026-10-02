@@ -4,6 +4,7 @@ import React from 'react';
 import { useAppState } from '@/context/useAppState';
 import { useUnifiedBalance } from '@/lib/circle-unified-balance-kit';
 import { Wallet, Info, Coins, ShieldAlert, Activity } from 'lucide-react';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function PortfolioView() {
   const {
@@ -166,26 +167,52 @@ export default function PortfolioView() {
             </span>
           </div>
 
-          <div className="flex-1 flex flex-col justify-around">
-            <div className="space-y-3">
-              {assetDetails.map(asset => {
+          <div className="flex-1 flex items-center h-full">
+            {/* Pie Chart */}
+            <div className="w-1/2 h-full min-h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={assetDetails.filter(a => a.value > 0)}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    stroke="none"
+                  >
+                    {assetDetails.filter(a => a.value > 0).map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    formatter={(value: number) => `$${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}
+                    contentStyle={{ backgroundColor: '#13131a', border: '1px solid #1f1f2e', borderRadius: '8px' }}
+                    itemStyle={{ color: '#fff', fontSize: '12px' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Custom Legend */}
+            <div className="w-1/2 flex flex-col justify-center space-y-3 pl-4 border-l border-slate-100 dark:border-[#1f1f2e]/50">
+              {assetDetails.filter(a => a.value > 0).map(asset => {
                 const share = collateralValue > 0 ? (asset.value / collateralValue) * 100 : 0;
                 return (
-                  <div key={asset.symbol} className="space-y-1">
-                    <div className="flex justify-between text-xs font-semibold">
-                      <span className="text-slate-900 dark:text-white flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: asset.color }} />
-                        {asset.name} ({asset.symbol})
-                      </span>
-                      <span className="number-mono text-slate-500 dark:text-[#8a8a9e]">
-                        {asset.amount.toLocaleString(undefined, { maximumFractionDigits: 4 })} {asset.symbol} ({share.toFixed(1)}%)
-                      </span>
+                  <div key={asset.name} className="flex justify-between items-center text-xs">
+                    <div className="flex items-center gap-2 text-slate-900 dark:text-white font-semibold">
+                      <span className="w-2.5 h-2.5 rounded-full shadow-sm" style={{ backgroundColor: asset.color }} />
+                      <span className="truncate max-w-[120px]">{asset.name}</span>
                     </div>
-                    <div className="w-full h-2 bg-slate-100 dark:bg-[#1f1f2e] rounded-full overflow-hidden">
-                      <div 
-                        className="h-full rounded-full transition-all duration-500" 
-                        style={{ width: `${Math.max(share, 0)}%`, backgroundColor: asset.color }}
-                      />
+                    <div className="text-right">
+                      <div className="number-mono font-bold text-slate-700 dark:text-slate-300">
+                        {asset.amount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                      </div>
+                      <div className="number-mono text-[10px] text-slate-400">
+                        {share.toFixed(1)}%
+                      </div>
                     </div>
                   </div>
                 );
