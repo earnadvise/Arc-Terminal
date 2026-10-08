@@ -67,12 +67,13 @@ export function useHyperliquid() {
       
       const provider = new BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
+      const network = await provider.getNetwork();
       
       // The EIP-712 domain for Hyperliquid Session Keys
       const domain = {
         name: 'HyperliquidSignTransaction',
         version: '1',
-        chainId: 42161, // Arbitrum is used for HL L1 auth
+        chainId: Number(network.chainId), // Dynamically match user's wallet network to prevent MetaMask rejection
         verifyingContract: '0x0000000000000000000000000000000000000000'
       };
 
