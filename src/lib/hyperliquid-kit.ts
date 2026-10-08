@@ -13,18 +13,39 @@ export function useHyperliquid() {
   const [sessionKeyActive, setSessionKeyActive] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
+  // Fetch real balance from Hyperliquid L1
+  const fetchRealBalance = useCallback(async (userAddress: string) => {
+    try {
+      const res = await fetch(HL_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: "clearinghouseState", user: userAddress })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const margin = parseFloat(data.marginSummary.accountValue);
+        setHlBalance(margin);
+      }
+    } catch (e) {
+      console.error('Failed to fetch HL balance:', e);
+    }
+  }, []);
+
   /**
    * 1. CROSS-CHAIN FUNDING (SynRoute Simulation)
    * In a full production environment, this calls POST /v1/hyperliquid/deposit/quote
    * to bridge USDC from the source chain (Arbitrum, Base, Arc) to the Hyperliquid L1.
    */
-  const depositToHyperliquid = async (amount: number, sourceChain: string) => {
+  const depositToHyperliquid = async (amount: number, sourceChain: string, userAddress?: string) => {
     setIsProcessing(true);
     try {
       // Simulate the SynRoute cross-chain bridge and Hyperliquid L1 confirmation delay
       await new Promise(resolve => setTimeout(resolve, 3000));
       
       setHlBalance(prev => prev + amount);
+      if (userAddress) {
+        fetchRealBalance(userAddress);
+      }
       return { success: true, message: `Successfully deposited ${amount} USDC via ${sourceChain}` };
     } catch (error) {
       console.error(error);
@@ -63,7 +84,7 @@ export function useHyperliquid() {
       };
 
       const value = {
-        source: "Arc Terminal",
+        source: "arcterminalai.xyz",
         connectionId: ethers.keccak256(ethers.toUtf8Bytes(Date.now().toString()))
       };
 
@@ -132,6 +153,7 @@ export function useHyperliquid() {
     hlBalance,
     sessionKeyActive,
     isProcessing,
+    fetchRealBalance,
     depositToHyperliquid,
     enableTrading,
     placeHyperliquidOrder

@@ -31,10 +31,17 @@ export default function PerpetualsView() {
     depositFunds,
     withdrawFunds,
     setTPSL,
-    addNotification
+    addNotification,
+    walletAddress
   } = useAppState();
 
-  const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, enableTrading, placeHyperliquidOrder } = useHyperliquid();
+  const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, enableTrading, placeHyperliquidOrder, fetchRealBalance } = useHyperliquid();
+
+  React.useEffect(() => {
+    if (walletAddress) {
+      fetchRealBalance(walletAddress);
+    }
+  }, [walletAddress, fetchRealBalance]);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Crypto' | 'Commodities' | 'Forex'>('All');
@@ -354,7 +361,7 @@ export default function PerpetualsView() {
           {/* Avbl Balance & 1CT */}
           <div className="flex justify-between items-center text-xs font-semibold mb-3 px-1">
             <div className="flex items-center gap-3">
-              <span className="text-slate-500">Avbl <span className="text-slate-900 dark:text-white">{balances.marginUSDC.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span></span>
+              <span className="text-slate-500">Avbl <span className="text-slate-900 dark:text-white">{hlBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span></span>
               
               {/* 1CT Toggle */}
               <label className="flex items-center gap-1.5 cursor-pointer group" title="One-Click Trading (Gasless)">
@@ -424,7 +431,7 @@ export default function PerpetualsView() {
                  className="w-full accent-[#e5c07b]"
                  onChange={(e) => {
                    const pct = parseInt(e.target.value);
-                   if (balances.marginUSDC <= 0) {
+                   if (hlBalance <= 0) {
                      if (pct > 0) {
                        addNotification('warning', 'Empty Margin', 'You must deposit USDC into your Vault to trade.');
                        e.target.value = "0";
@@ -432,7 +439,7 @@ export default function PerpetualsView() {
                      return;
                    }
                    if (leverage > 0) {
-                     const maxPos = balances.marginUSDC * leverage;
+                     const maxPos = hlBalance * leverage;
                      const targetPos = maxPos * (pct / 100);
                      setInputSize((Math.floor((targetPos / activePair.lastPrice) * 10000) / 10000).toString());
                    }
@@ -875,7 +882,7 @@ export default function PerpetualsView() {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-4">
                 <span className="font-black text-slate-800 dark:text-slate-100">Margin Account</span>
-                <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Available: {marginAction === 'deposit' ? balances.walletUSDC.toLocaleString() : balances.marginUSDC.toLocaleString()}</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Available: {marginAction === 'deposit' ? balances.walletUSDC.toLocaleString() : hlBalance.toLocaleString()}</span>
               </div>
               <div className="space-y-3">
                 <div>
@@ -888,7 +895,7 @@ export default function PerpetualsView() {
                       className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1e1e24] focus:border-[#e5c07b]/50 focus:ring-2 focus:ring-[#e5c07b]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white outline-none transition-all"
                     />
                     <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      <button onClick={() => setMarginAmount((marginAction === 'deposit' ? balances.walletUSDC : balances.marginUSDC).toString())} className="px-2 py-1 bg-[#1e1e24] text-[#e5c07b] rounded text-[10px] font-bold">MAX</button>
+                      <button onClick={() => setMarginAmount((marginAction === 'deposit' ? balances.walletUSDC : hlBalance).toString())} className="px-2 py-1 bg-[#1e1e24] text-[#e5c07b] rounded text-[10px] font-bold">MAX</button>
                     </div>
                   </div>
                 </div>
@@ -899,7 +906,7 @@ export default function PerpetualsView() {
               <button onClick={async () => {
                 const amt = parseFloat(marginAmount);
                 if (!isNaN(amt) && amt > 0) {
-                  if (marginAction === 'deposit') { const res = await depositToHyperliquid(amt, "Arc Mainnet"); if (res.success) { depositFunds(amt); addNotification('success', 'Hyperliquid Funded', res.message); } else { addNotification('error', 'Deposit Failed', res.message); } }
+                  if (marginAction === 'deposit') { const res = await depositToHyperliquid(amt, "Arc Mainnet", walletAddress); if (res.success) { depositFunds(amt); addNotification('success', 'Hyperliquid Funded', res.message); } else { addNotification('error', 'Deposit Failed', res.message); } }
                   else withdrawFunds(amt);
                 }
                 setMarginAction(null);
