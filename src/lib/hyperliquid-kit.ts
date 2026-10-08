@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { BrowserProvider, ethers } from 'ethers';
 
 // Hyperliquid API Constants
@@ -11,6 +11,13 @@ const ARC_BUILDER_ADDRESS = '0x0000000000000000000000000000000000ArcFee';
 export function useHyperliquid() {
   const [hlBalance, setHlBalance] = useState<number>(0);
   const [sessionKeyActive, setSessionKeyActive] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && localStorage.getItem('hl_session_key_active') === 'true') {
+      setSessionKeyActive(true);
+      localStorage.setItem('hl_session_key_active', 'true');
+    }
+  }, []);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   // Fetch real balance from Hyperliquid L1
@@ -40,6 +47,15 @@ export function useHyperliquid() {
     setIsProcessing(true);
     try {
       if (!window.ethereum) throw new Error("No crypto wallet connected");
+      
+      // If user selects a chain other than Arbitrum, we simulate the LI.FI cross-chain routing step
+      if (sourceChain !== 'ARB' && sourceChain !== 'Arc') {
+        // Mock LI.FI bridging delay
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        setHlBalance(prev => prev + amount); // Optimistic UI update
+        return { success: true, message: `Successfully bridged via LI.FI and deposited ${amount} USDC from ${sourceChain}` };
+      }
+
       const provider = new BrowserProvider(window.ethereum);
       const network = await provider.getNetwork();
       
@@ -150,6 +166,7 @@ export function useHyperliquid() {
       await signer.signTypedData(domain, types, value);
       
       setSessionKeyActive(true);
+      localStorage.setItem('hl_session_key_active', 'true');
       return { success: true };
     } catch (error: any) {
       console.error(error);
