@@ -39,17 +39,57 @@ export function useHyperliquid() {
   const depositToHyperliquid = async (amount: number, sourceChain: string, userAddress?: string) => {
     setIsProcessing(true);
     try {
-      // Simulate the SynRoute cross-chain bridge and Hyperliquid L1 confirmation delay
+      if (!window.ethereum) throw new Error("No crypto wallet connected");
+      const provider = new BrowserProvider(window.ethereum);
+      const network = await provider.getNetwork();
+      
+      // Enforce Arbitrum network for Hyperliquid Bridge
+      if (Number(network.chainId) !== 42161) {
+        try {
+          await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xa4b1' }], // 42161 in hex
+          });
+        } catch (e) {
+          throw new Error("Please switch to Arbitrum One to deposit.");
+        }
+      }
+
+      const signer = await provider.getSigner();
+      
+      // Native USDC on Arbitrum
+      const USDC_ADDRESS = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
+      const HL_BRIDGE_ADDRESS = "0x2df1c51e09aecf9cacb7bc98cb1742757f163df7";
+      
+      const usdcAbi = ["function approve(address spender, uint256 amount) external returns (bool)"];
+      const usdcContract = new ethers.Contract(USDC_ADDRESS, usdcAbi, signer);
+      
+      const parsedAmount = ethers.parseUnits(amount.toString(), 6); // USDC has 6 decimals
+
+      // 1. Approve USDC
+      const approveTx = await usdcContract.approve(HL_BRIDGE_ADDRESS, parsedAmount);
+      await approveTx.wait();
+
+      // 2. Deposit to Hyperliquid Bridge
+      const bridgeAbi = [
+        "function deposit(uint256 usdAmount) external"
+      ];
+      const bridgeContract = new ethers.Contract(HL_BRIDGE_ADDRESS, bridgeAbi, signer);
+      
+      // Execute Deposit
+      const depositTx = await bridgeContract["deposit(uint256)"](parsedAmount);
+      await depositTx.wait();
+
+      // Wait a moment for L1 to index
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      setHlBalance(prev => prev + amount);
       if (userAddress) {
         fetchRealBalance(userAddress);
       }
-      return { success: true, message: `Successfully deposited ${amount} USDC via ${sourceChain}` };
+      return { success: true, message: `Successfully deposited ${amount} USDC to Hyperliquid L1` };
     } catch (error: any) {
       console.error(error);
-      return { success: false, message: 'Deposit failed' };
+      return { success: false, message: error.message || 'Deposit failed' };
     } finally {
       setIsProcessing(false);
     }
