@@ -380,7 +380,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       const cirBtcBalRes = cirBtcRes?.result;
 
       setBalances(prev => {
-        const nextNativeBal = nativeHex && nativeHex !== '0x' && !nativeHex.error ? Number(BigInt(nativeHex)) / 1e6 : prev.BTC;
+        const nextNativeBal = nativeHex && nativeHex !== '0x' && !nativeHex.error ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
         
         // Parse mainnet wallet USDC
         const nextWalletUSDC = walletBalRes && walletBalRes !== '0x' && !walletBalRes.error ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
