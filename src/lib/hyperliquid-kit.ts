@@ -1,10 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { BrowserProvider, ethers } from 'ethers';
-import { getRoutes, executeRoute, createConfig } from '@lifi/sdk';
+import { getRoutes, executeRoute } from '@lifi/sdk';
 
-createConfig({
-  integrator: 'arc-terminal'
-});
+
 
 const CHAIN_MAP: Record<string, number> = {
   'ARB': 42161,
@@ -56,9 +54,9 @@ export function useHyperliquid() {
   const depositToHyperliquid = async (amount: number, sourceChain: string, userAddress?: string) => {
     setIsProcessing(true);
     try {
-      if (!window.ethereum) throw new Error("No crypto wallet connected");
+      if (!(window as any).ethereum) throw new Error("No crypto wallet connected");
       
-      const provider = new BrowserProvider(window.ethereum);
+      const provider = new BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
       const currentAddress = await signer.getAddress();
 
@@ -74,7 +72,7 @@ export function useHyperliquid() {
         // Ensure wallet is on source chain
         const network = await provider.getNetwork();
         if (Number(network.chainId) !== sourceChainId) {
-          throw new Error(Please switch your wallet to  to initiate the cross-chain deposit.);
+          throw new Error(`Please switch your wallet to  to initiate the cross-chain deposit.`);
         }
 
         // We build the calldata for the post-hook to execute on Arbitrum
@@ -100,11 +98,11 @@ export function useHyperliquid() {
           ]
         };
 
-        const result = await getRoutes(routesRequest);
+        const result = await (getRoutes as any)(routesRequest);
         if (!result.routes || result.routes.length === 0) throw new Error("No cross-chain route found by LI.FI");
         
         const route = result.routes[0];
-        await executeRoute(route, signer);
+        await (executeRoute as any)(route, { signer });
         
         if (userAddress) fetchRealBalance(userAddress);
         return { success: true, message: "Successfully bridged via LI.FI and deposited to Hyperliquid!" };
@@ -116,7 +114,7 @@ export function useHyperliquid() {
       // Enforce Arbitrum network for Hyperliquid Bridge
       if (Number(network.chainId) !== 42161) {
         try {
-          await window.ethereum.request({
+          await (window as any).ethereum.request({
             method: 'wallet_switchEthereumChain',
             params: [{ chainId: '0xa4b1' }], // 42161 in hex
           });
@@ -186,9 +184,9 @@ export function useHyperliquid() {
   const enableTrading = async () => {
     setIsProcessing(true);
     try {
-      if (!window.ethereum) throw new Error("No crypto wallet found");
+      if (!(window as any).ethereum) throw new Error("No crypto wallet found");
       
-      const provider = new BrowserProvider(window.ethereum);
+      const provider = new BrowserProvider((window as any).ethereum);
       const signer = await provider.getSigner();
       const network = await provider.getNetwork();
       
