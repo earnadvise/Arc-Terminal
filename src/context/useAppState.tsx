@@ -383,7 +383,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         const nextNativeBal = nativeHex && nativeHex !== '0x' && !nativeHex.error ? Number(BigInt(nativeHex)) / 1e18 : prev.BTC;
         
         // Parse mainnet wallet USDC
-        const nextWalletUSDC = walletBalRes && walletBalRes !== '0x' && !walletBalRes.error ? Number(BigInt(walletBalRes)) / 1e6 : prev.walletUSDC;
+        const nextWalletUSDC = walletBalRes && walletBalRes !== '0x' && !walletBalRes.error ? Number(BigInt(walletBalRes)) / 1e18 : prev.walletUSDC;
         const nextEURC = eurcBalRes && eurcBalRes !== '0x' && !eurcBalRes.error ? Number(BigInt(eurcBalRes)) / 1e6 : prev.EURC;
         const nextCirBTC = cirBtcBalRes && cirBtcBalRes !== '0x' && !cirBtcBalRes.error ? Number(BigInt(cirBtcBalRes)) / 1e8 : prev.BTC; // cirBTC has 8 decimals
         
