@@ -8,7 +8,8 @@ const CHAIN_MAP: Record<string, number> = {
   'ARB': 42161,
   'Base': 8453,
   'OP': 10,
-  'ETH': 1
+  'ETH': 1,
+  'Arc': 5042
 };
 
 // Hyperliquid API Constants
@@ -92,7 +93,7 @@ export function useHyperliquid() {
         };
         
         const USDC_MAP: Record<string, string> = {
-          'Arc': "0x0000000000000000000000000000000000000000", // Update with Arc USDC
+          'Arc': "0x3600000000000000000000000000000000000000",
           'Base': "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
           'OP': "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
           'ETH': "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
