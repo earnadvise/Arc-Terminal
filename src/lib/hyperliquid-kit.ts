@@ -86,6 +86,25 @@ export function useHyperliquid() {
         const hlBridgeInterface = new ethers.Interface(["function deposit(uint256 usdAmount) external"]);
         const postHookCalldata = hlBridgeInterface.encodeFunctionData("deposit", [parsedAmount]);
 
+        // If user selects Arc, use the custom ArcPerpRouter (Omnibus Relayer model)
+        if (sourceChain === 'Arc') {
+          const ARC_ROUTER = "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7";
+          const ARC_USDC = "0x0000000000000000000000000000000000000000"; // Replace with actual Arc USDC address
+
+          const usdcAbi = ["function approve(address spender, uint256 amount) external returns (bool)"];
+          const usdcContract = new ethers.Contract(ARC_USDC, usdcAbi, signer);
+          
+          const approveTx = await usdcContract.approve(ARC_ROUTER, parsedAmount);
+          await approveTx.wait();
+
+          const routerAbi = ["function deposit(uint256 amount) external"];
+          const routerContract = new ethers.Contract(ARC_ROUTER, routerAbi, signer);
+          const depositTx = await routerContract.deposit(parsedAmount);
+          await depositTx.wait();
+
+          return { success: true, message: "Successfully deposited via Arc Relayer. Awaiting backend credit." };
+        }
+
         const USDC_MAP: Record<number, string> = {
           8453: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // Base
           10: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", // OP
