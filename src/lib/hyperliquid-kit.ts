@@ -47,7 +47,7 @@ export function useHyperliquid() {
         fetchRealBalance(userAddress);
       }
       return { success: true, message: `Successfully deposited ${amount} USDC via ${sourceChain}` };
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       return { success: false, message: 'Deposit failed' };
     } finally {
@@ -93,9 +93,9 @@ export function useHyperliquid() {
       
       setSessionKeyActive(true);
       return { success: true };
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      return { success: false, message: 'User rejected session key signature' };
+      return { success: false, message: error.message || 'User rejected session key signature' };
     } finally {
       setIsProcessing(false);
     }
@@ -142,7 +142,7 @@ export function useHyperliquid() {
       await new Promise(resolve => setTimeout(resolve, 800));
 
       return { success: true, message: `Placed ${isBuy ? 'LONG' : 'SHORT'} order for ${sz} ${symbol}` };
-    } catch (error) {
+    } catch (error: any) {
       return { success: false, message: 'Order execution failed' };
     } finally {
       setIsProcessing(false);
