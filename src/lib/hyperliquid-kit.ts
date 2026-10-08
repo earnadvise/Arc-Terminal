@@ -65,7 +65,9 @@ export function useHyperliquid() {
       const HL_BRIDGE_ADDRESS = "0x2df1c51e09aecf9cacb7bc98cb1742757f163df7";
       const parsedAmount = ethers.parseUnits(amount.toString(), 6);
 
-      // If user selects a chain other than Arbitrum, we execute a cross-chain post-hook via LI.FI
+      // --- SYNTHRA OMNIBUS RELAYER CLONE ---
+      // If user selects a chain other than Arbitrum (Base, OP, Arc), we skip decentralized bridging 
+      // and deposit straight into the custom ArcPerpRouter on that specific chain.
       if (sourceChain !== 'ARB') {
         const sourceChainId = CHAIN_MAP[sourceChain] || 1;
         
@@ -78,84 +80,41 @@ export function useHyperliquid() {
               params: [{ chainId: `0x${sourceChainId.toString(16)}` }],
             });
           } catch (e) {
-            throw new Error(`Please switch your wallet to ${sourceChain} to initiate the cross-chain deposit.`);
+            throw new Error(`Please switch your wallet to ${sourceChain} to initiate the deposit.`);
           }
         }
 
-        // We build the calldata for the post-hook to execute on Arbitrum
-        const hlBridgeInterface = new ethers.Interface(["function deposit(uint256 usdAmount) external"]);
-        const postHookCalldata = hlBridgeInterface.encodeFunctionData("deposit", [parsedAmount]);
-
-        // If user selects Arc, use the custom ArcPerpRouter (Omnibus Relayer model)
-        if (sourceChain === 'Arc') {
-          const ARC_ROUTER = "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7";
-          const ARC_USDC = "0x0000000000000000000000000000000000000000"; // Replace with actual Arc USDC address
-
-          const usdcAbi = ["function approve(address spender, uint256 amount) external returns (bool)"];
-          const usdcContract = new ethers.Contract(ARC_USDC, usdcAbi, signer);
-          
-          const approveTx = await usdcContract.approve(ARC_ROUTER, parsedAmount);
-          await approveTx.wait();
-
-          const routerAbi = ["function deposit(uint256 amount) external"];
-          const routerContract = new ethers.Contract(ARC_ROUTER, routerAbi, signer);
-          const depositTx = await routerContract.deposit(parsedAmount);
-          await depositTx.wait();
-
-          return { success: true, message: "Successfully deposited via Arc Relayer. Awaiting backend credit." };
-        }
-
-        const USDC_MAP: Record<number, string> = {
-          8453: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // Base
-          10: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", // OP
-          1: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" // ETH
+        // Deployed ArcPerpRouter addresses across different chains
+        const ROUTER_MAP: Record<string, string> = {
+          'Arc': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7",
+          'Base': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7", // Update when deployed on Base
+          'OP': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7"     // Update when deployed on OP
         };
-        const sourceToken = USDC_MAP[sourceChainId] || "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
-
-        const routesRequest = {
-          fromChainId: sourceChainId,
-          toChainId: 42161,
-          fromTokenAddress: sourceToken,
-          toTokenAddress: ARB_USDC,
-          fromAmount: parsedAmount.toString(),
-          fromAddress: currentAddress,
-          toAddress: currentAddress,
-          contractCalls: [
-            {
-              fromAmount: parsedAmount.toString(),
-              fromTokenAddress: ARB_USDC,
-              toContractAddress: HL_BRIDGE_ADDRESS,
-              toContractCallData: postHookCalldata,
-              toContractGasLimit: "500000"
-            }
-          ]
+        
+        const USDC_MAP: Record<string, string> = {
+          'Arc': "0x0000000000000000000000000000000000000000", // Update with Arc USDC
+          'Base': "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+          'OP': "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85",
+          'ETH': "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         };
 
-        const response = await fetch('https://li.quest/v1/advanced/routes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(routesRequest)
-        });
-        const result = await response.json();
+        const targetRouter = ROUTER_MAP[sourceChain] || ROUTER_MAP['Arc'];
+        const targetUSDC = USDC_MAP[sourceChain] || USDC_MAP['Arc'];
 
-        if (!result.routes || result.routes.length === 0) throw new Error("No cross-chain route found by LI.FI");
+        const usdcAbi = ["function approve(address spender, uint256 amount) external returns (bool)"];
+        const usdcContract = new ethers.Contract(targetUSDC, usdcAbi, signer);
         
-        const route = result.routes[0];
-        const txRequest = route.steps[0].transactionRequest;
-        
-        if (!txRequest) throw new Error("LI.FI route generation failed");
-        
-        // Execute the cross-chain swap directly via Ethers.js
-        const tx = await signer.sendTransaction({
-          to: txRequest.to,
-          data: txRequest.data,
-          value: txRequest.value,
-          gasLimit: txRequest.gasLimit
-        });
-        await tx.wait();
-        
-        if (userAddress) fetchRealBalance(userAddress);
-        return { success: true, message: "Successfully bridged via LI.FI and deposited to Hyperliquid!" };
+        // 1. Approve USDC on source chain for Omnibus Router
+        const approveTx = await usdcContract.approve(targetRouter, parsedAmount);
+        await approveTx.wait();
+
+        // 2. Deposit into Omnibus Router
+        const routerAbi = ["function deposit(uint256 amount) external"];
+        const routerContract = new ethers.Contract(targetRouter, routerAbi, signer);
+        const depositTx = await routerContract.deposit(parsedAmount);
+        await depositTx.wait();
+
+        return { success: true, message: `Successfully deposited ${amount} USDC into ${sourceChain} Relayer. Awaiting backend credit on Hyperliquid.` };
       }
 
       // --- STANDARD ARBITRUM DIRECT DEPOSIT FLOW ---
