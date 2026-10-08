@@ -377,7 +377,7 @@ export default function PerpetualsView() {
                     <span>Leverage</span>
                     <span className="text-[#e5c07b]">{leverage}x</span>
                   </div>
-                  <input type="range" min="1" max="100" value={leverage} onChange={(e) => setLeverage(parseInt(e.target.value))} className="w-full accent-[#e5c07b] mb-4" />
+                  <input type="range" min="1" max="50" value={leverage} onChange={(e) => setLeverage(parseInt(e.target.value))} className="w-full accent-[#e5c07b] mb-4" />
                   <button onClick={() => setShowLeverageDropdown(false)} className="w-full py-1.5 bg-[#e5c07b] text-slate-900 text-xs font-bold rounded hover:bg-[#d4ae6a]">Confirm</button>
                 </div>
               )}

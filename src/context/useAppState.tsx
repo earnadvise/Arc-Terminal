@@ -429,24 +429,31 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const fetchPrices = async () => {
       try {
-        const binanceRes = await fetch('https://api.binance.com/api/v3/ticker/24hr?symbols=%5B%22BTCUSDT%22,%22ETHUSDT%22,%22SOLUSDT%22,%22SUIUSDT%22,%22APTUSDT%22,%22PAXGUSDT%22,%22ASTRUSDT%22%5D').catch(() => null);
+        const hlRes = await fetch('https://api.hyperliquid.xyz/info', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type: "metaAndAssetCtxs" })
+        }).catch(() => null);
         
         let apiData: Record<string, any> = {};
-        if (binanceRes && binanceRes.ok) {
-          const data = await binanceRes.json();
-          data.forEach((item: any) => {
-            const symbolMap: Record<string, string> = {
-              BTCUSDT: 'BTC-PERP', ETHUSDT: 'ETH-PERP', SOLUSDT: 'SOL-PERP',
-              SUIUSDT: 'SUI-PERP', APTUSDT: 'APT-PERP', PAXGUSDT: 'xau-PERP'
-            };
-            const sym = symbolMap[item.symbol];
-            if (sym) {
-              apiData[sym] = {
-                lastPrice: parseFloat(item.lastPrice),
-                change24h: parseFloat(item.priceChangePercent),
-                high24h: parseFloat(item.highPrice),
-                low24h: parseFloat(item.lowPrice),
-                volume24h: Math.round(parseFloat(item.quoteVolume)),
+        if (hlRes && hlRes.ok) {
+          const data = await hlRes.json();
+          const meta = data[0];
+          const ctxs = data[1];
+
+          meta.universe.forEach((coin: any, index: number) => {
+            const symbol = coin.name + '-PERP';
+            const ctx = ctxs[index];
+            if (ctx) {
+              const markPx = parseFloat(ctx.markPx);
+              const prevDayPx = parseFloat(ctx.prevDayPx);
+              const change24h = prevDayPx > 0 ? ((markPx - prevDayPx) / prevDayPx) * 100 : 0;
+              apiData[symbol] = {
+                lastPrice: markPx,
+                change24h: Number(change24h.toFixed(2)),
+                high24h: 0,
+                low24h: 0,
+                volume24h: Math.round(parseFloat(ctx.dayNtlVlm)),
               };
             }
           });
