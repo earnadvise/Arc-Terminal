@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { BrowserProvider, ethers } from 'ethers';
-import { getRoutes, executeRoute } from '@lifi/sdk';
+import { getRoutes, executeRoute, createClient } from \'@lifi/sdk\';
 
 
 
@@ -105,11 +105,12 @@ export function useHyperliquid() {
           ]
         };
 
-        const result = await (getRoutes as any)(routesRequest);
+        const lifiClient = createClient({ integrator: 'arc-terminal' });
+        const result = await getRoutes(lifiClient, routesRequest);
         if (!result.routes || result.routes.length === 0) throw new Error("No cross-chain route found by LI.FI");
         
         const route = result.routes[0];
-        await (executeRoute as any)(route, { signer });
+        await executeRoute(lifiClient, route, { signer });
         
         if (userAddress) fetchRealBalance(userAddress);
         return { success: true, message: "Successfully bridged via LI.FI and deposited to Hyperliquid!" };
