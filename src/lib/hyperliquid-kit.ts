@@ -64,7 +64,7 @@ export function useHyperliquid() {
       // Native USDC on Arbitrum
       const ARB_USDC = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831";
       const HL_BRIDGE_ADDRESS = "0x2df1c51e09aecf9cacb7bc98cb1742757f163df7";
-      const parsedAmount = ethers.parseUnits(amount.toString(), sourceChain === "Arc" ? 18 : 6);
+      const parsedAmount = ethers.parseUnits(amount.toString(), 6);
 
       // --- SYNTHRA OMNIBUS RELAYER CLONE ---
       // If user selects a chain other than Arbitrum (Base, OP, Arc), we skip decentralized bridging 
@@ -227,7 +227,7 @@ export function useHyperliquid() {
           };
           const targetRouter = ROUTER_MAP[resolvedChainName] || ROUTER_MAP['Arc'];
 
-          const parsedAmount = ethers.parseUnits(amount.toString(), destinationChain === "Arc" ? 18 : 6);
+          const parsedAmount = ethers.parseUnits(amount.toString(), 6);
           const routerAbi = ["function withdraw(uint256 amount) external"];
           const routerContract = new ethers.Contract(targetRouter, routerAbi, await provider.getSigner());
           
