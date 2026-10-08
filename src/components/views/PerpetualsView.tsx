@@ -4,7 +4,8 @@ import React, { useState, useRef } from 'react';
 import { useAppState } from '@/context/useAppState';
 import { toPng } from 'html-to-image';
 import TradingViewChart from './TradingViewChart';
-import { Search, Scale, CircleAlert } from 'lucide-react';
+import { Search, Scale, CircleAlert, ShieldCheck, Loader2 } from 'lucide-react';
+import { useHyperliquid } from '@/lib/hyperliquid-kit';
 
 export default function PerpetualsView() {
   const {
@@ -32,6 +33,8 @@ export default function PerpetualsView() {
     setTPSL,
     addNotification
   } = useAppState();
+
+  const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, enableTrading, placeHyperliquidOrder } = useHyperliquid();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Crypto' | 'Commodities' | 'Forex'>('All');
@@ -81,13 +84,19 @@ export default function PerpetualsView() {
     ? parsedPrice * (1 - (1 / leverage) * 0.95)
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
-  const handlePlaceOrder = () => {
-    placeOrder(
-      tradeSide,
-      orderType.toUpperCase() as 'MARKET' | 'LIMIT' | 'STOP',
-      parsedPrice,
-      parsedSize
-    );
+  const handlePlaceOrder = async () => {
+    if (!sessionKeyActive) {
+      addNotification('error', 'Auth Required', 'Please click "Enable Trading" to sign your Hyperliquid session key.');
+      return;
+    }
+    const res = await placeHyperliquidOrder(activePair.symbol, tradeSide === 'LONG', parsedSize, parsedPrice, leverage);
+    if (res.success) {
+      addNotification('success', 'Order Submitted', res.message);
+      // Fallback to local state mock for UI feedback
+      placeOrder(tradeSide, orderType.toUpperCase() as 'MARKET' | 'LIMIT' | 'STOP', parsedPrice, parsedSize);
+    } else {
+      addNotification('error', 'Execution Failed', res.message);
+    }
   };
 
   const filteredPairs = markets.filter(m => {
@@ -186,7 +195,7 @@ export default function PerpetualsView() {
                   {filteredPairs.map(m => (
                     <div
                       key={m.symbol}
-                      onClick={() => { setActivePairBySymbol(m.symbol); setShowMarketDropdown(false); }}
+                      onClick={async () => { setActivePairBySymbol(m.symbol); setShowMarketDropdown(false); }}
                       className="flex items-center justify-between p-2 hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] cursor-pointer border-b border-slate-200 dark:border-[#1e1e24]/50"
                     >
                       <div>
@@ -357,8 +366,8 @@ export default function PerpetualsView() {
               </label>
             </div>
             <div className="flex items-center gap-2">
-                <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Deposit" onClick={() => { setMarginAction('deposit'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
-                <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Withdraw" onClick={() => { setMarginAction('withdraw'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></button>
+                <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Deposit" onClick={async () => { setMarginAction('deposit'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
+                <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Withdraw" onClick={async () => { setMarginAction('withdraw'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></button>
               </div>
           </div>
 
@@ -460,20 +469,40 @@ export default function PerpetualsView() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          {!sessionKeyActive ? (
+            <button
+              onClick={async () => {
+                const res = await enableTrading();
+                if (res.success) {
+                  addNotification('success', 'Trading Enabled', 'Hyperliquid session key authorized.');
+                } else {
+                  addNotification('error', 'Auth Failed', res.message);
+                }
+              }}
+              disabled={isProcessing}
+              className="w-full py-3 rounded text-sm font-bold bg-gradient-to-r from-[#e5c07b] to-[#d4ae6a] hover:opacity-90 text-slate-900 transition-opacity shadow-lg shadow-[#e5c07b]/20 flex items-center justify-center gap-2"
+            >
+              <ShieldCheck size={18} />
+              {isProcessing ? 'Signing...' : 'Enable Trading'}
+            </button>
+          ) : (
+            <div className="flex gap-2">
               <button
-                onClick={() => { setTradeSide('LONG'); handlePlaceOrder(); }}
-                className="flex-1 py-3 rounded text-sm font-bold bg-[#10b981] hover:bg-[#059669] text-slate-900 dark:text-white transition-colors shadow-lg shadow-[#10b981]/20 flex flex-col items-center justify-center leading-tight"
+                onClick={async () => { setTradeSide('LONG'); handlePlaceOrder(); }}
+                disabled={isProcessing}
+                className="flex-1 py-3 rounded text-sm font-bold bg-[#10b981] hover:bg-[#059669] text-slate-900 dark:text-white transition-colors shadow-lg shadow-[#10b981]/20 flex flex-col items-center justify-center leading-tight disabled:opacity-50"
               >
-                <span>Buy / Long</span>
+                {isProcessing && tradeSide === 'LONG' ? <Loader2 size={16} className="animate-spin" /> : <span>Buy / Long</span>}
               </button>
               <button
-                onClick={() => { setTradeSide('SHORT'); handlePlaceOrder(); }}
-                className="flex-1 py-3 rounded text-sm font-bold bg-[#ef4444] hover:bg-[#dc2626] text-slate-900 dark:text-white transition-colors shadow-lg shadow-[#ef4444]/20 flex flex-col items-center justify-center leading-tight"
+                onClick={async () => { setTradeSide('SHORT'); handlePlaceOrder(); }}
+                disabled={isProcessing}
+                className="flex-1 py-3 rounded text-sm font-bold bg-[#ef4444] hover:bg-[#dc2626] text-slate-900 dark:text-white transition-colors shadow-lg shadow-[#ef4444]/20 flex flex-col items-center justify-center leading-tight disabled:opacity-50"
               >
-                <span>Sell / Short</span>
+                {isProcessing && tradeSide === 'SHORT' ? <Loader2 size={16} className="animate-spin" /> : <span>Sell / Short</span>}
               </button>
             </div>
+          )}
         </div>
       </div>
 
@@ -531,7 +560,7 @@ export default function PerpetualsView() {
             {/* Actions (Not part of the downloaded image) */}
             <div className="w-full flex gap-3">
               <button onClick={() => setSharePosition(null)} className="flex-1 py-3 rounded-xl text-xs font-bold text-slate-900 bg-white hover:bg-slate-200 transition-colors backdrop-blur-md">Close</button>
-              <button onClick={() => {
+              <button onClick={async () => {
                 navigator.clipboard.writeText(`I'm ${sharePosition.side} ${sharePosition.symbol} with ${sharePosition.leverage}x leverage on Arc Terminal AI! PnL: ${sharePosition.unrealizedPnl >= 0 ? '+' : ''}${sharePosition.margin > 0 ? ((sharePosition.unrealizedPnl / sharePosition.margin) * 100).toFixed(2) : 0}%`);
                 alert('Copied to clipboard!');
               }} className="flex-1 py-3 rounded-xl text-xs font-bold text-slate-900 bg-white hover:bg-slate-200 transition-colors backdrop-blur-md">Copy Text</button>
@@ -592,7 +621,7 @@ export default function PerpetualsView() {
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
               <button onClick={() => setTpSlPosition(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] transition-colors">Cancel</button>
-              <button onClick={() => {
+              <button onClick={async () => {
                 if (tpPrice || slPrice) {
                   const tp = tpPrice ? parseFloat(tpPrice) : 0;
                   const sl = slPrice ? parseFloat(slPrice) : 0;
@@ -670,7 +699,7 @@ export default function PerpetualsView() {
               </div>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
-              <button onClick={() => {
+              <button onClick={async () => {
                 const amt = parseFloat(closeSizeInput);
                 if (!isNaN(amt) && amt > 0) {
                   closePosition(closingPosition.id, amt);
@@ -749,7 +778,7 @@ export default function PerpetualsView() {
                               await new Promise(r => setTimeout(r, 8000));
                               await placeOrder(pos.side === 'LONG' ? 'SHORT' : 'LONG', 'MARKET', pos.markPrice, pos.size, pos.symbol, false, true);
                             }} className="px-2 py-1 text-[10px] font-semibold text-[#f59e0b] hover:bg-[#f59e0b]/10 border border-[#f59e0b]/30 rounded transition-all" title="Reverse Position">Reverse</button>
-                            <button onClick={() => {
+                            <button onClick={async () => {
                               setClosingPosition(pos);
                               setCloseSizeInput(pos.size.toString());
                             }} className="px-2 py-1 text-[10px] font-semibold text-[#ef4444] hover:bg-[#ef4444]/10 border border-[#ef4444]/30 rounded transition-all">Close</button>
@@ -867,10 +896,10 @@ export default function PerpetualsView() {
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
               <button onClick={() => setMarginAction(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] transition-colors">Cancel</button>
-              <button onClick={() => {
+              <button onClick={async () => {
                 const amt = parseFloat(marginAmount);
                 if (!isNaN(amt) && amt > 0) {
-                  if (marginAction === 'deposit') depositFunds(amt);
+                  if (marginAction === 'deposit') { const res = await depositToHyperliquid(amt, "Arc Mainnet"); if (res.success) { depositFunds(amt); addNotification('success', 'Hyperliquid Funded', res.message); } else { addNotification('error', 'Deposit Failed', res.message); } }
                   else withdrawFunds(amt);
                 }
                 setMarginAction(null);
