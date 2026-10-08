@@ -70,11 +70,23 @@ export function useHyperliquid() {
       // If user selects a chain other than Arbitrum (Base, OP, Arc), we skip decentralized bridging 
       // and deposit straight into the custom ArcPerpRouter on that specific chain.
       if (sourceChain !== 'ARB') {
-        const sourceChainId = CHAIN_MAP[sourceChain] || 1;
-        
-        // Ensure wallet is on source chain
         const network = await provider.getNetwork();
-        if (Number(network.chainId) !== sourceChainId) {
+        const currentChainId = Number(network.chainId);
+        
+        let resolvedChainName = sourceChain;
+        let sourceChainId = CHAIN_MAP[sourceChain];
+        
+        if (sourceChain === 'Auto') {
+          sourceChainId = currentChainId;
+          // Reverse lookup chain name from ID
+          const entry = Object.entries(CHAIN_MAP).find(([name, id]) => id === currentChainId);
+          resolvedChainName = entry ? entry[0] : 'Arc';
+        } else if (!sourceChainId) {
+          sourceChainId = 1;
+        }
+        
+        // Ensure wallet is on source chain (only switch if not Auto and not already on it)
+        if (sourceChain !== 'Auto' && currentChainId !== sourceChainId) {
           try {
             await (window as any).ethereum.request({
               method: 'wallet_switchEthereumChain',
@@ -89,7 +101,8 @@ export function useHyperliquid() {
         const ROUTER_MAP: Record<string, string> = {
           'Arc': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7",
           'Base': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7", // Update when deployed on Base
-          'OP': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7"     // Update when deployed on OP
+          'OP': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7",    // Update when deployed on OP
+          'ETH': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7"
         };
         
         const USDC_MAP: Record<string, string> = {
@@ -99,8 +112,8 @@ export function useHyperliquid() {
           'ETH': "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
         };
 
-        const targetRouter = ROUTER_MAP[sourceChain] || ROUTER_MAP['Arc'];
-        const targetUSDC = USDC_MAP[sourceChain] || USDC_MAP['Arc'];
+        const targetRouter = ROUTER_MAP[resolvedChainName] || ROUTER_MAP['Arc'];
+        const targetUSDC = USDC_MAP[resolvedChainName] || USDC_MAP['Arc'];
 
         const usdcAbi = ["function approve(address spender, uint256 amount) external returns (bool)"];
         const usdcContract = new ethers.Contract(targetUSDC, usdcAbi, signer);
