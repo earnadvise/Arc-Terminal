@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { BrowserProvider, ethers } from 'ethers';
-import { getRoutes, executeRoute, createClient } from \'@lifi/sdk\';
+import { getRoutes, executeRoute, createClient } from '@lifi/sdk';
 
 
 
