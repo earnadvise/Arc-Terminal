@@ -72,7 +72,14 @@ export function useHyperliquid() {
         // Ensure wallet is on source chain
         const network = await provider.getNetwork();
         if (Number(network.chainId) !== sourceChainId) {
-          throw new Error(`Please switch your wallet to  to initiate the cross-chain deposit.`);
+          try {
+            await (window as any).ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: `0x${sourceChainId.toString(16)}` }],
+            });
+          } catch (e) {
+            throw new Error(`Please switch your wallet to ${sourceChain} to initiate the cross-chain deposit.`);
+          }
         }
 
         // We build the calldata for the post-hook to execute on Arbitrum
