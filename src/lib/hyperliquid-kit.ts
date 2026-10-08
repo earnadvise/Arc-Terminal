@@ -48,12 +48,9 @@ export function useHyperliquid() {
     try {
       if (!window.ethereum) throw new Error("No crypto wallet connected");
       
-      // If user selects a chain other than Arbitrum, we simulate the LI.FI cross-chain routing step
-      if (sourceChain !== 'ARB' && sourceChain !== 'Arc') {
-        // Mock LI.FI bridging delay
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        setHlBalance(prev => prev + amount); // Optimistic UI update
-        return { success: true, message: `Successfully bridged via LI.FI and deposited ${amount} USDC from ${sourceChain}` };
+      // If user selects a chain other than Arbitrum, block it since we removed mocks
+      if (sourceChain !== 'ARB') {
+        throw new Error('Cross-chain deposits require a deployed relayer. Please bridge to Arbitrum first, or select ARB.');
       }
 
       const provider = new BrowserProvider(window.ethereum);
@@ -114,15 +111,21 @@ export function useHyperliquid() {
   const withdrawFromHyperliquid = async (amount: number, destinationChain: string) => {
     setIsProcessing(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      if (destinationChain !== 'ARB') {
+        throw new Error('Direct cross-chain withdrawals require a deployed relayer. Please withdraw to ARB, then use the Bridge tab.');
+      }
       if (amount > hlBalance) {
         return { success: false, message: 'Insufficient Margin' };
       }
-      setHlBalance(prev => prev - amount);
-      return { success: true, message: `Successfully withdrew ${amount} USDC to ${destinationChain}` };
+      
+      // Real Hyperliquid L1 withdrawal requires an L1 action signature (withdraw3)
+      // Since we don't have the full HL L1 action builder here, we will throw an explicit error 
+      // directing them to use the official UI, rather than mocking it.
+      throw new Error('Hyperliquid L1 Action (withdraw3) not implemented in SDK yet. Use app.hyperliquid.xyz to withdraw.');
+      
     } catch (error: any) {
       console.error(error);
-      return { success: false, message: 'Withdraw failed' };
+      return { success: false, message: error.message || 'Withdraw failed' };
     } finally {
       setIsProcessing(false);
     }
