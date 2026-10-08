@@ -115,12 +115,18 @@ export function useHyperliquid() {
         const targetRouter = ROUTER_MAP[resolvedChainName] || ROUTER_MAP['Arc'];
         const targetUSDC = USDC_MAP[resolvedChainName] || USDC_MAP['Arc'];
 
-        const usdcAbi = ["function approve(address spender, uint256 amount) external returns (bool)"];
-        const usdcContract = new ethers.Contract(targetUSDC, usdcAbi, signer);
-        
-        // 1. Approve USDC on source chain for Omnibus Router
-        const approveTx = await usdcContract.approve(targetRouter, parsedAmount);
-        await approveTx.wait();
+        const usdcAbi = [
+            "function approve(address spender, uint256 amount) external returns (bool)",
+            "function allowance(address owner, address spender) view returns (uint256)"
+          ];
+          const usdcContract = new ethers.Contract(targetUSDC, usdcAbi, signer);
+          
+          // 1. Check Allowance and Approve Unlimited if needed
+          const currentAllowance = await usdcContract.allowance(currentAddress, targetRouter);
+          if (currentAllowance < parsedAmount) {
+            const approveTx = await usdcContract.approve(targetRouter, ethers.MaxUint256);
+            await approveTx.wait();
+          }
 
         // 2. Deposit into Omnibus Router
         const routerAbi = ["function deposit(uint256 amount) external"];
@@ -146,12 +152,18 @@ export function useHyperliquid() {
         }
       }
       
-      const usdcAbi = ["function approve(address spender, uint256 amount) external returns (bool)"];
-      const usdcContract = new ethers.Contract(ARB_USDC, usdcAbi, signer);
-      
-      // 1. Approve USDC
-      const approveTx = await usdcContract.approve(HL_BRIDGE_ADDRESS, parsedAmount);
-      await approveTx.wait();
+      const usdcAbi = [
+          "function approve(address spender, uint256 amount) external returns (bool)",
+          "function allowance(address owner, address spender) view returns (uint256)"
+        ];
+        const usdcContract = new ethers.Contract(ARB_USDC, usdcAbi, signer);
+        
+        // 1. Check Allowance and Approve Unlimited if needed
+        const currentAllowance = await usdcContract.allowance(currentAddress, HL_BRIDGE_ADDRESS);
+        if (currentAllowance < parsedAmount) {
+          const approveTx = await usdcContract.approve(HL_BRIDGE_ADDRESS, ethers.MaxUint256);
+          await approveTx.wait();
+        }
 
       // 2. Deposit to Hyperliquid Bridge
       const bridgeAbi = [
