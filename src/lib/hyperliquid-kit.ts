@@ -86,10 +86,17 @@ export function useHyperliquid() {
         const hlBridgeInterface = new ethers.Interface(["function deposit(uint256 usdAmount) external"]);
         const postHookCalldata = hlBridgeInterface.encodeFunctionData("deposit", [parsedAmount]);
 
+        const USDC_MAP: Record<number, string> = {
+          8453: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // Base
+          10: "0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85", // OP
+          1: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48" // ETH
+        };
+        const sourceToken = USDC_MAP[sourceChainId] || "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+
         const routesRequest = {
           fromChainId: sourceChainId,
           toChainId: 42161,
-          fromTokenAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // Base USDC address for demo purposes
+          fromTokenAddress: sourceToken,
           toTokenAddress: ARB_USDC,
           fromAmount: parsedAmount.toString(),
           fromAddress: currentAddress,
