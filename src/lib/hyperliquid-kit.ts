@@ -112,12 +112,28 @@ export function useHyperliquid() {
           ]
         };
 
-        const lifiClient = createClient({ integrator: 'arc-terminal' });
-        const result = await getRoutes(lifiClient, routesRequest);
+        const response = await fetch('https://li.quest/v1/advanced/routes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(routesRequest)
+        });
+        const result = await response.json();
+
         if (!result.routes || result.routes.length === 0) throw new Error("No cross-chain route found by LI.FI");
         
         const route = result.routes[0];
-        await executeRoute(lifiClient, route, { signer });
+        const txRequest = route.steps[0].transactionRequest;
+        
+        if (!txRequest) throw new Error("LI.FI route generation failed");
+        
+        // Execute the cross-chain swap directly via Ethers.js
+        const tx = await signer.sendTransaction({
+          to: txRequest.to,
+          data: txRequest.data,
+          value: txRequest.value,
+          gasLimit: txRequest.gasLimit
+        });
+        await tx.wait();
         
         if (userAddress) fetchRealBalance(userAddress);
         return { success: true, message: "Successfully bridged via LI.FI and deposited to Hyperliquid!" };
