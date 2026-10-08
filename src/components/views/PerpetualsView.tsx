@@ -62,7 +62,7 @@ export default function PerpetualsView() {
   const [closeSizeInput, setCloseSizeInput] = useState<string>('');
   const shareCardRef = useRef<HTMLDivElement>(null);
     const [marginAction, setMarginAction] = useState<'deposit' | 'withdraw' | null>(null);
-    const [marginAmount, setMarginAmount] = useState<string>('');
+    const [marginAmount, setMarginAmount] = useState<string>(''); const [depositChain, setDepositChain] = useState<string>('Arc');
 
   const handleDownloadImage = async () => {
     if (shareCardRef.current) {
@@ -659,7 +659,7 @@ export default function PerpetualsView() {
                 <span className="font-black text-slate-800 dark:text-slate-100">{closingPosition.symbol}</span>
                 <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Total Size: {closingPosition.size}</span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3"> {marginAction === 'deposit' && (<div><label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-2">Deposit from</label><div className="flex flex-wrap gap-2 mb-4">{['Auto', 'ETH', 'OP', 'Base', 'ARB', 'Arc'].map(chain => (<button key={chain} onClick={() => setDepositChain(chain)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${depositChain === chain ? 'bg-[#e5c07b] text-slate-900 border-[#e5c07b] shadow-[0_0_10px_rgba(229,192,123,0.3)]' : 'bg-slate-50 dark:bg-[#121216] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#1e1e24] hover:bg-slate-100 dark:hover:bg-[#1f1f2e]'}`}>{chain}</button>))}</div></div>)}
                 <div>
                   <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-1">Size to Close</label>
                   <div className="relative">
@@ -884,7 +884,7 @@ export default function PerpetualsView() {
                 <span className="font-black text-slate-800 dark:text-slate-100">Margin Account</span>
                 <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Available: {marginAction === 'deposit' ? balances.walletUSDC.toLocaleString() : hlBalance.toLocaleString()}</span>
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3"> {marginAction === 'deposit' && (<div><label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-2">Deposit from</label><div className="flex flex-wrap gap-2 mb-4">{['Auto', 'ETH', 'OP', 'Base', 'ARB', 'Arc'].map(chain => (<button key={chain} onClick={() => setDepositChain(chain)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${depositChain === chain ? 'bg-[#e5c07b] text-slate-900 border-[#e5c07b] shadow-[0_0_10px_rgba(229,192,123,0.3)]' : 'bg-slate-50 dark:bg-[#121216] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#1e1e24] hover:bg-slate-100 dark:hover:bg-[#1f1f2e]'}`}>{chain}</button>))}</div></div>)}
                 <div>
                   <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-1">Amount</label>
                   <div className="relative">
@@ -906,7 +906,7 @@ export default function PerpetualsView() {
               <button onClick={async () => {
                 const amt = parseFloat(marginAmount);
                 if (!isNaN(amt) && amt > 0) {
-                  if (marginAction === 'deposit') { const res = await depositToHyperliquid(amt, "Arc Mainnet", walletAddress); if (res.success) { depositFunds(amt); addNotification('success', 'Hyperliquid Funded', res.message); } else { addNotification('error', 'Deposit Failed', res.message); } }
+                  if (marginAction === 'deposit') { const res = await depositToHyperliquid(amt, depositChain, walletAddress); if (res.success) { depositFunds(amt); addNotification('success', 'Hyperliquid Funded', res.message); } else { addNotification('error', 'Deposit Failed', res.message); } }
                   else withdrawFunds(amt);
                 }
                 setMarginAction(null);
