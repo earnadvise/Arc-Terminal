@@ -31,19 +31,14 @@ export function useHyperliquid() {
   }, []);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  // Fetch real balance from Hyperliquid L1
+  // Fetch real balance from smart contract
   const fetchRealBalance = useCallback(async (userAddress: string) => {
     try {
-      const res = await fetch(HL_API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: "clearinghouseState", user: userAddress })
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const margin = parseFloat(data.marginSummary.accountValue);
-        setHlBalance(margin);
-      }
+      const targetRouter = ROUTER_MAP['Arc'];
+      const routerAbi = ["function userMargin(address) view returns (uint256)"];
+      const routerContract = new ethers.Contract(targetRouter, routerAbi, new ethers.JsonRpcProvider('https://rpc.mainnet.arc.io'));
+      const marginStr = await routerContract.userMargin(userAddress);
+      setHlBalance(Number(ethers.formatUnits(marginStr, 6)));
     } catch (e) {
       console.error('Failed to fetch HL balance:', e);
     }
