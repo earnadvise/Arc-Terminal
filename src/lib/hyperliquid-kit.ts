@@ -34,7 +34,7 @@ export function useHyperliquid() {
   // Fetch real balance from smart contract
   const fetchRealBalance = useCallback(async (userAddress: string) => {
     try {
-      const targetRouter = ROUTER_MAP['Arc'];
+      const targetRouter = "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7";
       const routerAbi = ["function userMargin(address) view returns (uint256)"];
       const routerContract = new ethers.Contract(targetRouter, routerAbi, new ethers.JsonRpcProvider('https://rpc.mainnet.arc.io'));
       const marginStr = await routerContract.userMargin(userAddress);
