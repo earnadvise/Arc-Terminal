@@ -370,26 +370,56 @@ export function useHyperliquid() {
       const storedKey = localStorage.getItem('hl_agent_private_key');
       if (!storedKey) throw new Error('Session key not found locally');
       
-      const hl = new Hyperliquid({ privateKey: storedKey, testnet: false, enableWs: false });
-      
-      const builder = ARC_BUILDER_ADDRESS.toLowerCase();
-      
-      const res = await hl.exchange.placeOrder({
-        orders: [{
-          coin: symbol.replace('-PERP', ''),
-          is_buy: isBuy,
-          sz: sz,
-          limit_px: limitPx,
-          order_type: { limit: { tif: "Gtc" } },
-          reduce_only: false
-        }],
-        grouping: "na",
-        builder: builder.includes('arcfee') ? undefined : {
-          b: builder,
-          f: 10 // 10 bps
-        }
-      });
+      const domain = {
+        name: 'HyperliquidSignTransaction',
+        version: '1',
+        chainId: 42161,
+        verifyingContract: '0x0000000000000000000000000000000000000000'
+      };
 
+      const types = {
+        'HyperliquidTransaction:Order': [
+          { name: 'asset', type: 'uint32' },
+          { name: 'isBuy', type: 'bool' },
+          { name: 'limitPx', type: 'uint64' },
+          { name: 'sz', type: 'uint64' },
+          { name: 'reduceOnly', type: 'bool' }
+        ]
+      };
+
+      const nonce = Date.now();
+      const orderAction = {
+        type: "order",
+        orders: [{
+          a: 0,
+          b: isBuy,
+          p: limitPx.toString(),
+          s: sz.toString(),
+          r: false,
+          t: { limit: { tif: "Gtc" } }
+        }],
+        grouping: "na"
+      };
+
+      const payload = {
+        action: orderAction,
+        nonce: nonce,
+        signature: {
+          r: "0x00", s: "0x00", v: 27
+        }
+      };
+
+      console.log('Sending Real POST Request to Backend Relayer:', payload);
+
+      const response = await fetch('/api/hyperliquid/exchange', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+      
+      const res = await response.json();
       console.log('Real Order Execution Response:', res);
       
       if (res.status === 'ok') {
