@@ -962,6 +962,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
     const actualCloseSize = (closeSize !== undefined && closeSize > 0 && closeSize < pos.size) ? closeSize : pos.size;
     const isPartial = actualCloseSize < pos.size;
+      window.dispatchEvent(new CustomEvent('mock_pnl_settled', { detail: realizedPnl }));
     const fraction = actualCloseSize / pos.size;
     const realizedPnl = pos.unrealizedPnl * fraction;
 

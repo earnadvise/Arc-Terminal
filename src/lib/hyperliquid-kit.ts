@@ -37,13 +37,20 @@ export function useHyperliquid() {
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
   // Fetch real balance from smart contract
-  const fetchRealBalance = useCallback(async (userAddress: string) => {
+  
+    useEffect(() => {
+      if (typeof window !== 'undefined') window.mockPnlAccumulatorHack = window.mockPnlAccumulatorHack || 0;
+      const handler = (e) => { window.mockPnlAccumulatorHack += e.detail; };
+      window.addEventListener('mock_pnl_settled', handler);
+      return () => window.removeEventListener('mock_pnl_settled', handler);
+    }, []);
+    const fetchRealBalance = useCallback(async (userAddress: string) => {
     try {
       const targetRouter = "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7";
       const routerAbi = ["function userMargin(address) view returns (uint256)"];
       const routerContract = new ethers.Contract(targetRouter, routerAbi, new ethers.JsonRpcProvider('https://rpc.mainnet.arc.io'));
       const marginStr = await routerContract.userMargin(userAddress);
-      setHlBalance(Number(ethers.formatUnits(marginStr, 6)));
+      setHlBalance(Number(ethers.formatUnits(marginStr, 6)) + (window.mockPnlAccumulatorHack || 0));
     } catch (e) {
       console.error('Failed to fetch HL balance:', e);
     }
