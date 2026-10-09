@@ -99,10 +99,10 @@ export function useHyperliquid() {
 
         // Deployed ArcPerpRouter addresses across different chains
         const ROUTER_MAP: Record<string, string> = {
-          'Arc': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7",
-          'Base': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7", // Update when deployed on Base
-          'OP': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7",    // Update when deployed on OP
-          'ETH': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7"
+          'Arc': "0x217B5d75868d975aeF6a147733c64341e0735532",
+          'Base': "0x217B5d75868d975aeF6a147733c64341e0735532", // Update when deployed on Base
+          'OP': "0x217B5d75868d975aeF6a147733c64341e0735532",    // Update when deployed on OP
+          'ETH': "0x217B5d75868d975aeF6a147733c64341e0735532"
         };
         
         const USDC_MAP: Record<string, string> = {
@@ -220,10 +220,10 @@ export function useHyperliquid() {
           }
 
           const ROUTER_MAP: Record<string, string> = {
-            'Arc': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7",
-            'Base': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7",
-            'OP': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7",
-            'ETH': "0x68E6EF57B846CA3dBb3Aed6E8e7512BB2180C8C7"
+            'Arc': "0x217B5d75868d975aeF6a147733c64341e0735532",
+            'Base': "0x217B5d75868d975aeF6a147733c64341e0735532",
+            'OP': "0x217B5d75868d975aeF6a147733c64341e0735532",
+            'ETH': "0x217B5d75868d975aeF6a147733c64341e0735532"
           };
           const targetRouter = ROUTER_MAP[resolvedChainName] || ROUTER_MAP['Arc'];
 
