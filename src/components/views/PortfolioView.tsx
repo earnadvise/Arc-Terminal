@@ -3,6 +3,7 @@
 import React from 'react';
 import { useAppState } from '@/context/useAppState';
 import { useUnifiedBalance } from '@/lib/circle-unified-balance-kit';
+import { useHyperliquid } from '@/lib/hyperliquid-kit';
 import { Wallet, Info, Coins, ShieldAlert, Activity } from 'lucide-react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
