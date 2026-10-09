@@ -25,8 +25,13 @@ export function useHyperliquid() {
 
   useEffect(() => {
     if (typeof window !== 'undefined' && localStorage.getItem('hl_session_key_active') === 'true') {
-      setSessionKeyActive(true);
-      localStorage.setItem('hl_session_key_active', 'true');
+      if (localStorage.getItem('hl_agent_private_key')) {
+        setSessionKeyActive(true);
+        localStorage.setItem('hl_session_key_active', 'true');
+      } else {
+        localStorage.removeItem('hl_session_key_active');
+        setSessionKeyActive(false);
+      }
     }
   }, []);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
