@@ -23,6 +23,7 @@
     "ethers": "^6.17.0",
     "framer-motion": "^12.40.0",
     "html-to-image": "^1.11.13",
+    "hyperliquid": "^1.7.7",
     "lucide-react": "^1.17.0",
     "next": "16.2.9",
     "react": "19.2.4",
@@ -38,6 +39,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "hardhat": "^3.19.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

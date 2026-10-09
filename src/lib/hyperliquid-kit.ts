@@ -14,7 +14,7 @@ const CHAIN_MAP: Record<string, number> = {
 
 // Hyperliquid API Constants
 const HL_API_URL = 'https://api.hyperliquid.xyz/info';
-const HL_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
+const HL_EXCHANGE_URL = '/api/hyperliquid/exchange';
 
 // Arc Terminal Builder Address for collecting the 10bps fee
 const ARC_BUILDER_ADDRESS = '0x0000000000000000000000000000000000ArcFee'; 
@@ -324,7 +324,7 @@ export function useHyperliquid() {
         signature: { r, s, v }
       };
       
-      const res = await fetch('https://api.hyperliquid.xyz/exchange', {
+      const res = await fetch('/api/hyperliquid/exchange', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(approveAgentAction)
