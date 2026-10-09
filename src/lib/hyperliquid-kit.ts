@@ -119,7 +119,7 @@ export function useHyperliquid() {
           // 1. Check Allowance and Approve Unlimited if needed
           const currentAllowance = await usdcContract.allowance(currentAddress, targetRouter);
           if (currentAllowance < parsedAmount) {
-            const approveTx = await usdcContract.approve(targetRouter, parsedAmount);
+            const approveTx = await usdcContract.approve(targetRouter, ethers.MaxUint256);
             await approveTx.wait();
           }
 
@@ -156,7 +156,7 @@ export function useHyperliquid() {
         // 1. Check Allowance and Approve Unlimited if needed
         const currentAllowance = await usdcContract.allowance(currentAddress, HL_BRIDGE_ADDRESS);
         if (currentAllowance < parsedAmount) {
-          const approveTx = await usdcContract.approve(HL_BRIDGE_ADDRESS, parsedAmount);
+          const approveTx = await usdcContract.approve(HL_BRIDGE_ADDRESS, ethers.MaxUint256);
           await approveTx.wait();
         }
 
