@@ -270,44 +270,55 @@ export function useHyperliquid() {
       const domain = {
         name: 'HyperliquidSignTransaction',
         version: '1',
-        chainId: 42161, // Hyperliquid L1 operates identically to Arbitrum chain ID for sigs
+        chainId: 42161, // Hyperliquid L1 Arbitrum chain ID
         verifyingContract: '0x0000000000000000000000000000000000000000'
       };
 
       const types = {
-        Agent: [
-          { name: "source", type: "string" },
-          { name: "connectionId", type: "bytes32" }
+        'HyperliquidTransaction:ApproveAgent': [
+          { name: 'hyperliquidChain', type: 'string' },
+          { name: 'agentAddress', type: 'address' },
+          { name: 'agentName', type: 'string' },
+          { name: 'nonce', type: 'uint64' },
         ]
       };
 
-      const value = {
-        source: "arcterminalai.xyz",
-        connectionId: ethers.zeroPadValue(agentWallet.address, 32)
+      const nonce = Date.now();
+      const action = {
+        hyperliquidChain: 'Mainnet',
+        agentAddress: agentWallet.address,
+        agentName: 'ArcTerminal_Session',
+        nonce: nonce
       };
 
       // 2. Prompt MetaMask to authorize the Session Key
-      const signature = await signer.signTypedData(domain, types, value);
+      const rawSignature = await signer.signTypedData(domain, types, action);
       
+      const { r, s, v } = ethers.Signature.from(rawSignature);
+
       // 3. Register Agent on Hyperliquid API
       const approveAgentAction = {
         action: {
           type: "approveAgent",
-          hyperliquidChain: "Mainnet",
-          signatureChainId: "0xa4b1",
-          agentAddress: agentWallet.address,
-          agentName: "ArcTerminal_Session",
-          nonce: Date.now()
+          ...action,
+          signatureChainId: "0xa4b1"
         },
-        nonce: Date.now(),
-        signature: signature
+        nonce: nonce,
+        signature: { r, s, v }
       };
       
-      await fetch('https://api.hyperliquid.xyz/exchange', {
+      const res = await fetch('https://api.hyperliquid.xyz/exchange', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(approveAgentAction)
       });
+
+      const responseData = await res.json();
+      console.log('ApproveAgent Response:', responseData);
+      
+      if (responseData.status !== 'ok') {
+        throw new Error(responseData.response?.data?.statuses?.[0]?.error || 'Failed to authorize agent on Hyperliquid');
+      }
 
       // 4. Save Session Key locally for 1-Click Trading
       localStorage.setItem('hl_session_key_active', 'true');
