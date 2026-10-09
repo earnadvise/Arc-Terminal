@@ -262,6 +262,8 @@ export function useHyperliquid() {
       if (!(window as any).ethereum) throw new Error("No crypto wallet found");
       
       const provider = new BrowserProvider((window as any).ethereum);
+      const network = await provider.getNetwork();
+      const currentChainId = Number(network.chainId);
       const signer = await provider.getSigner();
       
       // 1. Generate Local Session Key (Agent)
@@ -270,7 +272,7 @@ export function useHyperliquid() {
       const domain = {
         name: 'HyperliquidSignTransaction',
         version: '1',
-        chainId: 42161, // Hyperliquid L1 Arbitrum chain ID
+        chainId: currentChainId, // Use the user's CURRENT chain ID
         verifyingContract: '0x0000000000000000000000000000000000000000'
       };
 
@@ -301,7 +303,7 @@ export function useHyperliquid() {
         action: {
           type: "approveAgent",
           ...action,
-          signatureChainId: "0xa4b1"
+          signatureChainId: "0x" + currentChainId.toString(16) // Pass the hex chainId to Hyperliquid
         },
         nonce: nonce,
         signature: { r, s, v }
