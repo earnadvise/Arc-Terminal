@@ -337,48 +337,36 @@ export function useHyperliquid() {
       const storedKey = localStorage.getItem('hl_agent_private_key');
       if (!storedKey) throw new Error('Session key not found locally');
       
-      const agentWallet = new ethers.Wallet(storedKey);
-
-      // Create the Hyperliquid action payload
-      const orderAction = {
-        type: "order",
+      const hl = new Hyperliquid({ privateKey: storedKey, testnet: false, enableWs: false });
+      
+      const builder = ARC_BUILDER_ADDRESS.toLowerCase();
+      
+      const res = await hl.exchange.placeOrder({
         orders: [{
           coin: symbol.replace('-PERP', ''),
           is_buy: isBuy,
-          sz: sz.toString(),
-          limit_px: limitPx.toString(),
+          sz: sz,
+          limit_px: limitPx,
           order_type: { limit: { tif: "Gtc" } },
           reduce_only: false
         }],
         grouping: "na",
-        builder: {
-          b: ARC_BUILDER_ADDRESS,
+        builder: builder.includes('arcfee') ? undefined : {
+          b: builder,
           f: 10 // 10 bps
         }
-      };
-
-      const nonce = Date.now();
-      
-      const payload = {
-        action: orderAction,
-        nonce: nonce,
-        signature: {
-          r: "0x00", s: "0x00", v: 27
-        }
-      };
-
-      console.log('Sending Real POST Request to Hyperliquid /exchange endpoint:', payload);
-      
-      await fetch('https://api.hyperliquid.xyz/exchange', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
       });
+
+      console.log('Real Order Execution Response:', res);
       
-      return { success: true, message: `Placed ${isBuy ? 'LONG' : 'SHORT'} order for ${sz} ${symbol}` };
+      if (res.status === 'ok') {
+          return { success: true, message: `Placed ${isBuy ? 'LONG' : 'SHORT'} order for ${sz} ${symbol}` };
+      } else {
+          return { success: false, message: res.response?.data?.statuses?.[0]?.error || 'Order rejected by Hyperliquid' };
+      }
     } catch (error: any) {
-      console.error(error);
-      return { success: false, message: 'Order execution failed' };
+      console.error('Order Error:', error);
+      return { success: false, message: error.message || 'Order execution failed' };
     } finally {
       setIsProcessing(false);
     }
