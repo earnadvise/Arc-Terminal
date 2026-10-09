@@ -262,9 +262,24 @@ export function useHyperliquid() {
       if (!(window as any).ethereum) throw new Error("No crypto wallet found");
       
       const provider = new BrowserProvider((window as any).ethereum);
+      
+      // Force switch to Arbitrum for Hyperliquid signature
+      const ARB_CHAIN_ID = 42161;
       const network = await provider.getNetwork();
-      const currentChainId = Number(network.chainId);
-      const signer = await provider.getSigner();
+      if (Number(network.chainId) !== ARB_CHAIN_ID) {
+        try {
+          await (window as any).ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: '0xa4b1' }], // 42161 in hex
+          });
+        } catch (e: any) {
+          throw new Error('You must switch to Arbitrum to authorize trading on Hyperliquid.');
+        }
+      }
+
+      // Re-fetch signer after potential chain switch
+      const updatedProvider = new BrowserProvider((window as any).ethereum);
+      const signer = await updatedProvider.getSigner();
       
       // 1. Generate Local Session Key (Agent)
       const agentWallet = ethers.Wallet.createRandom();
@@ -272,7 +287,7 @@ export function useHyperliquid() {
       const domain = {
         name: 'HyperliquidSignTransaction',
         version: '1',
-        chainId: currentChainId, // Use the user's CURRENT chain ID
+        chainId: 42161, // MUST be Arbitrum
         verifyingContract: '0x0000000000000000000000000000000000000000'
       };
 
@@ -303,7 +318,7 @@ export function useHyperliquid() {
         action: {
           type: "approveAgent",
           ...action,
-          signatureChainId: "0x" + currentChainId.toString(16) // Pass the hex chainId to Hyperliquid
+          signatureChainId: "0xa4b1"
         },
         nonce: nonce,
         signature: { r, s, v }
