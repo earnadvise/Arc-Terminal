@@ -36,7 +36,7 @@ export default function PerpetualsView() {
     walletAddress
   } = useAppState();
 
-  const { hlBalance, sessionKeyActive, isProcessing, enableTrading, fetchRealBalance } = useHyperliquid();
+  const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, enableTrading, fetchRealBalance } = useHyperliquid();
   const { placeGmxOrder } = useGmx();
 
   React.useEffect(() => {
@@ -914,14 +914,17 @@ export default function PerpetualsView() {
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
               <button onClick={() => setMarginAction(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] transition-colors">Cancel</button>
-              <button onClick={async () => {
-                const amt = parseFloat(marginAmount);
-                if (!isNaN(amt) && amt > 0) {
+                              <button onClick={async () => {
+                  const amt = parseFloat(marginAmount);
+                  if (!isNaN(amt) && amt > 0) {
+                    if (marginAction === 'deposit') {
+                      depositToHyperliquid(amt, 'Arc', walletAddress);
+                    } else {
+                      withdrawFromHyperliquid(amt, 'Arc', walletAddress);
+                    }
+                  }
                   setMarginAction(null);
-                  
-                }
-                setMarginAction(null);
-              }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
+                }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
             </div>
           </div>
         </div>
