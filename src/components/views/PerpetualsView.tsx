@@ -36,8 +36,8 @@ export default function PerpetualsView() {
     walletAddress
   } = useAppState();
 
-  const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, enableTrading, placeHyperliquidOrder, fetchRealBalance } = useHyperliquid();
-  const { placeGmxOrder, isProcessing: gmxProcessing } = useGmx();
+  const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, enableTrading, fetchRealBalance } = useHyperliquid();
+  const { placeGmxOrder } = useGmx();
 
   React.useEffect(() => {
     if (walletAddress) {
