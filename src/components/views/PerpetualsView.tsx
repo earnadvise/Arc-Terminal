@@ -978,7 +978,7 @@ export default function PerpetualsView() {
                 const amt = parseFloat(marginAmount);
                 if (!isNaN(amt) && amt > 0) {
                   setMarginAction(null);
-                  else { const res = await withdrawFromHyperliquid(amt, depositChain); if (res.success) { withdrawFunds(amt); addNotification('success', 'Withdrawn', res.message); } else { addNotification('error', 'Withdraw Failed', res.message); } }
+                  
                 }
                 setMarginAction(null);
               }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30">Confirm</button>
