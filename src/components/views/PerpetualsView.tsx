@@ -6,6 +6,7 @@ import { toPng } from 'html-to-image';
 import TradingViewChart from './TradingViewChart';
 import { Search, Scale, CircleAlert, ShieldCheck, Loader2 } from 'lucide-react';
 import { useHyperliquid } from '@/lib/hyperliquid-kit';
+import { useGmx } from '@/lib/gmx-kit';
 
 export default function PerpetualsView() {
   const {
@@ -36,6 +37,7 @@ export default function PerpetualsView() {
   } = useAppState();
 
   const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, enableTrading, placeHyperliquidOrder, fetchRealBalance } = useHyperliquid();
+  const { placeGmxOrder, isProcessing: gmxProcessing } = useGmx();
 
   React.useEffect(() => {
     if (walletAddress) {
@@ -92,19 +94,33 @@ export default function PerpetualsView() {
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
   const handlePlaceOrder = async () => {
-    const res = await placeHyperliquidOrder(
-      activePair.symbol,
-      tradeSide === 'LONG',
-      parsedSize,
-      parsedPrice,
-      leverage
-    );
-    if (res.success) {
-      addNotification('success', 'Order Placed', res.message);
-      // Update local position state for UI feedback
-      placeOrder(tradeSide, orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT', parsedPrice, parsedSize, undefined, undefined, true);
+    const coin = activePair.symbol.split(/[-/]/)[0].toUpperCase();
+    const supported = ['BTC','ETH','SOL','ARB','AVAX'];
+
+    if (supported.includes(coin)) {
+      // Route to GMX — real liquidity, user signs with their own wallet on Arbitrum
+      const res = await placeGmxOrder(
+        coin,
+        tradeSide === 'LONG',
+        parsedSize * parsedPrice,  // position size in USD
+        (parsedSize * parsedPrice) / leverage,  // collateral (margin)
+        walletAddress,
+      );
+      if (res.success) {
+        addNotification('success', 'Order Placed on GMX', res.message);
+        // Record position locally for UI
+        placeOrder(tradeSide, orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT', parsedPrice, parsedSize, undefined, undefined, true);
+      } else {
+        addNotification('error', 'Execution Failed', res.message);
+      }
     } else {
-      addNotification('error', 'Execution Failed', res.message);
+      // Fallback to ArcPerpRouter for unsupported markets
+      await placeOrder(
+        tradeSide,
+        orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
+        parsedPrice,
+        parsedSize
+      );
     }
   };
 
