@@ -48,7 +48,7 @@ export default function PerpetualsView() {
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Crypto' | 'Commodities' | 'Forex'>('All');
   const [orderType, setOrderType] = useState<'Market' | 'Limit' | 'Stop' | 'Trailing' | 'OCO'>('Market');
-  const [oneClickTrading, setOneClickTrading] = useState(false);
+  
   const [tradeSide, setTradeSide] = useState<'LONG' | 'SHORT'>('LONG');
   const [inputPrice, setInputPrice] = useState<string>(activePair.lastPrice.toString());
   const [inputSize, setInputSize] = useState<string>('1.0');
@@ -381,14 +381,7 @@ export default function PerpetualsView() {
             <div className="flex items-center gap-3">
               <span className="text-slate-500">Avbl <span className="text-slate-900 dark:text-white">{hlBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span></span>
               
-              {/* 1CT Toggle */}
-              <label className="flex items-center gap-1.5 cursor-pointer group" title="One-Click Trading (Gasless)">
-                <input type="checkbox" className="hidden" checked={oneClickTrading} onChange={(e) => setOneClickTrading(e.target.checked)} />
-                <div className={`relative w-6 h-3.5 rounded-full transition-colors ${oneClickTrading ? 'bg-[#10b981]' : 'bg-slate-300 dark:bg-[#1e1e24]'}`}>
-                  <div className={`absolute top-[2px] w-2.5 h-2.5 bg-white rounded-full transition-transform ${oneClickTrading ? 'left-[12px]' : 'left-[2px]'}`} />
-                </div>
-                <span className={`text-[10px] font-bold ${oneClickTrading ? 'text-[#10b981]' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300'}`}>1CT</span>
-              </label>
+              
             </div>
             <div className="flex items-center gap-2">
                 <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Deposit" onClick={async () => { setMarginAction('deposit'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
