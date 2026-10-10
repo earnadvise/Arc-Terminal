@@ -57,7 +57,7 @@ export default function PerpetualsView() {
   const [showLeverageDropdown, setShowLeverageDropdown] = useState(false);
   const [tpPrice, setTpPrice] = useState<string>('');
   const [slPrice, setSlPrice] = useState<string>('');
-  const [showTPSL, setShowTPSL] = useState(false);
+  const [_showTPSL, _setShowTPSL] = useState(false);
   const [sharePosition, setSharePosition] = useState<any>(null);
   const [tpSlPosition, setTpSlPosition] = useState<any>(null);
   const [closingPosition, setClosingPosition] = useState<any>(null);
