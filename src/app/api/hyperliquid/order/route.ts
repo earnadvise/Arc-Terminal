@@ -73,9 +73,14 @@ export async function POST(req: Request) {
     const wallet = new ethers.Wallet(AGENT_PRIVATE_KEY);
     const nonce  = Date.now();
 
+    // Round price to HL tick size (1 decimal for BTC, 4 for others)
+    const szDecimals = (meta.universe as any[])[assetIdx]?.szDecimals ?? 3;
+    const pxRounded  = parseFloat(Number(limitPx).toPrecision(5));
+    const szRounded  = parseFloat(Number(sz).toFixed(szDecimals));
+
     const orderAction = {
       type:     'order',
-      orders:   [{ a: assetIdx, b: isBuy, p: limitPx.toFixed(5), s: sz.toFixed(6), r: false, t: { limit: { tif: 'Ioc' } } }],
+      orders:   [{ a: assetIdx, b: isBuy, p: String(pxRounded), s: String(szRounded), r: false, t: { limit: { tif: 'Ioc' } } }],
       grouping: 'na',
     };
 
