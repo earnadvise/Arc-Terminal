@@ -683,22 +683,7 @@ export default function PerpetualsView() {
         </button>
       ))}
     </div>
-    {marginAction === 'deposit' && (
-      <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-        <div className="text-[10px] font-bold text-blue-400 mb-1">Trade on GMX (Arbitrum)</div>
-        <div className="text-[10px] text-slate-400 mb-2">Bridge USDC from Arc to Arbitrum to trade with real GMX liquidity.</div>
-        <button
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              window.open('https://bridge.arc.io/?from=arc&to=arbitrum', '_blank');
-            }
-          }}
-          className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors"
-        >
-          Bridge Arc {'->'} Arbitrum (CCTP)
-        </button>
-      </div>
-    )}
+    
   </div>
 )}
                 <div>
@@ -938,22 +923,7 @@ export default function PerpetualsView() {
         </button>
       ))}
     </div>
-    {marginAction === 'deposit' && (
-      <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-        <div className="text-[10px] font-bold text-blue-400 mb-1">Trade on GMX (Arbitrum)</div>
-        <div className="text-[10px] text-slate-400 mb-2">Bridge USDC from Arc to Arbitrum to trade with real GMX liquidity.</div>
-        <button
-          onClick={() => {
-            if (typeof window !== 'undefined') {
-              window.open('https://bridge.arc.io/?from=arc&to=arbitrum', '_blank');
-            }
-          }}
-          className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors"
-        >
-          Bridge Arc {'->'} Arbitrum (CCTP)
-        </button>
-      </div>
-    )}
+    
   </div>
 )}
                 <div>
