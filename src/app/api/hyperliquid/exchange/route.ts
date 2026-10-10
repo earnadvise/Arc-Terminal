@@ -1,62 +1,25 @@
 import { NextResponse } from 'next/server';
 
+const HL_EXCHANGE_URL = 'https://api.hyperliquid.xyz/exchange';
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    
-    // Simulate Hyperliquid Backend Relayer
-    
-    if (body.action?.type === 'approveAgent') {
-      console.log('Backend Relayer: Intercepted approveAgent payload', body);
-      // Return a mocked success response
-      return NextResponse.json({
-        status: 'ok',
-        response: {
-          type: 'default',
-          data: {
-            statuses: [
-              {
-                agentAddress: body.action.agentAddress,
-                status: 'approved'
-              }
-            ]
-          }
-        }
-      });
-    }
 
-    if (body.action?.type === 'order') {
-      console.log('Backend Relayer: Intercepted placeOrder payload', body);
-      // Return a mocked filled order response
-      return NextResponse.json({
-        status: 'ok',
-        response: {
-          type: 'order',
-          data: {
-            statuses: [
-              {
-                filled: {
-                  totalSz: body.action.orders[0].sz,
-                  avgPx: body.action.orders[0].limitPx,
-                  oid: Math.floor(Math.random() * 10000000)
-                }
-              }
-            ]
-          }
-        }
-      });
-    }
-
-    // Default mock response for other actions
-    return NextResponse.json({
-      status: 'ok',
-      response: {
-        type: 'default',
-        data: { statuses: ['success'] }
-      }
+    const hlRes = await fetch(HL_EXCHANGE_URL, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify(body),
     });
 
-  } catch (error) {
-    return NextResponse.json({ status: 'err', response: 'Internal Relayer Error' }, { status: 500 });
+    const data = await hlRes.json();
+    return NextResponse.json(data, { status: hlRes.status });
+
+  } catch (error: any) {
+    console.error('Hyperliquid exchange proxy error:', error);
+    return NextResponse.json(
+      { status: 'err', response: error?.message ?? 'Proxy error' },
+      { status: 500 },
+    );
   }
 }
