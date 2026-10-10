@@ -6,8 +6,6 @@ import { toPng } from 'html-to-image';
 import TradingViewChart from './TradingViewChart';
 import { Search, Scale, CircleAlert, ShieldCheck, Loader2 } from 'lucide-react';
 import { useHyperliquid } from '@/lib/hyperliquid-kit';
-import { useGmx } from '@/lib/gmx-kit';
-
 export default function PerpetualsView() {
   const {
     markets,
@@ -37,8 +35,6 @@ export default function PerpetualsView() {
   } = useAppState();
 
   const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, enableTrading, fetchRealBalance } = useHyperliquid();
-  const { placeGmxOrder } = useGmx();
-
   React.useEffect(() => {
     if (walletAddress) {
       fetchRealBalance(walletAddress);
@@ -94,34 +90,12 @@ export default function PerpetualsView() {
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
   const handlePlaceOrder = async () => {
-    const coin = activePair.symbol.split(/[-/]/)[0].toUpperCase();
-    const supported = ['BTC','ETH','SOL','ARB','AVAX'];
-
-    if (supported.includes(coin)) {
-      // Route to GMX — real liquidity, user signs with their own wallet on Arbitrum
-      const res = await placeGmxOrder(
-        coin,
-        tradeSide === 'LONG',
-        parsedSize * parsedPrice,  // position size in USD
-        (parsedSize * parsedPrice) / leverage,  // collateral (margin)
-        walletAddress,
-      );
-      if (res.success) {
-        addNotification('success', 'Order Placed on GMX', res.message);
-        // Record position locally for UI
-        placeOrder(tradeSide, orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT', parsedPrice, parsedSize, undefined, undefined, true);
-      } else {
-        addNotification('error', 'Execution Failed', res.message);
-      }
-    } else {
-      // Fallback to ArcPerpRouter for unsupported markets
-      await placeOrder(
-        tradeSide,
-        orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
-        parsedPrice,
-        parsedSize
-      );
-    }
+    await placeOrder(
+      tradeSide,
+      orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
+      parsedPrice,
+      parsedSize
+    );
   };
 
   const filteredPairs = markets.filter(m => {
