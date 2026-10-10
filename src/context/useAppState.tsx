@@ -196,6 +196,26 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
+  useEffect(() => {
+    const autoConnect = async () => {
+      if (typeof window !== 'undefined' && (window as any).ethereum) {
+        try {
+          const eth = (window as any).ethereum;
+          const accounts = await eth.request({ method: 'eth_accounts' });
+          if (accounts && accounts.length > 0) {
+            const fullAddr = accounts[0];
+            setWalletConnected(true);
+            setWalletAddress(fullAddr);
+            setWalletType('MetaMask');
+            refreshOnChainBalances(fullAddr);
+          }
+        } catch (e) {
+          console.warn('Auto-connect failed', e);
+        }
+      }
+    };
+    autoConnect();
+  }, []);
 
   useEffect(() => {
     if (typeof window !== 'undefined' && walletAddress) {
@@ -434,7 +454,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
           setBalances(prev => ({ ...prev, marginUSDC: prev.marginUSDC - requiredMargin }));
         } catch (err: any) { console.error(err); addNotification('error', 'Execution Failed', err.message || 'Transaction rejected.'); return; }
       } else {
-        txHash = '0x' + Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('');
+        setBalances(prev => ({ ...prev, marginUSDC: prev.marginUSDC - requiredMargin })); txHash = '0x' + Array.from({length:64},()=>Math.floor(Math.random()*16).toString(16)).join('');
         addNotification('success', 'Order Submitted', 'Market order submitted.', txHash);
       }
       const entryPrice = activePair.lastPrice;
