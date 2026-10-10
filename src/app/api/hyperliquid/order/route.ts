@@ -92,6 +92,9 @@ export async function POST(req: Request) {
       body:    JSON.stringify({ action: orderAction, nonce, signature }),
     });
     const result = await hlRes.json();
+    // Log full HL response for debugging
+    console.log('[HL raw response]', JSON.stringify(result));
+    console.log('[HL order payload]', JSON.stringify({ action: orderAction, nonce, agentAddress: wallet.address }));
     return NextResponse.json({ status:'ok', response: result });
 
   } catch (error: any) {
