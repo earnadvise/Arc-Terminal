@@ -92,18 +92,12 @@ export default function PerpetualsView() {
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
   const handlePlaceOrder = async () => {
-    if (!sessionKeyActive) {
-      addNotification('error', 'Auth Required', 'Please click "Enable Trading" to sign your Hyperliquid session key.');
-      return;
-    }
-    const res = await placeHyperliquidOrder(activePair.symbol, tradeSide === 'LONG', parsedSize, parsedPrice, leverage);
-    if (res.success) {
-      addNotification('success', 'Order Submitted', res.message);
-      // Fallback to local state mock for UI feedback
-      placeOrder(tradeSide, orderType.toUpperCase() as 'MARKET' | 'LIMIT' | 'STOP', parsedPrice, parsedSize);
-    } else {
-      addNotification('error', 'Execution Failed', res.message);
-    }
+    await placeOrder(
+      tradeSide,
+      orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
+      parsedPrice,
+      parsedSize
+    );
   };
 
   const filteredPairs = markets.filter(m => {
