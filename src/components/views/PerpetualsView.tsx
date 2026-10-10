@@ -677,7 +677,37 @@ export default function PerpetualsView() {
                 <span className="font-black text-slate-800 dark:text-slate-100">{closingPosition.symbol}</span>
                 <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Total Size: {closingPosition.size}</span>
               </div>
-              <div className="space-y-3"> {(marginAction === 'deposit' || marginAction === 'withdraw') && (<div><label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-2">{marginAction === 'deposit' ? 'Deposit from' : 'Withdraw to'}</label><div className="flex flex-wrap gap-2 mb-4">{['Auto', 'ETH', 'OP', 'Base', 'ARB', 'Arc'].map(chain => (<button key={chain} onClick={() => setDepositChain(chain)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${depositChain === chain ? 'bg-[#e5c07b] text-slate-900 border-[#e5c07b] shadow-[0_0_10px_rgba(229,192,123,0.3)]' : 'bg-slate-50 dark:bg-[#121216] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#1e1e24] hover:bg-slate-100 dark:hover:bg-[#1f1f2e]'}`}>{chain}</button>))}</div></div>)}
+              <div className="space-y-3"> {(marginAction === 'deposit' || marginAction === 'withdraw') && (
+  <div className="mb-3">
+    <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mb-2 font-semibold uppercase tracking-wide">
+      {marginAction === 'deposit' ? 'Deposit from' : 'Withdraw to'}
+    </div>
+    <div className="flex flex-wrap gap-1.5 mb-3">
+      {['Auto', 'ETH', 'OP', 'Base', 'ARB', 'Arc'].map(chain => (
+        <button key={chain} onClick={() => setDepositChain(chain)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${depositChain === chain ? 'bg-[#e5c07b] text-slate-900 border-[#e5c07b] shadow-[0_0_10px_rgba(229,192,123,0.3)]' : 'bg-slate-50 dark:bg-[#121216] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#1e1e24] hover:bg-slate-100 dark:hover:bg-[#1f1f2e]'}`}>
+          {chain}
+        </button>
+      ))}
+    </div>
+    {marginAction === 'deposit' && (
+      <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+        <div className="text-[10px] font-bold text-blue-400 mb-1">Trade on GMX (Arbitrum)</div>
+        <div className="text-[10px] text-slate-400 mb-2">Bridge USDC from Arc to Arbitrum to trade with real GMX liquidity.</div>
+        <button
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.open('https://app.circle.com/bridge?sourceChain=arc&destinationChain=arbitrum', '_blank');
+            }
+          }}
+          className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+        >
+          Bridge Arc -> Arbitrum (CCTP)
+        </button>
+      </div>
+    )}
+  </div>
+)}
                 <div>
                   <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-1">Size to Close</label>
                   <div className="relative">
@@ -902,7 +932,37 @@ export default function PerpetualsView() {
                 <span className="font-black text-slate-800 dark:text-slate-100">Margin Account</span>
                 <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Available: {marginAction === 'deposit' ? balances.walletUSDC.toLocaleString() : hlBalance.toLocaleString()}</span>
               </div>
-              <div className="space-y-3"> {(marginAction === 'deposit' || marginAction === 'withdraw') && (<div><label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-2">{marginAction === 'deposit' ? 'Deposit from' : 'Withdraw to'}</label><div className="flex flex-wrap gap-2 mb-4">{['Auto', 'ETH', 'OP', 'Base', 'ARB', 'Arc'].map(chain => (<button key={chain} onClick={() => setDepositChain(chain)} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${depositChain === chain ? 'bg-[#e5c07b] text-slate-900 border-[#e5c07b] shadow-[0_0_10px_rgba(229,192,123,0.3)]' : 'bg-slate-50 dark:bg-[#121216] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#1e1e24] hover:bg-slate-100 dark:hover:bg-[#1f1f2e]'}`}>{chain}</button>))}</div></div>)}
+              <div className="space-y-3"> {(marginAction === 'deposit' || marginAction === 'withdraw') && (
+  <div className="mb-3">
+    <div className="text-[10px] text-slate-500 dark:text-[#8a8a9e] mb-2 font-semibold uppercase tracking-wide">
+      {marginAction === 'deposit' ? 'Deposit from' : 'Withdraw to'}
+    </div>
+    <div className="flex flex-wrap gap-1.5 mb-3">
+      {['Auto', 'ETH', 'OP', 'Base', 'ARB', 'Arc'].map(chain => (
+        <button key={chain} onClick={() => setDepositChain(chain)}
+          className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors border ${depositChain === chain ? 'bg-[#e5c07b] text-slate-900 border-[#e5c07b] shadow-[0_0_10px_rgba(229,192,123,0.3)]' : 'bg-slate-50 dark:bg-[#121216] text-slate-600 dark:text-slate-400 border-slate-200 dark:border-[#1e1e24] hover:bg-slate-100 dark:hover:bg-[#1f1f2e]'}`}>
+          {chain}
+        </button>
+      ))}
+    </div>
+    {marginAction === 'deposit' && (
+      <div className="p-2.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+        <div className="text-[10px] font-bold text-blue-400 mb-1">Trade on GMX (Arbitrum)</div>
+        <div className="text-[10px] text-slate-400 mb-2">Bridge USDC from Arc to Arbitrum to trade with real GMX liquidity.</div>
+        <button
+          onClick={() => {
+            if (typeof window !== 'undefined') {
+              window.open('https://app.circle.com/bridge?sourceChain=arc&destinationChain=arbitrum', '_blank');
+            }
+          }}
+          className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors"
+        >
+          Bridge Arc -> Arbitrum (CCTP)
+        </button>
+      </div>
+    )}
+  </div>
+)}
                 <div>
                   <label className="text-xs font-bold text-slate-600 dark:text-slate-300 uppercase tracking-wider block mb-1">Amount</label>
                   <div className="relative">
