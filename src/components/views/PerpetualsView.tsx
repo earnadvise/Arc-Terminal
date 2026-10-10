@@ -29,14 +29,14 @@ export default function PerpetualsView() {
     adjustPositionMargin,
     cancelOrder,
     connectWallet,
-    depositFunds,
-    withdrawFunds,
+    
+    
     setTPSL,
     addNotification,
     walletAddress
   } = useAppState();
 
-  const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, enableTrading, fetchRealBalance } = useHyperliquid();
+  const { hlBalance, sessionKeyActive, isProcessing, enableTrading, fetchRealBalance } = useHyperliquid();
   const { placeGmxOrder } = useGmx();
 
   React.useEffect(() => {
@@ -977,7 +977,7 @@ export default function PerpetualsView() {
               <button onClick={async () => {
                 const amt = parseFloat(marginAmount);
                 if (!isNaN(amt) && amt > 0) {
-                  if (marginAction === 'deposit') { const res = await depositToHyperliquid(amt, depositChain, walletAddress); if (res.success) { depositFunds(amt); addNotification('success', 'Hyperliquid Funded', res.message); } else { addNotification('error', 'Deposit Failed', res.message); } }
+                  setMarginAction(null);
                   else { const res = await withdrawFromHyperliquid(amt, depositChain); if (res.success) { withdrawFunds(amt); addNotification('success', 'Withdrawn', res.message); } else { addNotification('error', 'Withdraw Failed', res.message); } }
                 }
                 setMarginAction(null);
