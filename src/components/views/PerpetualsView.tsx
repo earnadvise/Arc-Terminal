@@ -690,7 +690,7 @@ export default function PerpetualsView() {
         <button
           onClick={() => {
             if (typeof window !== 'undefined') {
-              window.open('https://app.circle.com/bridge?sourceChain=arc&destinationChain=arbitrum', '_blank');
+              window.open('https://bridge.arc.io/?from=arc&to=arbitrum', '_blank');
             }
           }}
           className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors"
@@ -945,7 +945,7 @@ export default function PerpetualsView() {
         <button
           onClick={() => {
             if (typeof window !== 'undefined') {
-              window.open('https://app.circle.com/bridge?sourceChain=arc&destinationChain=arbitrum', '_blank');
+              window.open('https://bridge.arc.io/?from=arc&to=arbitrum', '_blank');
             }
           }}
           className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors"
