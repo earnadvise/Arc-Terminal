@@ -456,7 +456,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       setTimeout(() => refreshOnChainBalances(walletAddress), 6000);
     } else {
       let txHash = '';
-      if (eth && walletConnected && walletAddress) {
+      if (eth && walletConnected && walletAddress && !skipMarginCheck) {
         addNotification('info', 'Executing Limit Order', 'Please confirm in MetaMask/Rabby...');
         try {
           const rm = (amount * price) / leverage;
@@ -512,7 +512,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     const pos = positions.find(p => p.id === id);
     if (!pos) return;
     const eth = getProvider();
-    if (eth && walletConnected && walletAddress) {
+    if (eth && walletConnected && walletAddress && !skipMarginCheck) {
       if (balances.marginUSDC < additionalMargin) {
         if (unifiedBalances?.USDC >= additionalMargin) {
           addNotification('info', 'Unified Balance Kit', 'Auto-allocating cross-chain USDC margin...');
@@ -556,7 +556,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   const setTPSL = async (symbol: string, tpPrice: number, slPrice: number) => {
     const eth = getProvider();
-    if (eth && walletConnected && walletAddress) {
+    if (eth && walletConnected && walletAddress && !skipMarginCheck) {
       addNotification('info', 'Setting TP/SL', 'Please confirm in MetaMask/Rabby...');
       try {
         const txHash = await eth.request({ method: 'eth_sendTransaction', params: [{ from: walletAddress, to: MARGIN_ADDRESS, data: encodeSetTPSL(symbol, tpPrice, slPrice) }] });
