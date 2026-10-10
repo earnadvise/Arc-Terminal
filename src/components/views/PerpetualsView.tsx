@@ -702,7 +702,7 @@ export default function PerpetualsView() {
           }}
           className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors"
         >
-          Bridge Arc -> Arbitrum (CCTP)
+          Bridge Arc {'->'} Arbitrum (CCTP)
         </button>
       </div>
     )}
@@ -957,7 +957,7 @@ export default function PerpetualsView() {
           }}
           className="w-full py-1.5 rounded-lg text-[10px] font-bold bg-blue-500 hover:bg-blue-600 text-white transition-colors"
         >
-          Bridge Arc -> Arbitrum (CCTP)
+          Bridge Arc {'->'} Arbitrum (CCTP)
         </button>
       </div>
     )}
