@@ -92,12 +92,20 @@ export default function PerpetualsView() {
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
   const handlePlaceOrder = async () => {
-    await placeOrder(
-      tradeSide,
-      orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
+    const res = await placeHyperliquidOrder(
+      activePair.symbol,
+      tradeSide === 'LONG',
+      parsedSize,
       parsedPrice,
-      parsedSize
+      leverage
     );
+    if (res.success) {
+      addNotification('success', 'Order Placed', res.message);
+      // Update local position state for UI feedback
+      placeOrder(tradeSide, orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT', parsedPrice, parsedSize, undefined, undefined, true);
+    } else {
+      addNotification('error', 'Execution Failed', res.message);
+    }
   };
 
   const filteredPairs = markets.filter(m => {
