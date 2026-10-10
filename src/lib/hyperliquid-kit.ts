@@ -150,7 +150,7 @@ export function useHyperliquid() {
       const response = await fetch('/api/hyperliquid/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ symbol: coin, isBuy, sz, limitPx, orderType: 'Ioc' }),
+        body: JSON.stringify({ symbol: coin, isBuy, sz, limitPx: isBuy ? limitPx * 1.005 : limitPx * 0.995, orderType: 'Ioc' }),
       });
       const result = await response.json();
       console.log('[HL order response]', JSON.stringify(result));
