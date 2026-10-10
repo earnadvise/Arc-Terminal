@@ -166,7 +166,22 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const toggleDarkMode = () => setIsDarkMode(prev => !prev);
+  const toggleDarkMode = () => setIsDarkMode(prev => {
+    const newVal = !prev;
+    try { localStorage.setItem('arc_terminal_theme', newVal ? 'dark' : 'light'); } catch {}
+    return newVal;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('arc_terminal_theme');
+        if (saved === 'dark') setIsDarkMode(true);
+        else if (saved === 'light') setIsDarkMode(false);
+        else if (window.matchMedia('(prefers-color-scheme: dark)').matches) setIsDarkMode(true);
+      } catch {}
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof document !== 'undefined') {
