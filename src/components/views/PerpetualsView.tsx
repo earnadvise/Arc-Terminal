@@ -892,9 +892,9 @@ export default function PerpetualsView() {
                   const amt = parseFloat(marginAmount);
                   if (!isNaN(amt) && amt > 0) {
                     if (marginAction === 'deposit') {
-                      depositToHyperliquid(amt, 'Arc', walletAddress);
+                      await depositToHyperliquid(amt, 'Arc', walletAddress);
                     } else {
-                      withdrawFromHyperliquid(amt, 'Arc', walletAddress);
+                      await withdrawFromHyperliquid(amt, 'Arc', walletAddress);
                     }
                   }
                   setMarginAction(null);
