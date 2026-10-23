@@ -6,6 +6,7 @@ import { toPng } from 'html-to-image';
 import TradingViewChart from './TradingViewChart';
 import { Search, Scale, CircleAlert, ShieldCheck, Loader2 } from 'lucide-react';
 import { useHyperliquid } from '@/lib/hyperliquid-kit';
+import { useExtended } from '@/lib/extended-kit';
 export default function PerpetualsView() {
   const {
     markets,
@@ -34,7 +35,8 @@ export default function PerpetualsView() {
     walletAddress
   } = useAppState();
 
-  const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, enableTrading, fetchRealBalance } = useHyperliquid();
+  const { hlBalance, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, fetchRealBalance } = useHyperliquid();
+  const { isProcessing: extProcessing, tradingEnabled, enableTrading, placeExtendedOrder } = useExtended();
   React.useEffect(() => {
     if (walletAddress) {
       fetchRealBalance(walletAddress);
@@ -90,12 +92,26 @@ export default function PerpetualsView() {
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
   const handlePlaceOrder = async () => {
-    await placeOrder(
-      tradeSide,
-      orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
+    // Ensure user is onboarded with Extended (one-time)
+    if (!tradingEnabled) {
+      addNotification('info', 'Enable Trading', 'Please enable trading first.');
+      const res = await enableTrading(walletAddress);
+      if (!res.success) { addNotification('error', 'Onboarding Failed', res.message); return; }
+    }
+    // Place order via Extended — real liquidity on Arc
+    const res = await placeExtendedOrder(
+      activePair.symbol,
+      tradeSide === 'LONG',
+      parsedSize * parsedPrice,
       parsedPrice,
-      parsedSize,
+      orderType === 'Market' ? 'MARKET' : 'LIMIT',
     );
+    if (res.success) {
+      addNotification('success', 'Order Placed', res.message);
+      placeOrder(tradeSide, orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT', parsedPrice, parsedSize, undefined, undefined, true);
+    } else {
+      addNotification('error', 'Execution Failed', res.message);
+    }
   };
 
   const filteredPairs = markets.filter(m => {
@@ -461,27 +477,27 @@ export default function PerpetualsView() {
             </div>
           </div>
 
-          {!sessionKeyActive ? (
+          {!tradingEnabled ? (
             <button
               onClick={async () => {
-                const res = await enableTrading();
+                const res = await enableTrading(walletAddress);
                 if (res.success) {
-                  addNotification('success', 'Trading Enabled', 'Hyperliquid session key authorized.');
+                  addNotification('success', 'Trading Enabled', 'Extended trading authorized.');
                 } else {
                   addNotification('error', 'Auth Failed', res.message);
                 }
               }}
-              disabled={isProcessing}
+              disabled={extProcessing || isProcessing}
               className="w-full py-3 rounded text-sm font-bold bg-gradient-to-r from-[#e5c07b] to-[#d4ae6a] hover:opacity-90 text-slate-900 transition-opacity shadow-lg shadow-[#e5c07b]/20 flex items-center justify-center gap-2"
             >
               <ShieldCheck size={18} />
-              {isProcessing ? 'Signing...' : 'Enable Trading'}
+              {(extProcessing || isProcessing) ? 'Signing...' : 'Enable Trading'}
             </button>
           ) : (
             <div className="flex gap-2">
               <button
                 onClick={async () => { setTradeSide('LONG'); handlePlaceOrder(); }}
-                disabled={isProcessing}
+              disabled={extProcessing || isProcessing}
                 className="flex-1 py-3 rounded text-sm font-bold bg-[#10b981] hover:bg-[#059669] text-slate-900 dark:text-white transition-colors shadow-lg shadow-[#10b981]/20 flex flex-col items-center justify-center leading-tight disabled:opacity-50"
               >
                 {isProcessing && tradeSide === 'LONG' ? <Loader2 size={16} className="animate-spin" /> : <span>Buy / Long</span>}
