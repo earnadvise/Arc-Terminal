@@ -6,7 +6,6 @@ import { toPng } from 'html-to-image';
 import TradingViewChart from './TradingViewChart';
 import { Search, Scale, CircleAlert, ShieldCheck, Loader2 } from 'lucide-react';
 import { useHyperliquid } from '@/lib/hyperliquid-kit';
-import { useExtended } from '@/lib/extended-kit';
 export default function PerpetualsView() {
   const {
     markets,
@@ -36,7 +35,6 @@ export default function PerpetualsView() {
   } = useAppState();
 
   const { hlBalance, sessionKeyActive, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, enableTrading, fetchRealBalance } = useHyperliquid();
-  const { placeExtendedOrder } = useExtended();
   React.useEffect(() => {
     if (walletAddress) {
       fetchRealBalance(walletAddress);
@@ -92,29 +90,12 @@ export default function PerpetualsView() {
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
   const handlePlaceOrder = async () => {
-    // Route to Extended DEX — real liquidity on Arc, user keeps Arc wallet
-    const res = await placeExtendedOrder(
-      activePair.symbol,
-      tradeSide === 'LONG',
-      parsedSize * parsedPrice,
+    await placeOrder(
+      tradeSide,
+      orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
       parsedPrice,
-      orderType === 'Market' ? 'MARKET' : 'LIMIT',
+      parsedSize,
     );
-    if (res.success) {
-      addNotification('success', 'Order Placed on Extended', res.message);
-      // Record position locally for UI feedback
-      placeOrder(
-        tradeSide,
-        orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
-        parsedPrice,
-        parsedSize,
-        undefined,
-        undefined,
-        true,
-      );
-    } else {
-      addNotification('error', 'Execution Failed', res.message);
-    }
   };
 
   const filteredPairs = markets.filter(m => {
