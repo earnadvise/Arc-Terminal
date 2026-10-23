@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const API_URL     = process.env.EXTENDED_API_URL     ?? 'https://api.arc.extended.exchange/api/v1';
+const API_URL     = process.env.EXTENDED_API_URL     ?? 'https://api.starknet.extended.exchange/api/v1';
 const API_KEY     = process.env.EXTENDED_API_KEY     ?? '';
 const BUILDER_ID  = process.env.EXTENDED_BUILDER_ID  ?? '';
 const VAULT_NUM   = process.env.EXTENDED_VAULT_NUMBER ?? '42';
@@ -23,6 +23,8 @@ export async function POST(req: Request) {
       headers: {
         'Content-Type':  'application/json',
         'Authorization': `Bearer ${API_KEY}`,
+        'X-API-Key':     API_KEY,
+        'X-Api-Key':     API_KEY,
         'X-Vault-Id':    VAULT_NUM,
       },
       body: JSON.stringify(orderPayload),
@@ -46,7 +48,12 @@ export async function DELETE(req: Request) {
     if (!orderId) return NextResponse.json({ status: 'err', response: 'Missing order id' }, { status: 400 });
     const res = await fetch(`${API_URL}/order/${orderId}`, {
       method:  'DELETE',
-      headers: { 'Authorization': `Bearer ${API_KEY}`, 'X-Vault-Id': VAULT_NUM },
+      headers: { 
+        'Authorization': `Bearer ${API_KEY}`,
+        'X-API-Key':     API_KEY,
+        'X-Api-Key':     API_KEY,
+        'X-Vault-Id':    VAULT_NUM,
+      },
     });
     const data = await res.json();
     return NextResponse.json({ status: 'ok', response: data });

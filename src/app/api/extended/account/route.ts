@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-const API_URL = process.env.EXTENDED_API_URL ?? 'https://api.arc.extended.exchange/api/v1';
+const API_URL = process.env.EXTENDED_API_URL ?? 'https://api.starknet.extended.exchange/api/v1';
 const API_KEY = process.env.EXTENDED_API_KEY ?? '';
 
 // GET — fetch account info for a wallet address
@@ -12,7 +12,11 @@ export async function GET(req: Request) {
     if (!wallet) return NextResponse.json({ status: 'err', response: 'Missing wallet' }, { status: 400 });
 
     const res = await fetch(`${API_URL}/user/account/info?ethAddress=${wallet}`, {
-      headers: { 'Authorization': `Bearer ${API_KEY}` },
+      headers: { 
+        'Authorization': `Bearer ${API_KEY}`,
+        'X-API-Key': API_KEY,
+        'X-Api-Key': API_KEY,
+      },
     });
     const data = await res.json();
     return NextResponse.json({ status: 'ok', response: data });
@@ -36,6 +40,8 @@ export async function POST(req: Request) {
       headers: {
         'Content-Type':  'application/json',
         'Authorization': `Bearer ${API_KEY}`,
+        'X-API-Key':     API_KEY,
+        'X-Api-Key':     API_KEY,
       },
       body: JSON.stringify({ ethAddress: wallet, starkKey, signature, nonce }),
     });
