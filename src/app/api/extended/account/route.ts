@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 
-const API_URL = process.env.EXTENDED_API_URL ?? 'https://api.starknet.extended.exchange/api/v1';
+function getApiUrl(): string {
+  const envUrl = process.env.EXTENDED_API_URL;
+  if (!envUrl || envUrl.includes('api.arc.extended.exchange')) {
+    return 'https://api.starknet.extended.exchange/api/v1';
+  }
+  return envUrl;
+}
+
+const API_URL = getApiUrl();
 const API_KEY = process.env.EXTENDED_API_KEY ?? '';
 
 // GET — fetch account info for a wallet address
@@ -18,7 +26,11 @@ export async function GET(req: Request) {
         'X-Api-Key': API_KEY,
       },
     });
-    const data = await res.json();
+
+    const text = await res.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { data = { message: text }; }
+
     if (!res.ok) {
       const errMsg = data?.error?.message ?? data?.message ?? JSON.stringify(data);
       return NextResponse.json({ status: 'err', response: errMsg }, { status: res.status });
@@ -49,8 +61,12 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({ ethAddress: wallet, starkKey, signature, nonce }),
     });
-    const data = await res.json();
+
+    const text = await res.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { data = { message: text }; }
     console.log('[Extended onboard]', JSON.stringify(data));
+
     if (!res.ok) {
       const errMsg = data?.error?.message ?? data?.message ?? JSON.stringify(data);
       return NextResponse.json({ status: 'err', response: errMsg }, { status: res.status });

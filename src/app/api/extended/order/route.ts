@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
 
-const API_URL     = process.env.EXTENDED_API_URL     ?? 'https://api.starknet.extended.exchange/api/v1';
+function getApiUrl(): string {
+  const envUrl = process.env.EXTENDED_API_URL;
+  if (!envUrl || envUrl.includes('api.arc.extended.exchange')) {
+    return 'https://api.starknet.extended.exchange/api/v1';
+  }
+  return envUrl;
+}
+
+const API_URL     = getApiUrl();
 const API_KEY     = process.env.EXTENDED_API_KEY     ?? '';
 const BUILDER_ID  = process.env.EXTENDED_BUILDER_ID  ?? '';
 const VAULT_NUM   = process.env.EXTENDED_VAULT_NUMBER ?? '42';
@@ -30,8 +38,15 @@ export async function POST(req: Request) {
       body: JSON.stringify(orderPayload),
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { data = { message: text }; }
     console.log('[Extended order]', JSON.stringify(data));
+
+    if (!res.ok) {
+      const errMsg = data?.error?.message ?? data?.message ?? JSON.stringify(data);
+      return NextResponse.json({ status: 'err', response: errMsg }, { status: res.status });
+    }
     return NextResponse.json({ status: 'ok', response: data });
 
   } catch (error: any) {
@@ -55,7 +70,9 @@ export async function DELETE(req: Request) {
         'X-Vault-Id':    VAULT_NUM,
       },
     });
-    const data = await res.json();
+    const text = await res.text();
+    let data: any;
+    try { data = JSON.parse(text); } catch { data = { message: text }; }
     return NextResponse.json({ status: 'ok', response: data });
   } catch (error: any) {
     return NextResponse.json({ status: 'err', response: error?.message ?? 'Cancel failed' }, { status: 500 });
