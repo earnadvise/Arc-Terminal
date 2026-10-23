@@ -19,6 +19,10 @@ export async function GET(req: Request) {
       },
     });
     const data = await res.json();
+    if (!res.ok) {
+      const errMsg = data?.error?.message ?? data?.message ?? JSON.stringify(data);
+      return NextResponse.json({ status: 'err', response: errMsg }, { status: res.status });
+    }
     return NextResponse.json({ status: 'ok', response: data });
   } catch (error: any) {
     return NextResponse.json({ status: 'err', response: error?.message }, { status: 500 });
@@ -47,6 +51,10 @@ export async function POST(req: Request) {
     });
     const data = await res.json();
     console.log('[Extended onboard]', JSON.stringify(data));
+    if (!res.ok) {
+      const errMsg = data?.error?.message ?? data?.message ?? JSON.stringify(data);
+      return NextResponse.json({ status: 'err', response: errMsg }, { status: res.status });
+    }
     return NextResponse.json({ status: 'ok', response: data });
   } catch (error: any) {
     console.error('[Extended onboard error]', error);

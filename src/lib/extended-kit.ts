@@ -43,13 +43,15 @@ export function useExtended() {
 
       // Generate a Stark-compatible key pair from the user's EIP-712 signature
       const provider  = new BrowserProvider((window as any).ethereum);
+      const network   = await provider.getNetwork();
+      const chainId   = Number(network.chainId) || 5042;
       const signer    = await provider.getSigner();
       const nonce     = Date.now();
 
       const domain = {
         name:    'ArcTerminalAI',
         version: '1',
-        chainId: 5042,
+        chainId,
         verifyingContract: '0x0000000000000000000000000000000000000000',
       };
       const types = {
