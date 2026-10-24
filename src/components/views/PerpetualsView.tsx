@@ -6,6 +6,7 @@ import { toPng } from 'html-to-image';
 import TradingViewChart from './TradingViewChart';
 import { Search, Scale, CircleAlert, ShieldCheck, Loader2 } from 'lucide-react';
 import { useHyperliquid } from '@/lib/hyperliquid-kit';
+import { useExtended } from '@/lib/extended-kit';
 export default function PerpetualsView() {
   const {
     markets,
@@ -35,6 +36,7 @@ export default function PerpetualsView() {
   } = useAppState();
 
   const { hlBalance, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, fetchRealBalance } = useHyperliquid();
+  const { isProcessing: extProcessing, tradingEnabled, enableTrading, placeExtendedOrder } = useExtended();
   React.useEffect(() => {
     if (walletAddress) {
       fetchRealBalance(walletAddress);
@@ -90,12 +92,26 @@ export default function PerpetualsView() {
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
   const handlePlaceOrder = async () => {
-    await placeOrder(
-      tradeSide,
-      orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
+    // Ensure user is onboarded with Extended (one-time)
+    if (!tradingEnabled) {
+      addNotification('info', 'Enable Trading', 'Please enable trading first.');
+      const res = await enableTrading(walletAddress);
+      if (!res.success) { addNotification('error', 'Onboarding Failed', res.message); return; }
+    }
+    // Place order via Extended — real liquidity on Arc
+    const res = await placeExtendedOrder(
+      activePair.symbol,
+      tradeSide === 'LONG',
+      parsedSize * parsedPrice,
       parsedPrice,
-      parsedSize,
+      orderType === 'Market' ? 'MARKET' : 'LIMIT',
     );
+    if (res.success) {
+      addNotification('success', 'Order Placed', res.message);
+      placeOrder(tradeSide, orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT', parsedPrice, parsedSize, undefined, undefined, true);
+    } else {
+      addNotification('error', 'Execution Failed', res.message);
+    }
   };
 
   const filteredPairs = markets.filter(m => {

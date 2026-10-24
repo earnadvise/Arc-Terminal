@@ -2,15 +2,15 @@ import { useState, useCallback } from 'react';
 import { BrowserProvider, ethers } from 'ethers';
 
 const EXTENDED_MARKETS: Record<string, string> = {
-  BTC:  'BTC-USD-PERP',
-  ETH:  'ETH-USD-PERP',
-  SOL:  'SOL-USD-PERP',
-  ARB:  'ARB-USD-PERP',
-  LINK: 'LINK-USD-PERP',
-  AVAX: 'AVAX-USD-PERP',
-  AAPL: 'AAPL-USD-PERP',
-  TSLA: 'TSLA-USD-PERP',
-  GOLD: 'GOLD-USD-PERP',
+  BTC:  'BTC-USD',
+  ETH:  'ETH-USD',
+  SOL:  'SOL-USD',
+  ARB:  'ARB-USD',
+  LINK: 'LINK-USD',
+  AVAX: 'AVAX-USD',
+  AAPL: 'AAPL-USD',
+  TSLA: 'TSLA-USD',
+  GOLD: 'GOLD-USD',
 };
 
 export interface ExtendedOrderResult {
@@ -107,7 +107,7 @@ export function useExtended() {
     setIsProcessing(true);
     try {
       const coin   = symbol.split(/[-/]/)[0].toUpperCase();
-      const market = EXTENDED_MARKETS[coin] ?? `${coin}-USD-PERP`;
+      const market = EXTENDED_MARKETS[coin] ?? `${coin}-USD`;
 
       const payload = {
         market,
