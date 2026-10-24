@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { BrowserProvider, ethers } from 'ethers';
 
 const EXTENDED_API  = 'https://api.starknet.extended.exchange/api/v1';
-const BUILDER_ID    = 30;
+const BUILDER_ID    = 304668;
 const BUILDER_FEE   = 0.0005;
 
 const EXTENDED_MARKETS: Record<string, string> = {
