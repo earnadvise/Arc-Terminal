@@ -32,16 +32,7 @@ export function useExtended() {
     try {
       if (!(window as any).ethereum) throw new Error('No wallet connected');
 
-      // Check if already onboarded
-      const checkRes = await fetch(`/api/extended/account?wallet=${walletAddress}`);
-      const checkData = await checkRes.json();
-      if (checkData?.response?.data?.status === 'ACTIVE') {
-        localStorage.setItem('extended_trading_enabled', 'true');
-        setTradingEnabled(true);
-        return { success: true, message: 'Trading already enabled.' };
-      }
-
-      // Generate a Stark-compatible key pair from the user's EIP-712 signature
+      // Prompt signature immediately without waiting for slow background checks
       const provider  = new BrowserProvider((window as any).ethereum);
       const network   = await provider.getNetwork();
       const chainId   = Number(network.chainId) || 5042;
