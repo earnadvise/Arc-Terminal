@@ -477,7 +477,24 @@ export default function PerpetualsView() {
             </div>
           </div>
 
-          <div className="flex gap-2">
+          {!tradingEnabled ? (
+            <button
+              onClick={async () => {
+                const res = await enableTrading(walletAddress);
+                if (res.success) {
+                  addNotification('success', 'Trading Enabled', 'Extended trading authorized.');
+                } else {
+                  addNotification('error', 'Auth Failed', res.message);
+                }
+              }}
+              disabled={extProcessing || isProcessing}
+              className="w-full py-3 rounded text-sm font-bold bg-gradient-to-r from-[#e5c07b] to-[#d4ae6a] hover:opacity-90 text-slate-900 transition-opacity shadow-lg shadow-[#e5c07b]/20 flex items-center justify-center gap-2"
+            >
+              <ShieldCheck size={18} />
+              {(extProcessing || isProcessing) ? 'Signing...' : 'Enable Trading'}
+            </button>
+          ) : (
+            <div className="flex gap-2">
               <button
                 onClick={async () => { setTradeSide('LONG'); handlePlaceOrder(); }}
               disabled={isProcessing}
@@ -493,6 +510,7 @@ export default function PerpetualsView() {
                 {isProcessing && tradeSide === 'SHORT' ? <Loader2 size={16} className="animate-spin" /> : <span>Sell / Short</span>}
               </button>
             </div>
+          )}
         </div>
       </div>
 
