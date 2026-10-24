@@ -1,16 +1,17 @@
 import { useState, useCallback } from 'react';
 import { BrowserProvider, ethers } from 'ethers';
 
+const EXTENDED_API  = 'https://api.starknet.extended.exchange/api/v1';
+const BUILDER_ID    = 30;
+const BUILDER_FEE   = 0.0005;
+
 const EXTENDED_MARKETS: Record<string, string> = {
-  BTC:  'BTC-USD',
-  ETH:  'ETH-USD',
-  SOL:  'SOL-USD',
-  ARB:  'ARB-USD',
-  LINK: 'LINK-USD',
-  AVAX: 'AVAX-USD',
-  AAPL: 'AAPL-USD',
-  TSLA: 'TSLA-USD',
-  GOLD: 'GOLD-USD',
+  BTC: 'BTC-USD-PERP', ETH: 'ETH-USD-PERP', SOL: 'SOL-USD-PERP',
+  ARB: 'ARB-USD-PERP', LINK: 'LINK-USD-PERP', AVAX: 'AVAX-USD-PERP',
+};
+
+const ONBOARDING_DOMAIN = {
+  name: 'extended.exchange', version: '1',
 };
 
 export interface ExtendedOrderResult {
@@ -20,64 +21,70 @@ export interface ExtendedOrderResult {
 }
 
 export function useExtended() {
-  const [isProcessing, setIsProcessing]       = useState(false);
-  const [tradingEnabled, setTradingEnabled]   = useState<boolean>(() => {
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [tradingEnabled, setTradingEnabled] = useState<boolean>(() => {
     if (typeof window === 'undefined') return false;
-    return localStorage.getItem('extended_trading_enabled') === 'true';
+    return !!localStorage.getItem('extended_jwt');
   });
 
-  // ─── 1. ONBOARD USER (once per wallet) ────────────────────────────────────
+  // ─── 1. ONBOARD — sign once, get JWT ──────────────────────────────────────
   const enableTrading = useCallback(async (walletAddress: string): Promise<ExtendedOrderResult> => {
     setIsProcessing(true);
     try {
+      // Check if JWT still valid
+      const stored = localStorage.getItem('extended_jwt');
+      if (stored) {
+        const testRes = await fetch(`${EXTENDED_API}/user/account`, {
+          headers: { 'Authorization': `Bearer ${stored}` },
+        });
+        if (testRes.ok) {
+          setTradingEnabled(true);
+          return { success: true, message: 'Trading already enabled.' };
+        }
+        localStorage.removeItem('extended_jwt');
+      }
+
       if (!(window as any).ethereum) throw new Error('No wallet connected');
+      const provider = new BrowserProvider((window as any).ethereum);
+      const network  = await provider.getNetwork();
+      const chainId  = Number(network.chainId) || 5042;
+      const signer   = await provider.getSigner();
+      const nonce    = Date.now();
 
-      // Prompt signature immediately without waiting for slow background checks
-      const provider  = new BrowserProvider((window as any).ethereum);
-      const network   = await provider.getNetwork();
-      const chainId   = Number(network.chainId) || 5042;
-      const signer    = await provider.getSigner();
-      const nonce     = Date.now();
-
-      const domain = {
-        name:    'ArcTerminalAI',
-        version: '1',
-        chainId,
-        verifyingContract: '0x0000000000000000000000000000000000000000',
-      };
-      const types = {
-        EnableTrading: [
-          { name: 'action',  type: 'string' },
-          { name: 'nonce',   type: 'uint64' },
+      // EIP-712 onboarding signature — Extended's standard format
+      const domain = { ...ONBOARDING_DOMAIN, chainId };
+      const types  = {
+        OnboardingAction: [
+          { name: 'action', type: 'string' },
+          { name: 'onlySignOn', type: 'string' },
         ],
       };
-      const message = { action: 'Enable trading on ArcTerminalAI', nonce };
+      const message = {
+        action:      'Enable Trading',
+        onlySignOn:  'app.extended.exchange',
+      };
 
       const signature = await signer.signTypedData(domain, types, message);
 
-      // Derive a deterministic Stark key from the signature
-      const sigBytes  = ethers.getBytes(signature);
-      const starkSeed = ethers.keccak256(sigBytes);
-      const starkKey  = '0x' + starkSeed.slice(2, 66); // use first 32 bytes as public key
-
-      // Register with Extended via our server
-      const regRes = await fetch('/api/extended/account', {
+      // Exchange signature for JWT
+      const res = await fetch(`${EXTENDED_API}/auth/ethereum`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ wallet: walletAddress, starkKey, signature, nonce }),
+        body:    JSON.stringify({ ethAddress: walletAddress, signature, nonce }),
       });
-      const regData = await regRes.json();
-      console.log('[Extended onboard]', JSON.stringify(regData));
 
-      if (regData.status === 'ok') {
-        localStorage.setItem('extended_trading_enabled', 'true');
-        localStorage.setItem(`extended_stark_key_${walletAddress}`, starkKey);
-        setTradingEnabled(true);
-        return { success: true, message: 'Trading enabled on Extended.' };
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(`Onboarding failed: ${err}`);
       }
 
-      const errMsg = regData?.response?.error?.message ?? regData?.response ?? 'Onboarding failed';
-      return { success: false, message: typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg) };
+      const data = await res.json();
+      const jwt  = data?.token ?? data?.data?.token ?? data?.accessToken;
+      if (!jwt) throw new Error('No token returned from Extended');
+
+      localStorage.setItem('extended_jwt', jwt);
+      setTradingEnabled(true);
+      return { success: true, message: 'Trading enabled on Extended.' };
 
     } catch (error: any) {
       console.error('[Extended enableTrading]', error);
@@ -97,44 +104,57 @@ export function useExtended() {
   ): Promise<ExtendedOrderResult> => {
     setIsProcessing(true);
     try {
+      const jwt = localStorage.getItem('extended_jwt');
+      if (!jwt) return { success: false, message: 'Please enable trading first.' };
+
       const coin   = symbol.split(/[-/]/)[0].toUpperCase();
-      const market = EXTENDED_MARKETS[coin] ?? `${coin}-USD`;
+      const market = EXTENDED_MARKETS[coin] ?? `${coin}-USD-PERP`;
 
       const payload = {
         market,
-        side:        isLong ? 'BUY' : 'SELL',
-        type:        orderType,
-        size:        sizeUsd.toFixed(2),
-        price:       orderType === 'LIMIT' ? limitPx.toFixed(2) : undefined,
-        timeInForce: orderType === 'MARKET' ? 'IOC' : 'GTC',
-        reduceOnly:  false,
+        side:          isLong ? 'BUY' : 'SELL',
+        type:          orderType,
+        size:          sizeUsd.toFixed(2),
+        price:         orderType === 'LIMIT' ? limitPx.toFixed(2) : undefined,
+        time_in_force: orderType === 'MARKET' ? 'IOC' : 'GTC',
+        reduce_only:   false,
+        builder_id:    BUILDER_ID,
+        builder_fee:   BUILDER_FEE,
       };
 
-      const res  = await fetch('/api/extended/order', {
+      const res = await fetch(`${EXTENDED_API}/order`, {
         method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${jwt}`,
+        },
+        body: JSON.stringify(payload),
       });
+
       const data = await res.json();
       console.log('[Extended order]', JSON.stringify(data));
 
-      if (data.status === 'ok') {
-        const inner = data.response;
-        if (inner?.status === 'OK' || inner?.data?.orderId) {
-          return {
-            success: true,
-            message: `${isLong ? 'Long' : 'Short'} order placed for ${coin}`,
-            orderId: inner?.data?.orderId,
-          };
-        }
-        const errMsg = inner?.error?.message ?? inner?.message ?? JSON.stringify(inner);
-        return { success: false, message: typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg) };
+      if (res.ok && (data?.status === 'OK' || data?.data?.order_id || data?.order_id)) {
+        return {
+          success: true,
+          message: `${isLong ? 'Long' : 'Short'} order placed for ${coin}`,
+          orderId: data?.data?.order_id ?? data?.order_id,
+        };
       }
-      return { success: false, message: data.response ?? 'Order failed' };
+
+      // JWT expired — clear and ask user to re-enable
+      if (res.status === 401) {
+        localStorage.removeItem('extended_jwt');
+        setTradingEnabled(false);
+        return { success: false, message: 'Session expired. Please click Enable Trading again.' };
+      }
+
+      const errMsg = data?.error?.message ?? data?.message ?? JSON.stringify(data);
+      return { success: false, message: typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg) };
 
     } catch (error: any) {
       console.error('[Extended order error]', error);
-      return { success: false, message: error?.message ?? 'Order execution failed' };
+      return { success: false, message: error?.message ?? 'Order failed' };
     } finally {
       setIsProcessing(false);
     }
@@ -144,10 +164,14 @@ export function useExtended() {
   const cancelExtendedOrder = useCallback(async (orderId: string): Promise<ExtendedOrderResult> => {
     setIsProcessing(true);
     try {
-      const res  = await fetch(`/api/extended/order?id=${orderId}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.status === 'ok') return { success: true, message: 'Order cancelled' };
-      return { success: false, message: data.response ?? 'Cancel failed' };
+      const jwt = localStorage.getItem('extended_jwt');
+      if (!jwt) return { success: false, message: 'Not authenticated.' };
+      const res  = await fetch(`${EXTENDED_API}/order/${orderId}`, {
+        method:  'DELETE',
+        headers: { 'Authorization': `Bearer ${jwt}` },
+      });
+      if (res.ok) return { success: true, message: 'Order cancelled.' };
+      return { success: false, message: 'Cancel failed.' };
     } catch (error: any) {
       return { success: false, message: error?.message ?? 'Cancel failed' };
     } finally {
@@ -155,11 +179,5 @@ export function useExtended() {
     }
   }, []);
 
-  return {
-    isProcessing,
-    tradingEnabled,
-    enableTrading,
-    placeExtendedOrder,
-    cancelExtendedOrder,
-  };
+  return { isProcessing, tradingEnabled, enableTrading, placeExtendedOrder, cancelExtendedOrder };
 }
