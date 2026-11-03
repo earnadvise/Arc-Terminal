@@ -35,7 +35,8 @@ const TOKENS: TokenMeta[] = [
   { symbol: 'USDC', name: 'USD Coin', decimals: 6,  color: '#8b5cf6', address: '0x3600000000000000000000000000000000000000', priceUSD: '1.00' },
   { symbol: 'EURC', name: 'Euro Coin',  decimals: 6,  color: '#3b82f6', address: '0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1', priceUSD: '1.08' },
   { symbol: 'cirBTC', name: 'Circle BTC', decimals: 8, color: '#F7931A', address: '0x171A4217b86A807A64eB94757Db6849fb4bDbAA0', priceUSD: '76000.0' },
-  { symbol: 'ARCAT', name: 'ARCAT', decimals: 18, color: '#F7931A', address: '0x07704B06981eA962b87296362a1281484d160000', priceUSD: '0.0007' }
+  { symbol: 'ARCAT', name: 'ARCAT', decimals: 18, color: '#F7931A', address: '0x07704B06981eA962b87296362a1281484d160000', priceUSD: '0.0007' },
+  { symbol: 'SATOSHI', name: 'Satoshi Standard', decimals: 18, color: '#F59E0B', address: '0xe7252cbf3e8046714e8302430930d350c6bc2a8b', priceUSD: '0.00' }
 ];
 
 function TokenSelector({
