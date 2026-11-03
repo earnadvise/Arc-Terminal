@@ -46,7 +46,8 @@ export const ARC_TOKENS: Record<string, { address: string; decimals: number; nam
   "LAZY": { "address": "0xD6509e6B2c2C3494bEc027D81952E5079112adc6", "decimals": 18, "name": "Arc's Chameleon" },
   "PI": { "address": "0x30aC39DeC8a854c5Fd03AA429E3BEF32a7E4c84a", "decimals": 18, "name": "3.141592653589793238462643383279" },
   "AI": { "address": "0xcaC4098684Cc7FC6BeA101D9B9c641cfA7D783EA", "decimals": 18, "name": "ARC Investor" },
-  "wARS": { "address": "0x0DC4F92879B7670e5f4e4e6e3c801D229129D90D", "decimals": 18, "name": "Peso Argentino" }
+  "wARS": { "address": "0x0DC4F92879B7670e5f4e4e6e3c801D229129D90D", "decimals": 18, "name": "Peso Argentino" },
+  "SATOSHI": { "address": "0xe7252cbf3e8046714e8302430930d350c6bc2a8b", "decimals": 18, "name": "Satoshi Standard" }
 };
 
 // Arc Terminal Router on Arc Mainnet (Our custom protocol proxy contract)
@@ -67,6 +68,10 @@ export const POOLS: Record<string, { address: string; fee: number }> = {
   'cirBTC-USDC': { address: '0x4301aba1ae52614a3412cac2e1a780e346d2cff9', fee: 10000 },
   'EURC-cirBTC': { address: '0x035641936aac893dab0cb6e506c36ecc07b53702', fee: 3000 },
   'cirBTC-EURC': { address: '0x035641936aac893dab0cb6e506c36ecc07b53702', fee: 3000 },
+  'USDC-SATOSHI': { address: '0xe7252cbf3e8046714e8302430930d350c6bc2a8b', fee: 3000 },
+  'SATOSHI-USDC': { address: '0xe7252cbf3e8046714e8302430930d350c6bc2a8b', fee: 3000 },
+  'cirBTC-SATOSHI': { address: '0xe7252cbf3e8046714e8302430930d350c6bc2a8b', fee: 3000 },
+  'SATOSHI-cirBTC': { address: '0xe7252cbf3e8046714e8302430930d350c6bc2a8b', fee: 3000 },
 };
 
 /** Get the pool fee tier for a given token pair. Defaults to 3000 if not found. */
