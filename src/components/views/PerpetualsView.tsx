@@ -5,14 +5,13 @@ import { useAppState } from '@/context/useAppState';
 import { toPng } from 'html-to-image';
 import TradingViewChart from './TradingViewChart';
 import { Search, Scale, CircleAlert, ShieldCheck, Loader2 } from 'lucide-react';
-import { useHyperliquid } from '@/lib/hyperliquid-kit';
+import { useExtended } from '@/lib/extended/useExtended';
+import type { OpenOrder } from '@/utils/mockData';
 export default function PerpetualsView() {
   const {
     markets,
     activePair,
     setActivePairBySymbol,
-    positions,
-    openOrders,
     history,
     walletConnected,
     balances,
@@ -22,24 +21,18 @@ export default function PerpetualsView() {
     setLeverage,
     marginMode,
     setMarginMode,
-    placeOrder,
-    closePosition,
-    adjustPositionMargin,
     cancelOrder,
     connectWallet,
-    
-    
-    setTPSL,
     addNotification,
     walletAddress
   } = useAppState();
 
-  const { hlBalance, isProcessing, depositToHyperliquid, withdrawFromHyperliquid, fetchRealBalance } = useHyperliquid();
-  React.useEffect(() => {
-    if (walletAddress) {
-      fetchRealBalance(walletAddress);
-    }
-  }, [walletAddress, fetchRealBalance]);
+  // Trading runs on Extended: balance, positions and orders come from the user's own Extended account.
+  const ext = useExtended(walletAddress);
+  const positions = ext.positions;
+  const openOrders: OpenOrder[] = [];
+  const hlBalance = ext.balance.available;
+  const isProcessing = ext.busy;
 
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<'All' | 'Crypto' | 'Commodities' | 'Forex'>('All');
@@ -84,18 +77,28 @@ export default function PerpetualsView() {
   const parsedSize = parseFloat(inputSize) || 0;
   const positionSize = parsedSize * (orderType === 'Market' ? activePair.lastPrice : parsedPrice);
   const marginRequired = leverage > 0 ? positionSize / leverage : 0;
-  const feeEstimate = positionSize * 0.0006;
+  const feeEstimate = positionSize * 0.00075;
   const calculatedLiqPrice = tradeSide === 'LONG'
     ? parsedPrice * (1 - (1 / leverage) * 0.95)
     : parsedPrice * (1 + (1 / leverage) * 0.95);
 
-  const handlePlaceOrder = async () => {
-    await placeOrder(
-      tradeSide,
-      orderType === 'Market' ? 'MARKET' : orderType === 'Stop' ? 'STOP' : 'LIMIT',
-      parsedPrice,
-      parsedSize,
-    );
+  const handlePlaceOrder = async (side: 'LONG' | 'SHORT') => {
+    if (!walletConnected) { addNotification('error', 'Wallet', 'Connect your wallet first.'); return; }
+    if (orderType !== 'Market' && orderType !== 'Limit') {
+      addNotification('warning', 'Order type', `${orderType} orders are not available yet. Use Market or Limit.`);
+      return;
+    }
+    if (parsedSize <= 0) { addNotification('error', 'Order', 'Enter a size.'); return; }
+    addNotification('info', 'Confirm in wallet', 'Sign the request in your wallet to continue.');
+    const res = await ext.placeOrder({
+      symbol: activePair.symbol,
+      side,
+      type: orderType === 'Market' ? 'MARKET' : 'LIMIT',
+      size: parsedSize,
+      price: orderType === 'Limit' ? parsedPrice : undefined,
+      leverage,
+    });
+    addNotification(res.success ? 'success' : 'error', res.success ? 'Order Placed' : 'Execution Failed', res.message);
   };
 
   const filteredPairs = markets.filter(m => {
@@ -453,7 +456,7 @@ export default function PerpetualsView() {
             </div>
             <div className="flex justify-between">
               <span>Taker / Maker Fee</span>
-              <span className="text-slate-900 dark:text-white number-mono">0.06% / 0.02%</span>
+              <span className="text-slate-900 dark:text-white number-mono">0.075% / 0.00%</span>
             </div>
             <div className="flex justify-between">
               <span>Est. Fee</span>
@@ -463,14 +466,14 @@ export default function PerpetualsView() {
 
           <div className="flex gap-2">
               <button
-                onClick={async () => { setTradeSide('LONG'); handlePlaceOrder(); }}
+                onClick={async () => { setTradeSide('LONG'); handlePlaceOrder('LONG'); }}
               disabled={isProcessing}
                 className="flex-1 py-3 rounded text-sm font-bold bg-[#10b981] hover:bg-[#059669] text-slate-900 dark:text-white transition-colors shadow-lg shadow-[#10b981]/20 flex flex-col items-center justify-center leading-tight disabled:opacity-50"
               >
                 {isProcessing && tradeSide === 'LONG' ? <Loader2 size={16} className="animate-spin" /> : <span>Buy / Long</span>}
               </button>
               <button
-                onClick={async () => { setTradeSide('SHORT'); handlePlaceOrder(); }}
+                onClick={async () => { setTradeSide('SHORT'); handlePlaceOrder('SHORT'); }}
                 disabled={isProcessing}
                 className="flex-1 py-3 rounded text-sm font-bold bg-[#ef4444] hover:bg-[#dc2626] text-slate-900 dark:text-white transition-colors shadow-lg shadow-[#ef4444]/20 flex flex-col items-center justify-center leading-tight disabled:opacity-50"
               >
@@ -599,7 +602,7 @@ export default function PerpetualsView() {
                 if (tpPrice || slPrice) {
                   const tp = tpPrice ? parseFloat(tpPrice) : 0;
                   const sl = slPrice ? parseFloat(slPrice) : 0;
-                  setTPSL(tpSlPosition.symbol, tp, sl);
+                  addNotification('info', 'TP/SL', 'Take profit and stop loss for Extended positions are coming soon.');
                 }
                 setTpPrice('');
                 setSlPrice('');
@@ -676,7 +679,9 @@ export default function PerpetualsView() {
               <button onClick={async () => {
                 const amt = parseFloat(closeSizeInput);
                 if (!isNaN(amt) && amt > 0) {
-                  closePosition(closingPosition.id, amt);
+                  ext.closePosition(closingPosition.id, amt).then((res) =>
+                    addNotification(res.success ? 'success' : 'error', res.success ? 'Closing Position' : 'Close Failed', res.message),
+                  );
                 }
                 setClosingPosition(null);
               }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 dark:text-white bg-[#ef4444] hover:bg-[#dc2626] transition-colors shadow-lg shadow-[#ef4444]/30">Confirm Close</button>
@@ -743,14 +748,15 @@ export default function PerpetualsView() {
                             {isGain ? '+' : ''}${pos.unrealizedPnl.toFixed(2)}
                           </td>
                           <td className="text-right pr-4 flex items-center justify-end gap-1 pt-2">
-                            <button onClick={() => setTpSlPosition(pos)} className="px-2 py-1 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] border border-slate-200 dark:border-[#1e1e24] rounded transition-all" title="Set TP/SL">TP/SL</button>
+                            <button onClick={() => addNotification('info', 'TP/SL', 'Take profit and stop loss for Extended positions are coming soon.')} className="px-2 py-1 text-[10px] font-bold text-slate-500 dark:text-[#8a8a9e] hover:text-slate-900 dark:text-white hover:bg-slate-200 dark:hover:bg-slate-200 dark:bg-[#1f1f2e] border border-slate-200 dark:border-[#1e1e24] rounded transition-all" title="Set TP/SL">TP/SL</button>
                             <button onClick={() => setSharePosition(pos)} className="p-1 text-[#e5c07b] hover:bg-[#e5c07b]/10 border border-[#e5c07b]/30 rounded transition-all" title="Share PnL">
                               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
                             </button>
                             <button onClick={async () => {
-                              await closePosition(pos.id);
-                              await new Promise(r => setTimeout(r, 8000));
-                              await placeOrder(pos.side === 'LONG' ? 'SHORT' : 'LONG', 'MARKET', pos.markPrice, pos.size, pos.symbol, false, true);
+                              const closed = await ext.closePosition(pos.id);
+                              if (!closed.success) { addNotification('error', 'Reverse Failed', closed.message); return; }
+                              const reopened = await ext.placeOrder({ symbol: pos.symbol, side: pos.side === 'LONG' ? 'SHORT' : 'LONG', type: 'MARKET', size: pos.size, leverage: pos.leverage });
+                              addNotification(reopened.success ? 'success' : 'error', reopened.success ? 'Position Reversed' : 'Reverse Failed', reopened.message);
                             }} className="px-2 py-1 text-[10px] font-semibold text-[#f59e0b] hover:bg-[#f59e0b]/10 border border-[#f59e0b]/30 rounded transition-all" title="Reverse Position">Reverse</button>
                             <button onClick={async () => {
                               setClosingPosition(pos);
@@ -849,7 +855,7 @@ export default function PerpetualsView() {
             <div className="p-5">
               <div className="flex items-center gap-2 mb-4">
                 <span className="font-black text-slate-800 dark:text-slate-100">Margin Account</span>
-                <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Available: {marginAction === 'deposit' ? balances.walletUSDC.toLocaleString() : hlBalance.toLocaleString()}</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-[#8a8a9e]">Available: {(marginAction === 'deposit' ? balances.walletUSDC : ext.balance.withdrawable).toLocaleString()}</span>
               </div>
               <div className="space-y-3"> 
                 <div>
@@ -862,7 +868,7 @@ export default function PerpetualsView() {
                       className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1e1e24] focus:border-[#e5c07b]/50 focus:ring-2 focus:ring-[#e5c07b]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white outline-none transition-all"
                     />
                     <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
-                      <button onClick={() => setMarginAmount((marginAction === 'deposit' ? balances.walletUSDC : hlBalance).toString())} className="px-2 py-1 bg-[#1e1e24] text-[#e5c07b] rounded text-[10px] font-bold">MAX</button>
+                      <button onClick={() => setMarginAmount((marginAction === 'deposit' ? balances.walletUSDC : ext.balance.withdrawable).toString())} className="px-2 py-1 bg-[#1e1e24] text-[#e5c07b] rounded text-[10px] font-bold">MAX</button>
                     </div>
                   </div>
                 </div>
@@ -872,14 +878,11 @@ export default function PerpetualsView() {
               <button onClick={() => setMarginAction(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] transition-colors">Cancel</button>
                                             <button 
                 onClick={async () => {
-                  const amt = parseFloat(marginAmount);
-                  if (!isNaN(amt) && amt > 0) {
-                    if (marginAction === 'deposit') {
-                      await depositToHyperliquid(amt, 'Arc', walletAddress);
-                    } else {
-                      await withdrawFromHyperliquid(amt, 'Arc', walletAddress);
-                    }
-                  }
+                  addNotification(
+                    'info',
+                    marginAction === 'deposit' ? 'Deposit' : 'Withdraw',
+                    'Funding and withdrawing your Extended account from Arc is being enabled. Your trading balance above is live from Extended.',
+                  );
                   setMarginAction(null);
                 }} 
                 disabled={isProcessing}
