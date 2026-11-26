@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { BrowserProvider } from 'ethers';
-import type { Position } from '@/utils/mockData';
+import type { OpenOrder, Position } from '@/utils/mockData';
 import { ExtendedError, extendedRequest } from './api';
 import { EXTENDED_BUILDER_FEE, EXTENDED_BUILDER_ID, toMarketName } from './config';
 import {
@@ -14,6 +14,7 @@ import {
   onboardAccount,
 } from './onboarding';
 import { buildSignedOrder, type ExtendedMarket } from './orders';
+import { executeArcDeposit, quoteArcDeposit, type DepositQuote } from './funding';
 
 export interface ExtendedBalance {
   equity: number;
@@ -50,6 +51,19 @@ interface RawPosition {
   unrealisedPnl: string;
 }
 
+interface RawOrder {
+  id: number;
+  market: string;
+  type: string;
+  side: 'BUY' | 'SELL';
+  status: string;
+  price?: string;
+  qty: string;
+  filledQty?: string;
+  trigger?: { triggerPrice?: string };
+  createdTime?: number;
+}
+
 interface RawFee {
   takerFeeRate: string;
   builderFeeRate?: string;
@@ -59,6 +73,19 @@ const EMPTY_BALANCE: ExtendedBalance = { equity: 0, available: 0, withdrawable: 
 const storageKey = (address: string) => `extended:v1:${address.toLowerCase()}`;
 const num = (v: string | number | undefined) => Number(v ?? 0) || 0;
 const toAppSymbol = (market: string) => `${market.split('-')[0]}-PERP`;
+
+const toOpenOrder = (o: RawOrder, leverageByMarket: Record<string, number>): OpenOrder => ({
+  id: String(o.id),
+  symbol: toAppSymbol(o.market),
+  side: o.side,
+  type: o.type === 'CONDITIONAL' ? 'STOP' : o.type === 'TPSL' ? 'TPSL' : 'LIMIT',
+  price: num(o.type === 'CONDITIONAL' ? o.trigger?.triggerPrice : o.price),
+  amount: num(o.qty) - num(o.filledQty),
+  leverage: leverageByMarket[o.market] ?? 0,
+  marginMode: 'CROSS',
+  status: o.status === 'PARTIALLY_FILLED' ? 'PARTIAL' : 'OPEN',
+  time: o.createdTime ? new Date(o.createdTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+});
 
 const toPosition = (p: RawPosition): Position => ({
   id: String(p.id),
@@ -91,6 +118,7 @@ export function useExtended(walletAddress: string) {
   const [busy, setBusy] = useState(false);
   const [balance, setBalance] = useState<ExtendedBalance>(EMPTY_BALANCE);
   const [positions, setPositions] = useState<Position[]>([]);
+  const [openOrders, setOpenOrders] = useState<OpenOrder[]>([]);
   const unlocked = useRef<Unlocked | null>(null);
   const stored = useRef<StoredSession | null>(null);
 
@@ -102,18 +130,20 @@ export function useExtended(walletAddress: string) {
     setStatus('idle');
     setBalance(EMPTY_BALANCE);
     setPositions([]);
+    setOpenOrders([]);
   }, [walletAddress]);
 
   const refresh = useCallback(async () => {
     const apiKey = stored.current?.apiKey;
     if (!apiKey) return;
     try {
-      const [bal, pos] = await Promise.all([
+      const [bal, pos, ords] = await Promise.all([
         extendedRequest<Record<string, string>>('/api/v1/user/balance', { apiKey }).catch((e) => {
           if (e instanceof ExtendedError && e.httpStatus === 404) return null; // 404 means a zero balance
           throw e;
         }),
         extendedRequest<RawPosition[]>('/api/v1/user/positions', { apiKey }),
+        extendedRequest<RawOrder[]>('/api/v1/user/orders', { apiKey }).catch(() => [] as RawOrder[]),
       ]);
       setBalance(
         bal
@@ -125,7 +155,10 @@ export function useExtended(walletAddress: string) {
             }
           : EMPTY_BALANCE,
       );
-      setPositions((Array.isArray(pos) ? pos : []).map(toPosition));
+      const rawPositions = Array.isArray(pos) ? pos : [];
+      setPositions(rawPositions.map(toPosition));
+      const leverageByMarket = Object.fromEntries(rawPositions.map((p) => [p.market, num(p.leverage)]));
+      setOpenOrders((Array.isArray(ords) ? ords : []).map((o) => toOpenOrder(o, leverageByMarket)));
     } catch (e) {
       console.warn('[extended] refresh failed', messageOf(e));
     }
@@ -261,5 +294,64 @@ export function useExtended(walletAddress: string) {
     [positions, submitOrder],
   );
 
-  return { status, hasSession, busy, balance, positions, connect, refresh, placeOrder, closePosition };
+  const cancelOrder = useCallback(
+    async (id: string): Promise<ExtendedResult> => {
+      const apiKey = stored.current?.apiKey;
+      if (!apiKey) return { success: false, message: 'Trading is not unlocked yet.' };
+      setBusy(true);
+      try {
+        await extendedRequest(`/api/v1/user/order/${encodeURIComponent(id)}`, { method: 'DELETE', apiKey });
+        await refresh();
+        return { success: true, message: 'Order cancelled.' };
+      } catch (e) {
+        return { success: false, message: messageOf(e) };
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refresh],
+  );
+
+  /** Deposit step 1: create the account if needed, then get a bridge quote so the user sees the fee. */
+  const quoteDeposit = useCallback(
+    async (amount: string): Promise<{ quote?: DepositQuote; message: string }> => {
+      setBusy(true);
+      try {
+        const session = await connect();
+        const quote = await quoteArcDeposit(session.apiKey, amount);
+        return { quote, message: `Bridge fee ${quote.fee} USDC` };
+      } catch (e) {
+        return { message: messageOf(e) };
+      } finally {
+        setBusy(false);
+      }
+    },
+    [connect],
+  );
+
+  /** Deposit step 2: commit the quote and send the on-chain deposit from Arc. */
+  const deposit = useCallback(
+    async (quote: DepositQuote): Promise<ExtendedResult> => {
+      const apiKey = stored.current?.apiKey;
+      const ethereum = (window as unknown as { ethereum?: ConstructorParameters<typeof BrowserProvider>[0] }).ethereum;
+      if (!apiKey || !ethereum) return { success: false, message: 'Wallet or session missing. Try again.' };
+      setBusy(true);
+      try {
+        const { txHash } = await executeArcDeposit(ethereum as never, apiKey, quote);
+        setTimeout(refresh, 15000);
+        setTimeout(refresh, 60000);
+        return { success: true, message: `Deposit sent (${txHash.slice(0, 10)}...). It usually shows in your balance within about a minute.` };
+      } catch (e) {
+        return { success: false, message: messageOf(e) };
+      } finally {
+        setBusy(false);
+      }
+    },
+    [refresh],
+  );
+
+  return {
+    status, hasSession, busy, balance, positions, openOrders,
+    connect, refresh, placeOrder, closePosition, cancelOrder, quoteDeposit, deposit,
+  };
 }

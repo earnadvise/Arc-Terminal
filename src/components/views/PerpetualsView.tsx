@@ -6,7 +6,7 @@ import { toPng } from 'html-to-image';
 import TradingViewChart from './TradingViewChart';
 import { Search, Scale, CircleAlert, ShieldCheck, Loader2 } from 'lucide-react';
 import { useExtended } from '@/lib/extended/useExtended';
-import type { OpenOrder } from '@/utils/mockData';
+import type { DepositQuote } from '@/lib/extended/funding';
 export default function PerpetualsView() {
   const {
     markets,
@@ -21,7 +21,6 @@ export default function PerpetualsView() {
     setLeverage,
     marginMode,
     setMarginMode,
-    cancelOrder,
     connectWallet,
     addNotification,
     walletAddress
@@ -30,7 +29,7 @@ export default function PerpetualsView() {
   // Trading runs on Extended: balance, positions and orders come from the user's own Extended account.
   const ext = useExtended(walletAddress);
   const positions = ext.positions;
-  const openOrders: OpenOrder[] = [];
+  const openOrders = ext.openOrders;
   const hlBalance = ext.balance.available;
   const isProcessing = ext.busy;
 
@@ -53,7 +52,8 @@ export default function PerpetualsView() {
   const [closeSizeInput, setCloseSizeInput] = useState<string>('');
   const shareCardRef = useRef<HTMLDivElement>(null);
     const [marginAction, setMarginAction] = useState<'deposit' | 'withdraw' | null>(null);
-    const [marginAmount, setMarginAmount] = useState<string>(''); const [depositChain, setDepositChain] = useState<string>('Arc');
+    const [marginAmount, setMarginAmount] = useState<string>('');
+    const [depositQuote, setDepositQuote] = useState<DepositQuote | null>(null); const [depositChain, setDepositChain] = useState<string>('Arc');
 
   const handleDownloadImage = async () => {
     if (shareCardRef.current) {
@@ -361,8 +361,8 @@ export default function PerpetualsView() {
               
             </div>
             <div className="flex items-center gap-2">
-                <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Deposit" onClick={async () => { setMarginAction('deposit'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
-                <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Withdraw" onClick={async () => { setMarginAction('withdraw'); setMarginAmount(''); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></button>
+                <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Deposit" onClick={async () => { setMarginAction('deposit'); setMarginAmount(''); setDepositQuote(null); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg></button>
+                <button className="text-[#e5c07b] hover:text-slate-900 dark:hover:text-white transition-colors" title="Withdraw" onClick={async () => { setMarginAction('withdraw'); setMarginAmount(''); setDepositQuote(null); }}><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg></button>
               </div>
           </div>
 
@@ -789,7 +789,7 @@ export default function PerpetualsView() {
                         <td className="py-2 pl-4">
                           <div className="font-bold text-slate-900 dark:text-white">{order.symbol}</div>
                           <div className={`text-[9px] font-bold ${order.side === 'BUY' ? 'text-[#10b981]' : 'text-[#ef4444]'}`}>
-                            {order.side === 'BUY' ? 'LONG' : 'SHORT'} {Number(order.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x
+                            {order.side === 'BUY' ? 'LONG' : 'SHORT'}{order.leverage > 0 ? ` ${Number(order.leverage).toLocaleString(undefined, { maximumFractionDigits: 2 })}x` : ''}
                           </div>
                         </td>
                         <td className="text-slate-700 dark:text-slate-300">{order.type === 'TPSL' ? 'TP/SL' : order.type}</td>
@@ -805,7 +805,7 @@ export default function PerpetualsView() {
                         </td>
                         <td className="number-mono text-slate-900 dark:text-white">{order.amount}</td>
                         <td className="text-right pr-4 py-1.5 flex items-center justify-end">
-                          <button onClick={() => cancelOrder(order.id)} className="px-2 py-1 text-[10px] font-bold text-[#ef4444] border border-[#ef4444]/30 bg-[#ef4444]/10 rounded hover:bg-[#ef4444]/20 transition-all">Cancel</button>
+                          <button onClick={() => ext.cancelOrder(order.id).then((res) => { if (!res.success) addNotification('error', 'Cancel Failed', res.message); })} className="px-2 py-1 text-[10px] font-bold text-[#ef4444] border border-[#ef4444]/30 bg-[#ef4444]/10 rounded hover:bg-[#ef4444]/20 transition-all">Cancel</button>
                         </td>
                       </tr>
                     ))}
@@ -848,7 +848,7 @@ export default function PerpetualsView() {
           <div className="bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative">
             <div className="p-5 border-b border-slate-100 dark:border-[#1e1e24] flex justify-between items-center bg-slate-50 dark:bg-[#0c0c10]">
               <h3 className="font-bold text-slate-800 dark:text-slate-100">{marginAction === 'deposit' ? 'Deposit Margin' : 'Withdraw Margin'}</h3>
-              <button onClick={() => setMarginAction(null)} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
+              <button onClick={() => { setMarginAction(null); setDepositQuote(null); }} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:text-slate-700 dark:text-slate-300 transition-colors">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
               </button>
             </div>
@@ -864,7 +864,7 @@ export default function PerpetualsView() {
                     <input
                       type="text"
                       value={marginAmount}
-                      onChange={e => setMarginAmount(e.target.value)}
+                      onChange={e => { setMarginAmount(e.target.value); setDepositQuote(null); }}
                       className="w-full pl-3 pr-16 py-2 bg-slate-50 dark:bg-[#0c0c10] border border-slate-200 dark:border-[#1e1e24] focus:border-[#e5c07b]/50 focus:ring-2 focus:ring-[#e5c07b]/20 rounded-lg text-sm font-bold number-mono text-slate-900 dark:text-white outline-none transition-all"
                     />
                     <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-1">
@@ -872,22 +872,35 @@ export default function PerpetualsView() {
                     </div>
                   </div>
                 </div>
+                {marginAction === 'deposit' && depositQuote && (
+                  <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded-lg p-3">
+                    Bridge fee: {depositQuote.fee} USDC. You send {depositQuote.amount} USDC from Arc to your Extended account. It usually arrives within about a minute.
+                  </div>
+                )}
               </div>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-[#0c0c10] border-t border-slate-100 dark:border-[#1e1e24] flex gap-3">
-              <button onClick={() => setMarginAction(null)} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] transition-colors">Cancel</button>
+              <button onClick={() => { setMarginAction(null); setDepositQuote(null); }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] transition-colors">Cancel</button>
                                             <button 
                 onClick={async () => {
-                  addNotification(
-                    'info',
-                    marginAction === 'deposit' ? 'Deposit' : 'Withdraw',
-                    'Funding and withdrawing your Extended account from Arc is being enabled. Your trading balance above is live from Extended.',
-                  );
-                  setMarginAction(null);
+                  if (marginAction === 'withdraw') {
+                    addNotification('info', 'Withdraw', 'Withdrawals back to Arc are being enabled. Your funds stay safe in your Extended account.');
+                    setMarginAction(null);
+                    return;
+                  }
+                  if (!depositQuote) {
+                    const { quote, message } = await ext.quoteDeposit(marginAmount.trim());
+                    if (quote) { setDepositQuote(quote); } else { addNotification('error', 'Deposit', message); }
+                    return;
+                  }
+                  const res = await ext.deposit(depositQuote);
+                  addNotification(res.success ? 'success' : 'error', res.success ? 'Deposit Sent' : 'Deposit Failed', res.message);
+                  setDepositQuote(null);
+                  if (res.success) setMarginAction(null);
                 }} 
                 disabled={isProcessing}
                 className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                {isProcessing ? <Loader2 size={16} className="animate-spin" /> : 'Confirm'}
+                {isProcessing ? <Loader2 size={16} className="animate-spin" /> : marginAction === 'deposit' && depositQuote ? 'Confirm Deposit' : marginAction === 'deposit' ? 'Get Quote' : 'Confirm'}
               </button>
             </div>
           </div>
