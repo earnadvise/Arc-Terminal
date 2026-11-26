@@ -889,9 +889,11 @@ export default function PerpetualsView() {
                     </div>
                   </div>
                 </div>
-                {marginAction === 'deposit' && depositQuote && (
+                {depositQuote && (
                   <div className="text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-[#18181c] border border-slate-200 dark:border-[#1e1e24] rounded-lg p-3">
-                    Bridge fee: {depositQuote.fee} USDC. You send {depositQuote.amount} USDC from Arc to your Extended account. It usually arrives within about a minute.
+                    {marginAction === 'deposit'
+                      ? `Bridge fee: ${depositQuote.fee} USDC. You send ${depositQuote.amount} USDC from Arc to your Extended account. It usually arrives within about a minute.`
+                      : `Bridge fee: ${depositQuote.fee} USDC. You withdraw ${depositQuote.amount} USDC from Extended to your Arc wallet. It usually arrives within about 5 minutes.`}
                   </div>
                 )}
               </div>
@@ -900,24 +902,26 @@ export default function PerpetualsView() {
               <button onClick={() => { setMarginAction(null); setDepositQuote(null); }} className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-white dark:bg-[#121216] border border-slate-200 dark:border-[#1e1e24] hover:bg-slate-50 dark:hover:bg-[#1f1f2e] transition-colors">Cancel</button>
                                             <button 
                 onClick={async () => {
-                  if (marginAction === 'withdraw') {
-                    addNotification('info', 'Withdraw', 'Withdrawals back to Arc are being enabled. Your funds stay safe in your Extended account.');
-                    setMarginAction(null);
-                    return;
-                  }
+                  const isDeposit = marginAction === 'deposit';
                   if (!depositQuote) {
-                    const { quote, message } = await ext.quoteDeposit(marginAmount.trim());
-                    if (quote) { setDepositQuote(quote); } else { addNotification('error', 'Deposit', message); }
+                    const { quote, message } = isDeposit
+                      ? await ext.quoteDeposit(marginAmount.trim())
+                      : await ext.quoteWithdraw(marginAmount.trim());
+                    if (quote) { setDepositQuote(quote); } else { addNotification('error', isDeposit ? 'Deposit' : 'Withdraw', message); }
                     return;
                   }
-                  const res = await ext.deposit(depositQuote);
-                  addNotification(res.success ? 'success' : 'error', res.success ? 'Deposit Sent' : 'Deposit Failed', res.message);
+                  const res = isDeposit ? await ext.deposit(depositQuote) : await ext.withdraw(depositQuote);
+                  addNotification(
+                    res.success ? 'success' : 'error',
+                    res.success ? (isDeposit ? 'Deposit Sent' : 'Withdrawal Requested') : (isDeposit ? 'Deposit Failed' : 'Withdrawal Failed'),
+                    res.message,
+                  );
                   setDepositQuote(null);
                   if (res.success) setMarginAction(null);
                 }} 
                 disabled={isProcessing}
                 className="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 bg-[#e5c07b] hover:bg-[#d4ae6a] transition-colors shadow-lg shadow-[#e5c07b]/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                {isProcessing ? <Loader2 size={16} className="animate-spin" /> : marginAction === 'deposit' && depositQuote ? 'Confirm Deposit' : marginAction === 'deposit' ? 'Get Quote' : 'Confirm'}
+                {isProcessing ? <Loader2 size={16} className="animate-spin" /> : depositQuote ? (marginAction === 'deposit' ? 'Confirm Deposit' : 'Confirm Withdrawal') : 'Get Quote'}
               </button>
             </div>
           </div>

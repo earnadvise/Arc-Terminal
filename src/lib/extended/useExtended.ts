@@ -14,7 +14,7 @@ import {
   onboardAccount,
 } from './onboarding';
 import { buildSignedOrder, type ExtendedMarket } from './orders';
-import { executeArcDeposit, quoteArcDeposit, type DepositQuote } from './funding';
+import { executeArcDeposit, executeArcWithdraw, quoteArcDeposit, quoteArcWithdraw, type DepositQuote } from './funding';
 
 export interface ExtendedBalance {
   equity: number;
@@ -350,8 +350,44 @@ export function useExtended(walletAddress: string) {
     [refresh],
   );
 
+  /** Withdraw step 1: quote the bridge back to Arc so the user sees the fee first. */
+  const quoteWithdraw = useCallback(
+    async (amount: string): Promise<{ quote?: DepositQuote; message: string }> => {
+      setBusy(true);
+      try {
+        const session = await connect();
+        const quote = await quoteArcWithdraw(session.apiKey, amount, balance.withdrawable);
+        return { quote, message: `Bridge fee ${quote.fee} USDC` };
+      } catch (e) {
+        return { message: messageOf(e) };
+      } finally {
+        setBusy(false);
+      }
+    },
+    [connect, balance.withdrawable],
+  );
+
+  /** Withdraw step 2: commit the quote and submit the signed withdrawal. */
+  const withdraw = useCallback(
+    async (quote: DepositQuote): Promise<ExtendedResult> => {
+      setBusy(true);
+      try {
+        const session = await connect();
+        await executeArcWithdraw(session.apiKey, quote, { privateKey: session.privateKey, publicKey: session.publicKey });
+        setTimeout(refresh, 10000);
+        setTimeout(refresh, 60000);
+        return { success: true, message: 'Withdrawal requested. The USDC should reach your Arc wallet in about 5 minutes.' };
+      } catch (e) {
+        return { success: false, message: messageOf(e) };
+      } finally {
+        setBusy(false);
+      }
+    },
+    [connect, refresh],
+  );
+
   return {
     status, hasSession, busy, balance, positions, openOrders,
-    connect, refresh, placeOrder, closePosition, cancelOrder, quoteDeposit, deposit,
+    connect, refresh, placeOrder, closePosition, cancelOrder, quoteDeposit, deposit, quoteWithdraw, withdraw,
   };
 }

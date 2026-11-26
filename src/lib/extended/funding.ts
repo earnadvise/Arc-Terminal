@@ -1,5 +1,7 @@
 import { BrowserProvider, Contract, getAddress, parseUnits, type Eip1193Provider } from 'ethers';
 import { extendedRequest, ExtendedError } from './api';
+import { EXTENDED_COLLATERAL_ID, EXTENDED_STARKNET_DOMAIN } from './config';
+import { signHash, withdrawalMessageHash, type StarkKeyPair } from './stark';
 
 /** USDC (ERC-20 view, 6 decimals) on Arc. Same address the rest of the app uses. */
 export const ARC_USDC_ADDRESS = '0x3600000000000000000000000000000000000000';
@@ -26,34 +28,69 @@ interface BridgeConfig {
   chains?: { chain: string; contractAddress: string }[];
 }
 
-/** Step 1 of 2: ask Extended for a bridge quote so the user can see the fee before anything is committed. */
-export async function quoteArcDeposit(apiKey: string, amount: string): Promise<DepositQuote> {
-  if (!/^\d+(\.\d{1,6})?$/.test(amount) || Number(amount) <= 0) {
-    throw new Error('Enter a valid USDC amount (up to 6 decimals).');
-  }
+async function getArcBridge(apiKey: string): Promise<{ chain: string; contractAddress: string }> {
   const config = await extendedRequest<BridgeConfig>('/api/v1/user/bridge/config', { apiKey });
   const arc = (config?.chains ?? []).find((c) => /^arc/i.test(c.chain));
   if (!arc) {
-    throw new Error('Extended has not enabled Arc deposits for this account yet. Ask Extended support to enable the Arc bridge.');
+    throw new Error('Extended has not enabled Arc for this account yet. Ask Extended support to enable the Arc bridge.');
   }
-  const contractAddress = getAddress(arc.contractAddress);
+  return { chain: arc.chain, contractAddress: getAddress(arc.contractAddress) };
+}
 
-  // The docs show both USDC and USD as the asset symbol, so try USDC first and fall back.
+const assertAmount = (amount: string) => {
+  if (!/^\d+(\.\d{1,6})?$/.test(amount) || Number(amount) <= 0) {
+    throw new Error('Enter a valid USDC amount (up to 6 decimals).');
+  }
+};
+
+/** Ask Extended for a bridge quote. The docs show both USDC and USD as the asset symbol, so try USDC first. */
+async function requestBridgeQuote(
+  apiKey: string,
+  chainIn: string,
+  chainOut: string,
+  amount: string,
+): Promise<{ id: string; fee: string; asset: string }> {
   let lastError: unknown;
   for (const asset of ['USDC', 'USD']) {
     try {
       const quote = await extendedRequest<{ id: string; fee: string }>('/api/v1/user/bridge/quote', {
         apiKey,
-        query: { chainIn: arc.chain, chainOut: 'STRK', amount, asset },
+        query: { chainIn, chainOut, amount, asset },
       });
       if (!quote?.id) throw new Error('Extended returned no quote id.');
-      return { id: String(quote.id), fee: String(quote.fee ?? '0'), amount, chain: arc.chain, asset, contractAddress };
+      return { id: String(quote.id), fee: String(quote.fee ?? '0'), asset };
     } catch (e) {
       lastError = e;
       if (!(e instanceof ExtendedError)) throw e;
     }
   }
   throw lastError instanceof Error ? lastError : new Error('Could not get a bridge quote.');
+}
+
+/** Commit a quote and return its hex commitment id. Anything unexpected aborts before any funds move. */
+async function commitBridgeQuote(apiKey: string, quoteId: string): Promise<string> {
+  if (!/^[0-9a-f]+$/i.test(quoteId.replace(/^0x/i, ''))) throw new Error('Unexpected quote id format. Nothing was sent.');
+  const committed = await extendedRequest<unknown>('/api/v1/user/bridge/quote', {
+    method: 'POST',
+    apiKey,
+    query: { id: quoteId },
+  });
+  const obj = (committed ?? {}) as { quoteId?: string; id?: string; commitmentId?: string };
+  const id =
+    typeof committed === 'string' || typeof committed === 'number'
+      ? String(committed)
+      : (obj.quoteId ?? obj.id ?? obj.commitmentId ?? quoteId);
+  const hexId = id.replace(/^0x/i, '');
+  if (!/^[0-9a-f]+$/i.test(hexId)) throw new Error('Unexpected commitment id format. Nothing was sent.');
+  return hexId;
+}
+
+/** Deposit step 1 of 2: quote so the user sees the fee before anything is committed. */
+export async function quoteArcDeposit(apiKey: string, amount: string): Promise<DepositQuote> {
+  assertAmount(amount);
+  const arc = await getArcBridge(apiKey);
+  const quote = await requestBridgeQuote(apiKey, arc.chain, 'STRK', amount);
+  return { ...quote, amount, chain: arc.chain, contractAddress: arc.contractAddress };
 }
 
 async function ensureArcNetwork(ethereum: Eip1193Provider): Promise<void> {
@@ -72,28 +109,12 @@ export async function executeArcDeposit(
   apiKey: string,
   quote: DepositQuote,
 ): Promise<{ txHash: string }> {
-  if (!/^[0-9a-f]+$/i.test(quote.id.replace(/^0x/i, ''))) {
-    throw new Error('Unexpected quote id format. Nothing was sent.');
-  }
   await ensureArcNetwork(ethereum);
   const provider = new BrowserProvider(ethereum);
   const code = await provider.getCode(quote.contractAddress);
   if (code === '0x') throw new Error('Bridge contract not found on Arc. Nothing was sent.');
 
-  const committed = await extendedRequest<unknown>('/api/v1/user/bridge/quote', {
-    method: 'POST',
-    apiKey,
-    query: { id: quote.id },
-  });
-  const committedId =
-    typeof committed === 'string' || typeof committed === 'number'
-      ? String(committed)
-      : ((committed as { quoteId?: string; id?: string; commitmentId?: string } | null)?.quoteId ??
-        (committed as { id?: string } | null)?.id ??
-        (committed as { commitmentId?: string } | null)?.commitmentId ??
-        quote.id);
-  const hexId = committedId.replace(/^0x/i, '');
-  if (!/^[0-9a-f]+$/i.test(hexId)) throw new Error('Unexpected commitment id format. Nothing was sent.');
+  const hexId = await commitBridgeQuote(apiKey, quote.id);
   const commitmentId = BigInt(`0x${hexId}`);
 
   const signer = await provider.getSigner();
@@ -112,4 +133,76 @@ export async function executeArcDeposit(
   const tx = await bridge.depositWithId(ARC_USDC_ADDRESS, amount, commitmentId);
   await tx.wait();
   return { txHash: tx.hash as string };
+}
+
+interface AccountInfo {
+  accountId: number | string;
+  l2Key: string;
+  l2Vault: number | string;
+  bridgeStarknetAddress?: string;
+}
+
+/** Withdraw step 1 of 2: quote the bridge from Extended back to Arc. */
+export async function quoteArcWithdraw(apiKey: string, amount: string, withdrawable: number): Promise<DepositQuote> {
+  assertAmount(amount);
+  if (Number(amount) > withdrawable) {
+    throw new Error(`You can withdraw up to ${withdrawable.toFixed(2)} USDC right now. Close positions to free more.`);
+  }
+  const arc = await getArcBridge(apiKey);
+  const quote = await requestBridgeQuote(apiKey, 'STRK', arc.chain, amount);
+  return { ...quote, amount, chain: arc.chain, contractAddress: arc.contractAddress };
+}
+
+/**
+ * Withdraw step 2 of 2: commit the quote, then submit the Stark-signed withdrawal request.
+ * Extended's bridge then sends the USDC to the wallet linked to the account.
+ */
+export async function executeArcWithdraw(
+  apiKey: string,
+  quote: DepositQuote,
+  keys: StarkKeyPair,
+): Promise<{ withdrawalId: string }> {
+  const info = await extendedRequest<AccountInfo>('/api/v1/user/account/info', { apiKey });
+  if (!info?.bridgeStarknetAddress) throw new Error('Your Extended account has no bridge address yet. Nothing was sent.');
+  if (BigInt(info.l2Key) !== BigInt(keys.publicKey)) throw new Error('Trading key does not match this account. Nothing was sent.');
+  const vault = Number(info.l2Vault);
+  const starkAmount = parseUnits(quote.amount, USDC_DECIMALS).toString();
+
+  const commitment = await commitBridgeQuote(apiKey, quote.id);
+
+  const expirationSeconds = Math.ceil(Date.now() / 1000) + 15 * 24 * 60 * 60;
+  const salt = Math.floor(Math.random() * 2 ** 32);
+  const hash = withdrawalMessageHash({
+    recipient: info.bridgeStarknetAddress,
+    positionId: vault,
+    collateralId: EXTENDED_COLLATERAL_ID,
+    amount: starkAmount,
+    expiration: expirationSeconds,
+    salt,
+    userPublicKey: keys.publicKey,
+    domain: EXTENDED_STARKNET_DOMAIN,
+  });
+  const signature = signHash(keys.privateKey, hash);
+
+  const withdrawalId = await extendedRequest<number | string>('/api/v1/user/withdrawal', {
+    method: 'POST',
+    apiKey,
+    body: {
+      accountId: Number(info.accountId),
+      amount: quote.amount,
+      chainId: quote.chain,
+      asset: 'USD',
+      quoteId: commitment,
+      settlement: {
+        recipient: info.bridgeStarknetAddress,
+        positionId: vault,
+        collateralId: EXTENDED_COLLATERAL_ID,
+        amount: Number(starkAmount),
+        expiration: { seconds: expirationSeconds },
+        salt,
+        signature,
+      },
+    },
+  });
+  return { withdrawalId: String(withdrawalId) };
 }

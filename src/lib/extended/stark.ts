@@ -13,6 +13,7 @@ import {
 const FIELD_PRIME = BigInt('0x800000000000011000000000000000000000000000000000000000000000001');
 const DOMAIN_SELECTOR = BigInt('0x1ff2f602e42168014d405a94f75e8a93d640751d71d16311266e140d8b0a210');
 const ORDER_SELECTOR = BigInt('0x36da8d51815527cabfaa9c982f564c80fa7429616739306036f1f9b608dd112');
+const WITHDRAWAL_SELECTOR = BigInt('0x250a5fa378e8b771654bd43dcb34844534f9d1e29e16b14760d7936ea7f4b1d');
 
 export interface StarknetDomain {
   name: string;
@@ -82,6 +83,36 @@ export function orderMessageHash(input: OrderHashInput): bigint {
     domainHash(input.domain),
     toFelt(input.userPublicKey),
     orderHash,
+  ]);
+}
+
+export interface WithdrawalHashInput {
+  recipient: string;
+  positionId: number | string;
+  collateralId: string;
+  amount: string;
+  expiration: number | string;
+  salt: number | string;
+  userPublicKey: string;
+  domain: StarknetDomain;
+}
+
+/** Hash of the signed withdrawal request (Extended "WithdrawArgs" struct). */
+export function withdrawalMessageHash(input: WithdrawalHashInput): bigint {
+  const structHash = poseidonHashMany([
+    WITHDRAWAL_SELECTOR,
+    toFelt(input.recipient),
+    toFelt(input.positionId),
+    toFelt(input.collateralId),
+    toFelt(input.amount),
+    toFelt(input.expiration),
+    toFelt(input.salt),
+  ]);
+  return poseidonHashMany([
+    shortString('StarkNet Message'),
+    domainHash(input.domain),
+    toFelt(input.userPublicKey),
+    structHash,
   ]);
 }
 

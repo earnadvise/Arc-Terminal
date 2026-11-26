@@ -17,6 +17,9 @@ export const EXTENDED_STARKNET_DOMAIN: StarknetDomain = {
   revision: '1',
 };
 
+/** Collateral asset id in Extended's Stark settlement (USDC). */
+export const EXTENDED_COLLATERAL_ID = '0x1';
+
 /** Builder code: public identifier of your Extended client account. */
 export const EXTENDED_BUILDER_ID = Number(process.env.NEXT_PUBLIC_EXTENDED_BUILDER_ID ?? '30');
 
