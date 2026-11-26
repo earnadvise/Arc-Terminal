@@ -357,6 +357,23 @@ export default function PerpetualsView() {
           <div className="flex justify-between items-center text-xs font-semibold mb-3 px-1">
             <div className="flex items-center gap-3">
               <span className="text-slate-500">Avbl <span className="text-slate-900 dark:text-white">{hlBalance.toLocaleString(undefined, { minimumFractionDigits: 2 })} USDC</span></span>
+              {walletConnected && !ext.hasSession && (
+                <button
+                  disabled={ext.busy}
+                  onClick={async () => {
+                    try {
+                      await ext.connect();
+                      await ext.refresh();
+                      addNotification('success', 'Trading unlocked', 'Your Extended balance and positions are now loaded.');
+                    } catch (e) {
+                      addNotification('error', 'Unlock failed', e instanceof Error ? e.message : 'Could not unlock trading.');
+                    }
+                  }}
+                  className="px-2 py-0.5 rounded bg-[#e5c07b] text-slate-900 text-[10px] font-bold hover:bg-[#d4ae6a] disabled:opacity-50"
+                >
+                  {ext.busy ? 'Unlocking...' : 'Unlock'}
+                </button>
+              )}
               
               
             </div>
